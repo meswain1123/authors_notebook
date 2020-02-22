@@ -49,10 +49,10 @@ class AppLayout extends Component {
     let w = window.innerWidth;
     if (w >= 600) {
       w -= 200;
-      this.setState({ width: w, marginLeft: 220 });
+      this.setState({ width: w, marginLeft: 220, innerWidth: window.innerWidth });
     }
     else {
-      this.setState({ width: w, marginLeft: 0 });
+      this.setState({ width: w, marginLeft: 0, innerWidth: window.innerWidth });
     }
     // if(window.innerWidth < 500) {
     //   this.setState({ width: 450, height: 102 });
@@ -84,8 +84,10 @@ class AppLayout extends Component {
             <MainPage />
           </Grid>
         </Grid> */}
-        <Box display={{ xs: 'none', sm: 'inline' }} className="Sidebar">
-          <Sidebar className="" logoText={"Author's Notebook"} />
+        <Box display={this.props.menuOpen ? 'inline' : 'none'}>
+          <Box display={{ xs: 'none', sm: 'inline' }} className="Sidebar">
+            <Sidebar className="" logoText={"Author's Notebook"} />
+          </Box>
         </Box>
         {/* <Box display="inline" 
           style={{ 
@@ -99,15 +101,15 @@ class AppLayout extends Component {
         <Grid container>
           <Grid item xs={12}
             style={{ 
-              marginLeft: `${this.state.marginLeft}px`, 
-              width: `${this.state.width}px` 
+              marginLeft: `${this.props.menuOpen ? this.state.marginLeft : 0}px`, 
+              width: `${this.props.menuOpen ? this.state.width : this.state.innerWidth}px` 
             }}>
             <NavBar />
           </Grid>
           <Grid item xs={12}
             style={{ 
-              marginLeft: `${this.state.marginLeft + 10}px`, 
-              width: `${this.state.width - 10}px`,
+              marginLeft: `${this.props.menuOpen ? this.state.marginLeft + 10 : 10}px`, 
+              width: `${this.props.menuOpen ? this.state.width - 20 : this.state.innerWidth - 20}px`,
               marginRight: "10px",
               marginTop: "10px" 
             }}>

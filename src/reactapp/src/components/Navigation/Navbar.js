@@ -19,13 +19,15 @@ import {
 } from "../../redux/actions/index";
 // import Cookies from "universal-cookie";
 import Grid from "@material-ui/core/Grid";
+import Box from "@material-ui/core/Box";
 import API from "../../api";
 
 const mapStateToProps = state => {
   return {
     selectedPage: state.app.selectedPage,
     user: state.session.user,
-    selectedWorld: state.app.selectedWorld
+    selectedWorld: state.app.selectedWorld,
+    mobileMenuOpen: !state.app.menuOpen // This defaults to closed instead of open
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -48,7 +50,7 @@ class Bar extends Component {
     this.props.loadFromStorage();
   }
 
-  menuClick() {
+  menuClick = () => {
     this.props.toggleMenu();
   }
 
@@ -98,6 +100,11 @@ class Bar extends Component {
             </Grid>
           </Grid>
         </Toolbar>
+        <Box display={this.props.mobileMenuOpen ? 'inline' : 'none'}>
+          <Box display={{ xs: 'inline', sm: 'none' }}>
+            Mobile Menu
+          </Box>
+        </Box>
       </AppBar>
       // <div className="row">
       //   <AppBar position="static">
