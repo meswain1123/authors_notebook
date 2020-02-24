@@ -5,7 +5,7 @@ import assert from "assert";
 const dbType = process.env.DB_TYPE;
 const dbName = process.env.DB_NAME;
 const url = process.env.DB_CONNECTION_STRING;
-const client = new MongoClient(url, { useNewUrlParser: true });
+const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
 function open() {
   console.log('opening');
   client.connect(function(err) {

@@ -48,10 +48,22 @@ import ChipInput from "material-ui-chip-input";
 
 const handleTypeChange = (value, props) => {
   // For Autocomplete // (e, props) => { // For Select
-  console.log(props);
-  console.log(value);
+  // console.log(props);
+  // console.log(value);
   const attr = props.attribute;
   attr["Type"] = value; // For Autocomplete // e.target.value; // For Select //
+  props.onChange(attr);
+};
+
+const handleType2Change = (value, props) => {
+  // For Autocomplete // (e, props) => { // For Select
+  // console.log(props);
+  // console.log(value);
+  const attr = props.attribute;
+  const type2 = props.types.filter(t=>t.Name === value);
+  attr["Type2ID"] = type2.length === 0 ? null : type2[0]._id;
+  attr["Type2"] = value; // For Autocomplete // e.target.value; // For Select //
+  console.log(attr);
   props.onChange(attr);
 };
 
@@ -77,17 +89,19 @@ export default function AttributeControl(props) {
     "Text",
     "Number",
     "True/False",
-    "Options" //, "Type" //, "List"
+    "Options", 
+    "Type", 
+    // "List"
   ];
   const type =
     props.attribute.Type === "" ? attributeTypes[0] : props.attribute.Type;
-  // const attributeTypes2 = [
-  //   "Text", "Number", "True/False", "Options", "Type"
-  // ];
+  const attributeTypes2 = props.types.map((type, i) => {
+    return type.Name;
+  });
 
   return (
     <Grid container spacing={1} direction="row">
-      <Grid item xs={3}>
+      <Grid item sm={3} xs={12}>
         <FormControl variant="outlined" fullWidth>
           <InputLabel htmlFor="Name">Name</InputLabel>
           <OutlinedInput
@@ -122,7 +136,7 @@ export default function AttributeControl(props) {
           <FormHelperText>{props.message}</FormHelperText>
         </FormControl>
       </Grid>
-      <Grid item xs={3}>
+      <Grid item sm={3} xs={12}>
         {/* <Autocomplete
           id={`ac_types_${props.attribute.index}`}
           disabled={props.attribute.FromSupers.length > 0}
@@ -172,7 +186,7 @@ export default function AttributeControl(props) {
             onChange={ (_, value) => handleTypeChange(value, props) }
           />
       </Grid>
-      <Grid item xs={3}>
+      <Grid item sm={3} xs={12}>
         {type === "Options" ? (
           <ChipInput
             variant="outlined"
@@ -181,12 +195,22 @@ export default function AttributeControl(props) {
             onChange={chips => handleOptionsChange(chips, props)}
           />
         ) : type === "Type" ? (
-          "Type"
+          <AutoCompleteComboBox 
+            Label="Detail"
+            disabled={props.attribute.FromSupers.length > 0} 
+            value={props.attribute.Type2}
+            // attribute={props.attribute}
+            // displayField="Name"
+            options={attributeTypes2}
+            onChange={ (_, value) => handleType2Change(value, props) }
+          />
+        ) : type === "List" ? (
+          "List"
         ) : (
           ""
         )}
       </Grid>
-      <Grid item xs={3}>
+      <Grid item sm={3} xs={12}>
         <Button
           variant="contained" color="primary"
           className="w200" fullWidth

@@ -7,30 +7,15 @@ import {
   addType,
   updateType
 } from "../../redux/actions/index";
-// import Button from "@material-ui/core/Button";
 import Edit from "@material-ui/icons/Edit";
 import Delete from "@material-ui/icons/Delete";
 import Add from "@material-ui/icons/Add";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
-// import { NavLink } from "react-router-dom";
 import Button from "@material-ui/core/Button";
-// import FormControl from '@material-ui/core/FormControl';
-// import OutlinedInput from '@material-ui/core/OutlinedInput';
-// import InputLabel from '@material-ui/core/InputLabel';
-// import FormHelperText from '@material-ui/core/FormHelperText';
-// import AttributesControl from "./AttributesControl";
-// import SupersControl from "./SupersControl";
-// import styled from 'styled-components';
 import API from "../../api";
 import Grid from "@material-ui/core/Grid";
-
-// const Label = styled('label')`
-//   padding: 0 0 4px;
-//   line-height: 1.5;
-//   display: block;
-// `;
 
 /* 
   This component will take the main portion of the page and is used for
@@ -39,7 +24,6 @@ import Grid from "@material-ui/core/Grid";
 */
 
 const mapStateToProps = state => {
-  // console.log(state);
   const type = state.app.selectedType;
   const subTypes =
     type === null
@@ -119,54 +103,19 @@ class Page extends Component {
   }
 
   render() { 
-    // Can I remove this?  It's a duplicate from what's in componentDidMount.  I think so
-    const { id } = this.props.match.params;
-    if (
-      this.props.selectedType !== null &&
-      this.props.selectedType._id !== id
-    ) {
-      // setTimeout(() => {
-      if (id !== undefined) {
-        this.api.getType(this.props.selectedWorldID, id).then(res => {
-          const supers = this.props.types.filter(type =>
-            res.SuperIDs.includes(type._id)
-          );
-          this.setState({
-            Name: res.Name,
-            Description: res.Description,
-            _id: id,
-            Supers: supers,
-            Major: res.Major
-          });
-          this.props.updateSelectedType(res);
-        });
-      } else {
-        this.props.updateSelectedType({
-          _id: null,
-          Name: "",
-          Description: "",
-          Supers: [],
-          AttributesArr: [],
-          Major: false
-        });
-      }
-      // }, 500);
-    }
-    // const types = this.props.types === undefined || this.state._id === null ? this.props.types : this.props.types.filter(type => type._id !== this.state._id);
-
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else {
       return (
         <Grid item xs={12} container spacing={0} direction="column">
           <Grid item container spacing={0} direction="row">
-            <Grid item xs={7}>
+            <Grid item xs={6}>
               <h2>{this.state.Name}</h2>
             </Grid>
-            <Grid item xs={2}>
+            <Grid item sm={3} xs={6}>
               <h3>{this.state.Major ? "Major Type" : ""}</h3>
             </Grid>
-            <Grid item xs={3}>
+            <Grid item sm={3} xs={12}>
               <List>
                 <ListItem>
                   <Button
@@ -202,7 +151,7 @@ class Page extends Component {
             </Grid>
           </Grid>
           <Grid item container spacing={0} direction="row">
-            <Grid item xs={9} container spacing={0} direction="column">
+            <Grid item sm={9} xs={12} container spacing={0} direction="column">
               <Grid item>{this.state.Description}</Grid>
               <Grid item>
                 Attributes
@@ -241,7 +190,7 @@ class Page extends Component {
                 </List>
               </Grid>
             </Grid>
-            <Grid item xs={3} container spacing={0} direction="column">
+            <Grid item sm={3} xs={12} container spacing={0} direction="column">
               {this.state.Supers.length === 0 ? (
                 ""
               ) : (
@@ -317,98 +266,6 @@ class Page extends Component {
             </Grid>
           </Grid>
         </Grid>
-        // <div className="col-sm-12">
-        //   <div className="row">
-        //     <div className="col-sm-12">
-        //       <div className="row">
-        //         <div className="col-sm-9">
-        //           <div className="row">
-        //             <div className="col-sm-12">
-        //               <h2>{this.state.Name}</h2>
-        //               <NavLink
-        //                 to={`/type/edit/${this.state._id}`}
-        //                 className="blue blackFont"
-        //                 activeClassName="active"
-        //               >
-        //                 <Edit/>
-        //               </NavLink>
-        //               <NavLink
-        //                 to={`/type/delete/${this.state._id}`}
-        //                 className="blue blackFont"
-        //                 activeClassName="active"
-        //               >
-        //                 <Delete/>
-        //               </NavLink>
-        //             </div>
-        //           </div>
-        //           <div className="row">
-        //             <div className="col-sm-12">
-        //               {this.state.Description}
-        //             </div>
-        //           </div>
-        //         </div>
-        //         <div className="col-sm-3">
-        //           <List>
-        //             <ListItem>
-        //               <ListItemText primary={"Super Types"} />
-        //             </ListItem>
-        //             {this.state.Supers.map((superType, i) => {
-        //               return (
-        //                 <NavLink key={i}
-        //                   to={`/type/details/${superType._id}`}
-        //                   className="blue blackFont"
-        //                   activeClassName="active"
-        //                 >
-        //                   <ListItem button className="curvedButton">
-        //                     <ListItemText primary={superType.Name} />
-        //                   </ListItem>
-        //                 </NavLink>
-        //               );
-        //             })}
-        //           </List>
-        //         </div>
-        //       </div>
-        //       <div className="row">
-        //         <div className="col-sm-12 margined">
-        //           <div className="Attributes">
-        //             Attributes
-        //             { this.props.selectedType === null || this.props.selectedType === undefined ? "" :
-        //               this.props.selectedType.AttributesArr.map((attribute,i) => {
-        //                 return (
-        //                   <div key={i} className="row bottomMargin">
-        //                     <div className="col-sm-6">
-        //                       {attribute.Name}
-        //                     </div>
-        //                     {/* <div className="col-sm-4">
-        //                       Type: {attribute.Type}
-        //                     </div> */}
-        //                     { attribute.Type === "Options" ?
-        //                       <div className="col-sm-6">
-        //                           Options:
-        //                           {
-        //                             attribute.Options.map((option,j) => {
-        //                               return (<span key={j}>{j===0?" ":", "}{option}</span>);
-        //                             })
-        //                           }
-
-        //                       </div>
-        //                       : (attribute.Type === "Type" ?
-        //                       <div className="col-sm-4">
-        //                         Type
-        //                       </div>
-        //                       : ""
-        //                       )
-        //                     }
-        //                   </div>
-        //                 );
-        //               })
-        //             }
-        //           </div>
-        //         </div>
-        //       </div>
-        //     </div>
-        //   </div>
-        // </div>
       );
     }
   }

@@ -65,10 +65,11 @@ class Control extends Component {
       Name: "",
       Type: "Text",
       Options: [],
+      Type2: "Text",
       ListType: "",
       FromTypes: [],
       Value: "",
-      AttributeTypes: ["Text", "Number", "True/False", "Options"]
+      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type"]
     });
     this.props.updateSelectedThing(thing);
     // const arr = this.props.attributesArr;
@@ -90,11 +91,12 @@ class Control extends Component {
       Name: value.Name,
       Type: value.Type,
       Options: value.Options,
+      Type2: value.Type2,
       ListType: value.ListType,
       // Default: value.Default
       FromTypes: value.FromTypes,
       Value: value.Value,
-      AttributeTypes: ["Text", "Number", "True/False", "Options"]
+      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type"]
     };
     // console.log(thing);
     this.props.updateSelectedThing(thing);

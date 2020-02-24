@@ -168,7 +168,7 @@ class Page extends Component {
             </Grid>
           </Grid>
           <Grid item container spacing={0} direction="row">
-            <Grid item xs={9} container spacing={0} direction="column">
+            <Grid item sm={9} xs={12} container spacing={0} direction="column">
               <Grid item>{this.state.Description}</Grid>
               <Grid item>
                 Attributes
@@ -191,7 +191,7 @@ class Page extends Component {
                 </List>
               </Grid>
             </Grid>
-            <Grid item xs={3} container spacing={0} direction="column">
+            <Grid item sm={3} xs={12} container spacing={0} direction="column">
               {this.state.Types.length === 0 ? (
                 ""
               ) : (

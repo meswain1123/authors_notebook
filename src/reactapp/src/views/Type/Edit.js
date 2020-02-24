@@ -143,15 +143,21 @@ class Page extends Component {
       case "AttributesArr":
         valid = true;
         value = this.props.selectedType[fieldName];
-        // // console.log(value);
-        // // console.log(this.props);
+        // console.log(value);
+        // console.log(this.props);
+        message = "";
         for (let i = 0; i < value.length; i++) {
           if (value.filter(attr2 => attr2.Name === value[i].Name).length > 1) {
             valid = false;
+            message = "Attribute Names must be unique";
             break;
           }
-        }
-        message = valid ? "" : "Attribute Names must be unique";
+          else if (value[i].Type === "Type" && (value[i].Type2ID === undefined || value[i].Type2ID === null)) {
+            valid = false;
+            message = `${value[i].Type2} is not a valid attribute type.`;
+            break;
+          }
+        } 
         break;
       default:
         break;
@@ -204,19 +210,24 @@ class Page extends Component {
       WorldID: this.props.selectedWorld._id,
       Major: this.state.Major
     };
-    // console.log(type);
+    console.log(type);
 
     if (type._id === null) {
       this.api
         .createType(type)
         .then(res => {
-          // console.log(res);
-          type._id = res.typeID;
-          this.props.addType(type);
-          this.setState({
-            waiting: false,
-            redirectTo: `/world/details/${this.props.selectedWorld._id}`
-          });
+          console.log(res);
+          if (res.typeID !== undefined) {
+            type._id = res.typeID;
+            this.props.addType(type);
+            this.setState({
+              waiting: false,
+              redirectTo: `/world/details/${this.props.selectedWorld._id}`
+            });
+          }
+          else if (res.message !== undefined) {
+            this.setState({ message: res.message });
+          }
         })
         .catch(err => console.log(err));
     } else {
@@ -431,9 +442,16 @@ class Page extends Component {
                 style={{marginLeft: "4px"}}
                 disabled={this.state.waiting}
                 onClick={_ => {
-                  this.setState({
-                    redirectTo: `/type/details/${this.props.selectedType._id}`
-                  });
+                  if (this.props.selectedType._id === null) {
+                    this.setState({
+                      redirectTo: `/world/details/${this.props.selectedWorldID}`
+                    });
+                  }
+                  else {
+                    this.setState({
+                      redirectTo: `/type/details/${this.props.selectedType._id}`
+                    });
+                  }
                 }}
                 type="button"
               >

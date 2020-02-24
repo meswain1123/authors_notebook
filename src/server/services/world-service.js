@@ -105,11 +105,14 @@ router
     db.getType(respond, req.params.worldID, req.params.typeID);
   })
   .post("/createType", function(req, res) {
+    console.log(req.body);
+    console.log(req.session.userID);
     if (req.session.userID == undefined) {
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function gotType(type) {
         if (type.message == undefined || type.message != "Type not found") {
+          console.log(115);
           res.send({ message: "This world already has a Type by that name." });
         } else {
           function respond(typeID) {

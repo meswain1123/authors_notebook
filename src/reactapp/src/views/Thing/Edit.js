@@ -1,25 +1,17 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
-// import { Redirect } from "react-router-dom";
 import {
   selectPage,
   updateSelectedThing,
   addThing,
   updateThing
 } from "../../redux/actions/index";
-
-// import Checkbox from "@material-ui/core/Checkbox";
 import Button from "@material-ui/core/Button";
 import FormControl from "@material-ui/core/FormControl";
 import OutlinedInput from "@material-ui/core/OutlinedInput";
 import InputLabel from "@material-ui/core/InputLabel";
-// import IconButton from '@material-ui/core/IconButton';
-// import InputAdornment from '@material-ui/core/InputAdornment';
-// import Visibility from '@material-ui/icons/Visibility';
-// import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import FormHelperText from "@material-ui/core/FormHelperText";
-// import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from "@material-ui/core/Grid";
 import AttributesControl from "./AttributesControl";
 import TypesControl from "./TypesControl";
@@ -32,7 +24,6 @@ import API from "../../api";
 */
 
 const mapStateToProps = state => {
-  // // console.log(state);
   return {
     selectedPage: state.app.selectedPage,
     selectedThing: state.app.selectedThing,
@@ -53,8 +44,6 @@ function mapDispatchToProps(dispatch) {
 class Page extends Component {
   constructor(props) {
     super(props);
-    // // console.log(props);
-    // // console.log(this.props);
     this.state = {
       _id: null,
       Name: "",
@@ -75,13 +64,10 @@ class Page extends Component {
   componentDidMount() {
     setTimeout(() => {
       const { id } = this.props.match.params;
-      // console.log(id);
-      // console.log(typeof id);
       if (id !== undefined) {
         if (id.includes("type_id_")) {
           // We're creating it from a type rather than from blank
           const typeID = id.substring(8);
-          console.log(typeID);
           let type = this.props.types.filter(t=> t._id === typeID);
           if (type.length > 0) {
             type = type[0];
@@ -94,7 +80,6 @@ class Page extends Component {
         else {
           // We're editing an existing Thing
           this.api.getThing(this.props.selectedWorldID, id).then(res => {
-            console.log(res);
             const things = this.props.things.filter(
               thing => res._id !== thing._id
             );
@@ -124,7 +109,6 @@ class Page extends Component {
   createThingFromType = type => {
     let types = [];
     types.push(type);
-    // types = types.concat(type.Supers);
     type.Supers.forEach(s=>{
       if (types.filter(t=>t._id === s._id).length === 0) {
         let superType = this.props.types.filter(t=>t._id === s._id);
@@ -132,7 +116,6 @@ class Page extends Component {
           types.push(superType[0]);
       }
     });
-    console.log(types);
     const thing = {
       _id: null,
       Name: "",
@@ -169,8 +152,6 @@ class Page extends Component {
         matches[0].FromTypes = typeIDs;
       }
     }
-    // console.log(types);
-    // console.log(attributes);
     this.setState({ Types: types });
     thing.AttributesArr = attributes;
     this.props.updateSelectedThing(thing);
@@ -181,12 +162,6 @@ class Page extends Component {
     const value =
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
     this.setState({ [name]: value });
-    // const name = e.target.name;
-    // const value = (e.target.type === "checkbox" ? e.target.checked : e.target.value);
-    // const thing = {...this.props.selectedThing};
-    // thing[name] = value;
-    // this.props.updateSelectedThing(thing);
-    // this.validateField(name, value);
   };
 
   inputBlur = e => {
@@ -217,7 +192,6 @@ class Page extends Component {
           valid = false;
           message = "Thing Name is too short";
         } else {
-          // console.log(this.props.things);
           valid =
             this.props.things.filter(
               t => t.Name === value && t._id !== this.state._id
@@ -228,8 +202,6 @@ class Page extends Component {
       case "AttributesArr":
         valid = true;
         value = this.props.selectedThing[fieldName];
-        // // console.log(value);
-        // // console.log(this.props);
         for (let i = 0; i < value.length; i++) {
           if (value.filter(attr2 => attr2.Name === value[i].Name).length > 1) {
             valid = false;
@@ -262,7 +234,6 @@ class Page extends Component {
   };
 
   onSubmit = () => {
-    // console.log(this.props);
     function respond() {
       if (this.state.formValid) {
         this.setState({ waiting: true }, this.submitThroughAPI);
@@ -273,9 +244,6 @@ class Page extends Component {
   };
 
   submitThroughAPI = () => {
-    // const types = this.state.Types.map(s => {
-    //   return { _id: s._id, Name: s.Name };
-    // });
     const typeIDs = this.state.Types.map(s => {
       return s._id;
     });
@@ -284,17 +252,14 @@ class Page extends Component {
       Name: this.state.Name,
       Description: this.state.Description,
       TypeIDs: typeIDs,
-      // Types: types,
       AttributesArr: this.props.selectedThing.AttributesArr,
       WorldID: this.props.selectedWorld._id
     };
-    console.log(thing);
 
     if (thing._id === null) {
       this.api
         .createThing(thing)
         .then(res => {
-          // console.log(res);
           thing._id = res.thingID;
           this.props.addThing(thing);
           this.setState({
@@ -318,22 +283,18 @@ class Page extends Component {
   };
 
   typesChange = (e, value) => {
-    // console.log(value);
     let types = [];
     for (let i = 0; i < value.length; i++) {
       const t = value[i];
       types.push(t);
       types = types.concat(t.Types);
     }
-    // console.log(types);
     this.setState({ Types: types });
   };
 
   addType = value => {
-    // console.log(value);
     let types = [...this.state.Types];
     types.push(value);
-    // types = types.concat(value.Supers);
     value.Supers.forEach(s=>{
       if (types.filter(t=>t._id === s._id).length === 0) {
         let superType = this.props.types.filter(t=>t._id === s._id);
@@ -341,7 +302,6 @@ class Page extends Component {
           types.push(superType[0]);
       }
     });
-    console.log(types);
     const thing = this.props.selectedThing;
     let attributes = [...thing.AttributesArr];
     for (let i = 0; i < value.AttributesArr.length; i++) {
@@ -372,15 +332,12 @@ class Page extends Component {
         matches[0].FromTypes = typeIDs;
       }
     }
-    // console.log(types);
-    // console.log(attributes);
     this.setState({ Types: types });
     thing.AttributesArr = attributes;
     this.props.updateSelectedThing(thing);
   };
 
   removeType = value => {
-    console.log(value);
     // TODO: Add a confirmation before doing this
     // to let them know it will also remove sub-types.
     let types = [];
@@ -391,8 +348,6 @@ class Page extends Component {
         removeUs.push(checkMe._id);
       else types.push(checkMe);
     });
-    // console.log(removeUs);
-    // console.log(types);
     const thing = this.props.selectedThing;
     let attributes = [...thing.AttributesArr];
     for (let i = 0; i < attributes.length; i++) {
@@ -411,7 +366,6 @@ class Page extends Component {
         }
       }
     }
-    // // console.log(types);
     this.setState({ Types: types });
     thing.AttributesArr = attributes;
     this.props.updateSelectedThing(thing);
@@ -469,13 +423,11 @@ class Page extends Component {
                 name="Description"
                 type="text"
                 value={this.state.Description}
-                // error={ !this.state.fieldValidation.Description.valid }
                 onChange={this.handleUserInput}
                 onBlur={this.inputBlur}
                 labelWidth={82}
                 fullWidth
               />
-              {/* <FormHelperText>{ this.state.fieldValidation.Description.message }</FormHelperText> */}
             </FormControl>
           </Grid>
           <Grid item>
@@ -509,9 +461,16 @@ class Page extends Component {
                 style={{marginLeft: "4px"}}
                 disabled={this.state.waiting}
                 onClick={_ => {
-                  this.setState({
-                    redirectTo: `/thing/details/${this.props.selectedThing._id}`
-                  });
+                  if (this.props.selectedThing._id === null) {
+                    this.setState({
+                      redirectTo: `/world/details/${this.props.selectedWorldID}`
+                    });
+                  }
+                  else {
+                    this.setState({
+                      redirectTo: `/thing/details/${this.props.selectedThing._id}`
+                    });
+                  }
                 }}
                 type="button"
               >

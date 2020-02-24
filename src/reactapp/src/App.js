@@ -45,7 +45,7 @@ class AppLayout extends Component {
   }
 
   updateDimensions() {
-    console.log(window.innerWidth);
+    // console.log(window.innerWidth);
     let w = window.innerWidth;
     if (w >= 600) {
       w -= 200;
@@ -84,11 +84,11 @@ class AppLayout extends Component {
             <MainPage />
           </Grid>
         </Grid> */}
-        <Box display={this.props.menuOpen ? 'inline' : 'none'}>
+        {this.props.menuOpen ? 
           <Box display={{ xs: 'none', sm: 'inline' }} className="Sidebar">
             <Sidebar className="" logoText={"Author's Notebook"} />
           </Box>
-        </Box>
+        : "" }
         {/* <Box display="inline" 
           style={{ 
             marginLeft: this.state.marginLeft, 

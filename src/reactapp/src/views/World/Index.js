@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
-// import { Link } from "react-router-dom";
 import Add from "@material-ui/icons/Add";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
-// import { NavLink } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -20,7 +18,6 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
   easier to manage.
 */
 const mapStateToProps = state => {
-  // // console.log(state);
   return { 
     things: state.app.things,
     types: state.app.types
@@ -50,13 +47,11 @@ class Index extends Component {
   };
 
   renderListForType(type) {
-    // console.log(this.props);
     // TODO: Add a PluralName field to types so I can use it here.  It may end up being useful other places too.
     const things = this.props.things.filter(thing => thing.TypeIDs.includes(type._id));
     return (
       <div className="Things">
-        <List style={{ width: "220px" }}>
-          {/* <ListItem><ListItemText primary={`${type.Name}s`} /></ListItem> */}
+        <List style={{ width: "240px" }}>
           <ListItem>
             <Button 
               fullWidth variant="contained" color="primary" 
@@ -86,8 +81,7 @@ class Index extends Component {
     const majorLess = this.props.things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
     return (
       <div className="Things">
-        <List style={{ width: "220px" }}>
-          {/* <ListItem><ListItemText primary={"Other Things"} /></ListItem> */}
+        <List style={{ width: "240px" }}>
           <ListItem>
             <Button 
               fullWidth variant="contained" color="primary" 
@@ -114,7 +108,6 @@ class Index extends Component {
   }
 
   render() {
-    // console.log(this.props);
     const majorless = this.props.things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
     return (
       <div>
@@ -125,8 +118,7 @@ class Index extends Component {
             Types ({this.props.types.length})
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
-            <List style={{ width: "220px" }}>
-              {/* <ListItem><ListItemText primary={`${type.Name}s`} /></ListItem> */}
+            <List style={{ width: "240px" }}>
               <ListItem>
                 <Button 
                   fullWidth variant="contained" color="primary" 
@@ -160,8 +152,7 @@ class Index extends Component {
               {type.Name}s ({things.length})
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
-                <List style={{ width: "220px" }}>
-                  {/* <ListItem><ListItemText primary={`${type.Name}s`} /></ListItem> */}
+                <List style={{ width: "240px" }}>
                   <ListItem>
                     <Button 
                       fullWidth variant="contained" color="primary" 
@@ -194,8 +185,7 @@ class Index extends Component {
             Other Things ({majorless.length})
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
-            <List style={{ width: "220px" }}>
-              {/* <ListItem><ListItemText primary={"Other Things"} /></ListItem> */}
+            <List style={{ width: "240px" }}>
               <ListItem>
                 <Button 
                   fullWidth variant="contained" color="primary" 

@@ -21,6 +21,7 @@ import {
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import API from "../../api";
+import MobileMenu from "./MobileMenu";
 
 const mapStateToProps = state => {
   return {
@@ -100,31 +101,12 @@ class Bar extends Component {
             </Grid>
           </Grid>
         </Toolbar>
-        <Box display={this.props.mobileMenuOpen ? 'inline' : 'none'}>
+        {this.props.mobileMenuOpen ? 
           <Box display={{ xs: 'inline', sm: 'none' }}>
-            Mobile Menu
+            <MobileMenu />
           </Box>
-        </Box>
+        : "" }
       </AppBar>
-      // <div className="row">
-      //   <AppBar position="static">
-      //     <Toolbar className="Wide12 blackFont">
-      //       <div className="col-sm-3">
-      //         <Typography color="inherit">{ this.props.selectedWorld === null ? "Welcome!" : this.props.selectedWorld.Name }</Typography>
-      //       </div>
-      //       <div className="col-sm-9">
-
-      //         <NavLink className="float-right blue blackFont"
-      //           to="/User/Login"
-      //           activeClassName="active">
-      //           <ListItem className="curvedButton">
-      //             <Icon>person</Icon><ListItemText primary={ this.props.user === null ? " Login/Register" : ` ${this.props.user.firstName} ${this.props.user.lastName}` } />
-      //           </ListItem>
-      //         </NavLink>
-      //       </div>
-      //     </Toolbar>
-      //   </AppBar>
-      // </div>
     );
   }
 }

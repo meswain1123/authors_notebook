@@ -145,7 +145,7 @@ export default function AutoCompleteComboBox(props) {
     value: props.value,
     multiple: false,
     options: props.options,
-    // getOptionLabel: option => option.Name,
+    // getOptionLabel: option => props.displayField !== undefined ? props.displayField : option,
     onChange: props.onChange,
     onBlur: props.onBlur
   });
