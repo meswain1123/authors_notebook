@@ -1,16 +1,16 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import AttributeControl from "./AttributeControl";
-import styled from "styled-components";
-// import Button from "@material-ui/core/Button";
+// import styled from "styled-components";
+import Grid from "@material-ui/core/Grid";
 // import Add from "@material-ui/icons/Add";
 import { updateSelectedThing } from "../../redux/actions/index";
 
-const Label = styled("label")`
-  padding: 0 0 4px;
-  line-height: 1.5;
-  display: block;
-`;
+// const Label = styled("label")`
+//   padding: 0 0 4px;
+//   line-height: 1.5;
+//   display: block;
+// `;
 // import Navbar from "react-bootstrap/lib/Navbar";
 // import { Button } from "reactstrap";
 // import {
@@ -65,11 +65,12 @@ class Control extends Component {
       Name: "",
       Type: "Text",
       Options: [],
-      Type2: "Text",
+      Type2: "",
       ListType: "",
       FromTypes: [],
       Value: "",
-      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type"]
+      ListValues: [],
+      // AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
     });
     this.props.updateSelectedThing(thing);
     // const arr = this.props.attributesArr;
@@ -83,7 +84,7 @@ class Control extends Component {
     // console.log(value);
     // const name = e.target.name;
     // const value = (e.target.type === "checkbox" ? e.target.checked : e.target.value);
-    // // console.log(value);
+    console.log(value);
     const thing = this.props.selectedThing;
     // thing.AttributesArr.push({Name: "", Type: ""});
     thing.AttributesArr[value.index] = {
@@ -96,7 +97,8 @@ class Control extends Component {
       // Default: value.Default
       FromTypes: value.FromTypes,
       Value: value.Value,
-      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type"]
+      ListValues: value.ListValues,
+      // AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
     };
     // console.log(thing);
     this.props.updateSelectedThing(thing);
@@ -127,26 +129,25 @@ class Control extends Component {
   render() {
     // console.log(this.props);
     return (
-      <div className="Attributes">
-        <Label>Attributes</Label>
-        {this.props.selectedThing === null ||
-        this.props.selectedThing === undefined
-          ? ""
+      <Grid item xs={12} container spacing={1} direction="column">
+        <Grid item>Attributes</Grid>
+        {this.props.selectedThing === null || this.props.selectedThing === undefined ? ""
           : this.props.selectedThing.AttributesArr.map((attribute, i) => {
-              return (
-                <AttributeControl
-                  key={i}
-                  thingID={this.props.selectedThing._id}
-                  attribute={attribute}
-                  onChange={this.changeAttribute}
-                  onDelete={this.deleteAttribute}
-                  onBlur={this.blurAttribute}
-                  things={this.props.things}
-                  types={this.props.types}
-                />
-              );
-            })}
-      </div>
+            return (
+              <AttributeControl
+                key={i}
+                thingID={this.props.selectedThing._id}
+                attribute={attribute}
+                onChange={this.changeAttribute}
+                onDelete={this.deleteAttribute}
+                onBlur={this.blurAttribute}
+                things={this.props.things}
+                types={this.props.types}
+              />
+            );
+          })
+        }
+      </Grid>
     );
   }
 }

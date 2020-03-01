@@ -58,7 +58,7 @@ router
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function respond(message) {
-        // console.log(message);
+        console.log(message);
         res.send(message);
       }
 
@@ -88,7 +88,7 @@ router
       res.send({ types });
     }
     // // console.log(req.params);
-    // console.log(req.session);
+    console.log(req.session);
 
     db.getTypesForWorld(respond, req.params.userID, req.params.worldID);
   })
@@ -105,14 +105,14 @@ router
     db.getType(respond, req.params.worldID, req.params.typeID);
   })
   .post("/createType", function(req, res) {
-    // console.log(req.body);
-    // console.log(req.body.userID);
+    console.log(req.body);
+    console.log(req.body.userID);
     if (req.body.userID == undefined) {
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function gotType(type) {
         if (type.message == undefined || type.message != "Type not found") {
-          // console.log(115);
+          console.log(115);
           res.send({ message: "This world already has a Type by that name." });
         } else {
           function respond(typeID) {
@@ -130,9 +130,8 @@ router
     function respond(message) {
       res.send(message);
     }
-    // console.log(req.body);
 
-    db.deleteType(respond, req.body.userID, req.body.worldID, req.body.typeID);
+    db.deleteType(respond, req.body.userID, req.body.type);
   })
   .patch("/updateType", function(req, res) {
     function respond(message) {
@@ -175,7 +174,7 @@ router
     db.deleteThing(
       respond,
       req.body.userID,
-      req.body.thingID
+      req.body.thing
     );
   })
   .patch("/updateThing", function(req, res) {

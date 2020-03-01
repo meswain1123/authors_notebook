@@ -5,7 +5,8 @@ import {
   selectPage,
   updateSelectedThing,
   addThing,
-  updateThing
+  updateThing,
+  setThings
 } from "../../redux/actions/index";
 // import Button from "@material-ui/core/Button";
 import Edit from "@material-ui/icons/Edit";
@@ -24,6 +25,7 @@ import Button from "@material-ui/core/Button";
 // import styled from 'styled-components';
 import API from "../../api";
 import Grid from "@material-ui/core/Grid";
+import Modal from '@material-ui/core/Modal';
 
 // const Label = styled('label')`
 //   padding: 0 0 4px;
@@ -45,15 +47,18 @@ const mapStateToProps = state => {
     selectedThing: thing,
     selectedWorld: state.app.selectedWorld,
     selectedWorldID: state.app.selectedWorldID,
-    types: state.app.types
+    types: state.app.types,
+    things: state.app.things,
+    user: state.app.user
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
     selectPage: page => dispatch(selectPage(page)),
-    updateSelectedThing: type => dispatch(updateSelectedThing(type)),
-    addThing: type => dispatch(addThing(type)),
-    updateThing: type => dispatch(updateThing(type))
+    updateSelectedThing: thing => dispatch(updateSelectedThing(thing)),
+    addThing: thing => dispatch(addThing(thing)),
+    updateThing: thing => dispatch(updateThing(thing)),
+    setThings: things => dispatch(setThings(things))
   };
 }
 class Page extends Component {
@@ -71,7 +76,8 @@ class Page extends Component {
       },
       formValid: false,
       message: "",
-      redirectTo: null
+      redirectTo: null,
+      modalOpen: false
     };
     this.api = API.getInstance();
   }
@@ -81,11 +87,15 @@ class Page extends Component {
       const { id } = this.props.match.params;
       if (id !== undefined) {
         this.api.getThing(this.props.selectedWorldID, id).then(res => {
+          let Types = [];
+          res.TypeIDs.forEach(tID=> {
+            Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
+          });
           this.setState({
             Name: res.Name,
             Description: res.Description,
             _id: id,
-            Types: res.Types
+            Types: Types
           });
           this.props.updateSelectedThing(res);
         });
@@ -101,36 +111,61 @@ class Page extends Component {
     }, 500);
   }
 
+  getModalStyle = () => {
+    const top = Math.round(window.innerHeight / 2) - 50;
+    const left = Math.round(window.innerWidth / 2) - 200;
+  
+    return {
+      top: `${top}%`,
+      left: `${left}%`,
+      transform: `translate(${left}px, ${top}px)`,
+    };
+  }
+
+  delete = e => {
+    console.log(this.state._id);
+    this.api.deleteThing(this.props.user._id, this.state._id).then(res=>{
+      // console.log(res);
+      const things = this.props.things.filter(t=>t._id!==this.state._id);
+      this.props.setThings(things);
+      this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})
+    });
+  }
+
   render() {
-    // console.log(this.props.match.params);
-    const { id } = this.props.match.params;
-    if (
-      this.props.selectedThing !== undefined &&
-      this.props.selectedThing !== null &&
-      this.props.selectedThing._id !== id
-    ) {
-      // setTimeout(() => {
-      if (id !== undefined) {
-        this.api.getThing(this.props.selectedWorldID, id).then(res => {
-          this.setState({
-            Name: res.Name,
-            Description: res.Description,
-            _id: id,
-            Types: res.Types
-          });
-          this.props.updateSelectedThing(res);
-        });
-      } else {
-        this.props.updateSelectedThing({
-          _id: null,
-          Name: "",
-          Description: "",
-          Types: [],
-          AttributesArr: []
-        });
-      }
-      // }, 500);
-    }
+    // console.log(this.props);
+    // const { id } = this.props.match.params;
+    // if (
+    //   this.props.selectedThing !== undefined &&
+    //   this.props.selectedThing !== null &&
+    //   this.props.selectedThing._id !== id
+    // ) {
+    //   // setTimeout(() => {
+    //   if (id !== undefined) {
+    //     this.api.getThing(this.props.selectedWorldID, id).then(res => {
+    //       let Types = [];
+    //       res.TypeIDs.forEach(tID=> {
+    //         Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
+    //       });
+    //       this.setState({
+    //         Name: res.Name,
+    //         Description: res.Description,
+    //         _id: id,
+    //         Types: Types
+    //       });
+    //       this.props.updateSelectedThing(res);
+    //     });
+    //   } else {
+    //     this.props.updateSelectedThing({
+    //       _id: null,
+    //       Name: "",
+    //       Description: "",
+    //       Types: [],
+    //       AttributesArr: []
+    //     });
+    //   }
+    //   // }, 500);
+    // }
     // const types = this.props.types === undefined || this.state._id === null ? this.props.types : this.props.types.filter(type => type._id !== this.state._id);
 
     if (this.state.redirectTo !== null) {
@@ -159,7 +194,8 @@ class Page extends Component {
                     fullWidth
                     variant="contained"
                     color="primary"
-                    href={`/thing/delete/${this.state._id}`}
+                    onClick={e => {this.setState({modalOpen: true})}}
+                    // href={`/thing/delete/${this.state._id}`}
                   >
                     <Delete />
                   </Button>
@@ -181,8 +217,39 @@ class Page extends Component {
                           return (
                             <ListItem key={i}>
                               <ListItemText>
-                                {attribute.Name}:
-                                {attribute.Value}
+                                {attribute.Name}:&nbsp;
+                                {attribute.Type === "Type" && attribute.Value !== "" ?
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  href={`/thing/details/${attribute.Value}`}
+                                >
+                                  <ListItemText primary={this.props.things.filter(t=>t._id === attribute.Value)[0].Name}/>
+                                </Button>
+                                : attribute.Type === "List" ?
+                                  attribute.ListValues.map(
+                                    (listValue, i) => {
+                                      return (
+                                      <span key={i}>
+                                        {
+                                          attribute.ListType === "Type" ?
+                                          <span>
+                                            <Button
+                                              variant="contained"
+                                              color="primary"
+                                              href={`/thing/details/${listValue}`}
+                                            >
+                                              <ListItemText primary={this.props.things.filter(t=>t._id === listValue)[0].Name}/>
+                                            </Button> 
+                                            &nbsp;
+                                          </span>
+                                          :
+                                          i > 0 ? `, ${listValue}` : `${listValue}`
+                                        }
+                                      </span>
+                                      );
+                                    })
+                                : attribute.Value}
                               </ListItemText>
                             </ListItem>
                           );
@@ -218,6 +285,44 @@ class Page extends Component {
               )}
             </Grid>
           </Grid>
+          <Modal
+            aria-labelledby="delete-thing-modal"
+            aria-describedby="delete-thing-modal-description"
+            open={this.state.modalOpen}
+            onClose={e => {this.setState({modalOpen: false})}}
+          >
+            <div style={this.getModalStyle()} className="paper">
+              <Grid container spacing={1} direction="column">
+                <Grid item>
+                  Are you sure you want to delete {this.state.Name}?
+                </Grid>
+                <Grid item>
+                  (All references to it will be left alone and may not work correctly)
+                </Grid>
+                <Grid item container spacing={1} direction="row">
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      onClick={this.delete}
+                    >
+                      Yes
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={e => {this.setState({modalOpen: false})}}
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </div>
+          </Modal>
         </Grid>
       );
     }

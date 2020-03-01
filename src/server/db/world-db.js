@@ -235,7 +235,7 @@ function createType(respond, worldID, type) {
   // if (type.Defaults != undefined)
   //   type1.Defaults = type.Defaults;
   const db = client.db(dbName);
-  console.log(type);
+  // console.log(type);
   db.collection("type").insertOne(type
   ).then(res => {
     respond(res.insertedId);
@@ -255,48 +255,21 @@ function createType(respond, worldID, type) {
 // TypeForRelationship I'll just remove the TypeForRelationship field.
 // I shouldn't need to do anything for Defaults.
 // I may wish to change to having deletes just change a field to say it's inactive.
-function deleteType(respond, userID, worldID, type) {
+function deleteType(respond, userID, worldID, typeID) {
   // // console.log(`Registering user: ${user.email}`);
   const db = client.db(dbName);
 
-  // Remove it from Supers in Types
+  // Remove it from SuperIDs in Types
   db.collection("type").updateMany({ 
     WorldID: worldID,
-    Supers: { $all: [ObjectID(type._id)] }
-  }, { $pull: { Supers: typeID }});
+    SuperIDs: { $all: [typeID] }
+  }, { $pull: { SuperIDs: typeID }});
 
-  // Remove it from Types in Things
-  db.collection("thing").updateMany({ 
-    WorldID: worldID,
-    Types: { $all: [ObjectID(type._id)] }
-  }, { $pull: { Types: ObjectID(type._id) }});
-
-  // For use in removing it from attributes and descriptions.
-  let typeString = `@Type_${type._id}`;
-  let idString = `${type._id}`;
-  for (let word of type.Name.split(" ")) {
-    typeString += `_${word}`;
-    idString += `_${word}`;
-  }
-
-  // Change attribute types to strings
-  let updateString = `AttributeTypes.$[${typeString}]`;
+  // Remove it from AttributesArr.FromSupers in Types
   db.collection("type").updateMany({ 
     WorldID: worldID,
-    AttributeTypes: { $all: [typeString] }
-  }, { $set: { updateString : "str" } });
-  updateString = `AttributeTypes.$[List<${typeString}>]`;
-  db.collection("type").updateMany({ 
-    WorldID: worldID,
-    AttributeTypes: { $all: [typeString] }
-  }, { $set: { updateString : "List<str>" } });
+  }, { $pull: { "AttributesArr.$[].FromSupers": typeID }});
 
-  // Relationship types.  
-  db.collection("type").updateMany({
-    WorldID: worldID,
-    TypeForRelationship: typeString
-  }, { $set: { TypeForRelationship: null }});
-  // I probably will need to do more than that, but I don't want to worry about it now.
 
   // Also need to change all links to it in Posts and Descriptions to 
   // something else, but I'm not sure I like that.  
@@ -307,7 +280,17 @@ function deleteType(respond, userID, worldID, type) {
   // I'll switch to that after I get the other stuff working.
   
   db.collection("type").deleteOne({
-    _id: ObjectID(type._id)
+    _id: ObjectID(typeID)
+  });
+  respond({ message: `Type ${typeID} deleted!` });
+}
+
+function deleteTypeSimple(respond, userID, typeID) {
+  // // console.log(`Registering user: ${user.email}`);
+  const db = client.db(dbName);
+
+  db.collection("type").deleteOne({
+    _id: ObjectID(typeID)
   });
   respond({ message: `Type ${typeID} deleted!` });
 }
@@ -413,6 +396,7 @@ module.exports = {
   getTypeByName,
   createType,
   deleteType,
+  deleteTypeSimple,
   updateType,
   getThingsForWorld,
   getThing,

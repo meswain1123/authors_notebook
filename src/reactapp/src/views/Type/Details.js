@@ -5,7 +5,8 @@ import {
   selectPage,
   updateSelectedType,
   addType,
-  updateType
+  updateType,
+  setTypes
 } from "../../redux/actions/index";
 import Edit from "@material-ui/icons/Edit";
 import Delete from "@material-ui/icons/Delete";
@@ -16,6 +17,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Button from "@material-ui/core/Button";
 import API from "../../api";
 import Grid from "@material-ui/core/Grid";
+import Modal from '@material-ui/core/Modal';
 
 /* 
   This component will take the main portion of the page and is used for
@@ -40,7 +42,8 @@ const mapStateToProps = state => {
     selectedWorldID: state.app.selectedWorldID,
     types: state.app.types,
     subTypes: subTypes,
-    instances: things
+    instances: things,
+    user: state.app.user
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -48,7 +51,8 @@ function mapDispatchToProps(dispatch) {
     selectPage: page => dispatch(selectPage(page)),
     updateSelectedType: type => dispatch(updateSelectedType(type)),
     addType: type => dispatch(addType(type)),
-    updateType: type => dispatch(updateType(type))
+    updateType: type => dispatch(updateType(type)),
+    setTypes: types => dispatch(setTypes(types))
   };
 }
 class Page extends Component {
@@ -67,7 +71,8 @@ class Page extends Component {
       },
       formValid: false,
       message: "",
-      redirectTo: null
+      redirectTo: null,
+      modalOpen: false
     };
     this.api = API.getInstance();
   }
@@ -102,7 +107,29 @@ class Page extends Component {
     }, 500);
   }
 
+  getModalStyle = () => {
+    const top = Math.round(window.innerHeight / 2) - 50;
+    const left = Math.round(window.innerWidth / 2) - 200;
+  
+    return {
+      top: `${top}%`,
+      left: `${left}%`,
+      transform: `translate(${left}px, ${top}px)`,
+    };
+  }
+
+  delete = e => {
+    console.log(this.state._id);
+    this.api.deleteType(this.props.user._id, this.props.selectedWorldID, this.state._id).then(res=>{
+      // console.log(res);
+      const types = this.props.types.filter(t=>t._id!==this.state._id);
+      this.props.setTypes(types);
+      this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})
+    });
+  }
+
   render() { 
+    console.log(this.props.selectedType);
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else {
@@ -142,7 +169,8 @@ class Page extends Component {
                     fullWidth
                     variant="contained"
                     color="primary"
-                    href={`/type/delete/${this.state._id}`}
+                    onClick={e => {this.setState({modalOpen: true})}}
+                    // href={`/type/delete/${this.state._id}`}
                   >
                     <Delete />
                   </Button>
@@ -164,7 +192,7 @@ class Page extends Component {
                           return (
                             <ListItem key={i}>
                               <ListItemText>
-                                {attribute.Name}
+                                {attribute.Name}:&nbsp;
                                 {attribute.Type === "Options" ? (
                                   <span>
                                     Options:
@@ -178,9 +206,42 @@ class Page extends Component {
                                     })}
                                   </span>
                                 ) : attribute.Type === "Type" ? (
-                                  "Type"
+                                  <Button
+                                    variant="contained"
+                                    color="primary"
+                                    href={`/type/details/${attribute.Type2}`}
+                                  >
+                                    <ListItemText primary={this.props.types.filter(t=>t._id === attribute.Type2)[0].Name}/>
+                                  </Button>
+                                ) : attribute.Type === "List" ? (
+                                  <span>
+                                    List:&nbsp;
+                                    {attribute.ListType === "Options" ? (
+                                      <span>
+                                        Options:
+                                        {attribute.Options.map((option, j) => {
+                                          return (
+                                            <span key={j}>
+                                              {j === 0 ? " " : ", "}
+                                              {option}
+                                            </span>
+                                          );
+                                        })}
+                                      </span>
+                                    ) : attribute.ListType === "Type" ? (
+                                      <Button
+                                        variant="contained"
+                                        color="primary"
+                                        href={`/type/details/${attribute.Type2}`}
+                                      >
+                                        <ListItemText primary={this.props.types.filter(t=>t._id === attribute.Type2)[0].Name}/>
+                                      </Button>
+                                    ) : (
+                                      attribute.ListType
+                                    )}
+                                  </span>
                                 ) : (
-                                  ""
+                                  attribute.Type
                                 )}
                               </ListItemText>
                             </ListItem>
@@ -265,6 +326,44 @@ class Page extends Component {
               )}
             </Grid>
           </Grid>
+          <Modal
+            aria-labelledby="delete-type-modal"
+            aria-describedby="delete-type-modal-description"
+            open={this.state.modalOpen}
+            onClose={e => {this.setState({modalOpen: false})}}
+          >
+            <div style={this.getModalStyle()} className="paper">
+              <Grid container spacing={1} direction="column">
+                <Grid item>
+                  Are you sure you want to delete {this.state.Name}?
+                </Grid>
+                <Grid item>
+                  (All references to it will be left alone and may not work correctly)
+                </Grid>
+                <Grid item container spacing={1} direction="row">
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      onClick={this.delete}
+                    >
+                      Yes
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      onClick={e => {this.setState({modalOpen: false})}}
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </div>
+          </Modal>
         </Grid>
       );
     }

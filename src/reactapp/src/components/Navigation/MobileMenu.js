@@ -22,7 +22,7 @@ const mapStateToProps = state => {
     selectedPage: state.app.selectedPage,
     worlds: state.app.worlds,
     publicWorlds: state.app.publicWorlds,
-    user: state.session.user
+    user: state.app.user
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -44,10 +44,12 @@ class Menu extends Component {
     this.api.getPublicWorlds().then(res => {
       this.props.setPublicWorlds(res.worlds);
     });
-    this.api.getWorldsForUser().then(res => {
-      if (res.worlds !== undefined)
-        this.props.setWorlds(res.worlds);
-    });
+    if (this.props.user !== null) {
+      this.api.getWorldsForUser(this.props.user._id).then(res => {
+        if (res.worlds !== undefined)
+          this.props.setWorlds(res.worlds);
+      });
+    }
   }
 
   links() {

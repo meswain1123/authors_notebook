@@ -31,7 +31,7 @@ const mapStateToProps = state => {
     selectedWorld: state.app.selectedWorld,
     selectedWorldID: state.app.selectedWorldID,
     worlds: state.app.worlds,
-    user: state.session.user
+    user: state.app.user
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -182,7 +182,7 @@ class Page extends Component {
 
     if (world._id === null) {
       this.api
-        .createWorld(world)
+        .createWorld(this.props.user._id, world)
         .then(res => {
           // console.log(res);
           if (res.message  !== undefined) {
@@ -200,7 +200,7 @@ class Page extends Component {
         .catch(err => console.log(err));
     } else {
       this.api
-        .updateWorld(world)
+        .updateWorld(this.props.user._id, world)
         .then(res => {
           // console.log(res);
           if (res.message !== `World ${world.Name} updated!`) {

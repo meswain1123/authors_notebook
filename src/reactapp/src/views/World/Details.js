@@ -22,7 +22,8 @@ const mapStateToProps = state => {
     selectedWorldID: state.app.selectedWorldID,
     worlds: state.app.worlds,
     types: state.app.types,
-    things: state.app.things
+    things: state.app.things,
+    user: state.app.user
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -44,7 +45,7 @@ class Page extends Component {
   componentDidMount() {
     setTimeout(() => {
       const { id } = this.props.match.params;
-      // this.api.selectWorld(id).then(res => {
+      // this.api.selectWorld(this.props.user._id, id).then(res => {
       // localStorage.setItem("selectedWorldID", id);
       this.props.selectWorld(id);
       this.getTypes();
@@ -55,7 +56,7 @@ class Page extends Component {
   getTypes() {
     // console.log('Getting Types');
     // console.log(this.props);
-    this.api.getTypesForWorld(this.props.selectedWorldID).then(res => {
+    this.api.getTypesForWorld(this.props.user._id, this.props.selectedWorldID).then(res => {
       // console.log(res);
       if (res !== undefined) {
         // Add Supers to each type
@@ -80,7 +81,7 @@ class Page extends Component {
     });
   }
   getThings() {
-    this.api.getThingsForWorld(this.props.selectedWorldID).then(res => {
+    this.api.getThingsForWorld(this.props.user._id, this.props.selectedWorldID).then(res => {
       if (res !== undefined) {
         // console.log(res);
         const things = res.things;

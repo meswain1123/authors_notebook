@@ -26,7 +26,7 @@ import MobileMenu from "./MobileMenu";
 const mapStateToProps = state => {
   return {
     selectedPage: state.app.selectedPage,
-    user: state.session.user,
+    user: state.app.user,
     selectedWorld: state.app.selectedWorld,
     mobileMenuOpen: !state.app.menuOpen // This defaults to closed instead of open
   };

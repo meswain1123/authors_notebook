@@ -57,7 +57,7 @@ const version = "0.0.1";
 // API calls
 app.route('/version')
   .get(function (req, res) {
-    // // console.log('version called');
+    console.log('version called');
     res.send({ version: version });
   });
 
@@ -69,7 +69,9 @@ function exitHandler(options, exitCode) {
   // if (options.cleanup) // console.log('clean');
   // if (exitCode || exitCode === 0) // console.log(exitCode);
   if (options.exit) {
+    console.log('closing');
     userService.close();
+    worldService.close();
     process.exit();
   }
 }

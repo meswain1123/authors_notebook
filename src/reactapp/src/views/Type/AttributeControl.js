@@ -1,132 +1,87 @@
 /* eslint-disable no-use-before-define */
 import React, { useState } from "react";
-// import Dropdown from "react-bootstrap/Dropdown";
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import useAutocomplete from '@material-ui/lab/useAutocomplete';
-// import CheckIcon from '@material-ui/icons/Check';
-// import CloseIcon from '@material-ui/icons/Close';
-// import Checkbox from "@material-ui/core/Checkbox";
-// import Button from "@material-ui/core/Button";
 import FormControl from "@material-ui/core/FormControl";
 import OutlinedInput from "@material-ui/core/OutlinedInput";
 import InputLabel from "@material-ui/core/InputLabel";
-// import TextField from '@material-ui/core/TextField';
 import DeleteForever from "@material-ui/icons/DeleteForever";
 import Button from "@material-ui/core/Button";
-// import IconButton from '@material-ui/core/IconButton';
-// import InputAdornment from '@material-ui/core/InputAdornment';
-// import Visibility from '@material-ui/icons/Visibility';
-// import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Grid from "@material-ui/core/Grid";
-// import List from "@material-ui/core/List";
-// import ListItem from "@material-ui/core/ListItem";
-// import ListItemText from "@material-ui/core/ListItemText";
-// import FormControlLabel from '@material-ui/core/FormControlLabel';
-// import styled from 'styled-components';
-// import Autocomplete from '@material-ui/lab/Autocomplete';
-import AutoCompleteComboBox from "../../components/AutoCompleteComboBox";
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 import ChipInput from "material-ui-chip-input";
 
-// const inputBlur = (e, props) => {
-//   // // console.log(e);
-//   const name = e.target.name;
-//   const value = (e.target.type === "checkbox" ? e.target.checked : e.target.value);
-//   // // console.log(value);
-//   // // console.log(props);
-//   const attribute = props.attribute;
-//   attribute[name] = value;
-//   props.onBlur(attribute);
-// }
-
-// const typeChange = (e, value, props, respond) => {
-//   // // console.log(value);
-//   // // console.log(props);
-//   // // console.log(respond);
-//   respond(value);
-// }
-
-const handleTypeChange = (value, props) => {
-  // For Autocomplete // (e, props) => { // For Select
-  // console.log(props);
-  // console.log(value);
+const handleTypeChange = (e, props) => {
   const attr = props.attribute;
-  attr["Type"] = value; // For Autocomplete // e.target.value; // For Select //
+  attr["Type"] = e.target.value;
   props.onChange(attr);
 };
 
-const handleType2Change = (value, props) => {
-  // For Autocomplete // (e, props) => { // For Select
-  // console.log(props);
-  // console.log(value);
+const handleType2Change = (e, props) => {
   const attr = props.attribute;
-  const type2 = props.types.filter(t=>t.Name === value);
-  attr["Type2ID"] = type2.length === 0 ? null : type2[0]._id;
-  attr["Type2"] = value; // For Autocomplete // e.target.value; // For Select //
-  console.log(attr);
+  attr["Type2"] = e.target.value;
+  props.onChange(attr);
+};
+
+const handleListTypeChange = (e, props) => {
+  const attr = props.attribute;
+  attr["ListType"] = e.target.value;
   props.onChange(attr);
 };
 
 const handleOptionsChange = (e, props) => {
-  // console.log(e);
   const attr = props.attribute;
   attr.Options = e;
   props.onChange(attr);
 };
 
-// const detailsChange = (e, props) => {
-//   // console.log(e);
-//   // const attr = props.attribute;
-//   // attr["Type"] = e.target.value;
-//   // props.onChange(attr);
-// }
-
 export default function AttributeControl(props) {
-  // console.log(props);
   const [name, changeName] = useState(props.attribute.Name);
-  // const typeDetails = props.attribute.TypeDetails;
+  // const [index, changeIndex] = useState(props.attribute.index);
+
   const attributeTypes = [
     "Text",
     "Number",
     "True/False",
     "Options", 
     "Type", 
-    // "List"
+    "List"
   ];
   const type =
     props.attribute.Type === "" ? attributeTypes[0] : props.attribute.Type;
-  const attributeTypes2 = props.types.map((type, i) => {
-    return type.Name;
-  });
+
+  const listTypes = [
+    "Text",
+    "Options", 
+    "Type"
+  ];
 
   return (
     <Grid container spacing={1} direction="row">
       <Grid item sm={3} xs={12}>
         <FormControl variant="outlined" fullWidth>
-          <InputLabel htmlFor="Name">Name</InputLabel>
+          <InputLabel htmlFor="AttrName">Name</InputLabel>
           <OutlinedInput
             disabled={props.attribute.FromSupers.length > 0}
-            id="Name"
-            name="Name"
+            id="AttrName"
+            name="AttrName"
             type="text"
             error={props.error}
             value={name}
             autoComplete="off"
-            // onChange={ e => handleUserInput(e, props.onChange) }
-            // onBlur={ e => inputBlur(e, props.onBlur) }
-            // onChange={ e => { props.onChange(e); changeAttribute(e); } }
             onChange={e => {
               changeName(e.target.value);
             }}
-            // onBlur={ e => { inputBlur(e, props) } }
             onBlur={e => {
               const attr = {
                 index: props.attribute.index,
                 Name: name,
                 Type: props.attribute.Type,
                 Options: props.attribute.Options,
-                ListType: "",
-                FromSupers: props.attribute.FromSupers
+                ListType: props.attribute.ListType,
+                FromSupers: props.attribute.FromSupers,
+                Type2: props.attribute.Type2,
+                AttributeTypes: props.attribute.AttributeTypes
               };
               props.onChange(attr);
             }}
@@ -137,54 +92,25 @@ export default function AttributeControl(props) {
         </FormControl>
       </Grid>
       <Grid item sm={3} xs={12}>
-        {/* <Autocomplete
-          id={`ac_types_${props.attribute.index}`}
-          disabled={props.attribute.FromSupers.length > 0}
-          options={attributeTypes}
-          value={type}
-          onChange={(e, value) => {
-            handleTypeChange(value, props);
-          }}
-          onBlur={e => {
-            const attr = {
-              index: props.attribute.index,
-              Name: name,
-              Type: type,
-              Options: props.attribute.Options,
-              ListType: "",
-              FromSupers: props.attribute.FromSupers
-            };
-            props.onChange(attr);
-          }}
-          // getOptionLabel={option => option.title}
-          // style={{ width: 300 }}
-          // fullWidth
-          renderInput={params => (
-            <TextField {...params} label="Type" variant="outlined" fullWidth />
-          )}
-        /> */}
-        {/* <div className="MyBorder">
-            <div className="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-fullWidth MuiInputBase-formControl MyPadding">
-              <select className="MuiInputBase-input MuiInputBase-root MuiInputBase-formControl MuiInputBase-fullWidth MyPadding" 
-                disabled={props.attribute.FromSupers.length > 0}
-                value={type} onChange={e => { handleTypeChange(e, props) }}>
-                {attributeTypes.map((type,i) => {
-                  return (
-                    <option key={i}>{type}</option>
-                  );
-                })}
-              </select>
-            </div>
-          </div> */}
-        <AutoCompleteComboBox 
-            Label="Type"
+        <FormControl variant="outlined" fullWidth>
+          <InputLabel htmlFor="attribute-type" id="attribute-type-label">
+            Attribute Type
+          </InputLabel>
+          <Select
+            labelId="attribute-type-label"
+            id="attribute-type"
             disabled={props.attribute.FromSupers.length > 0} 
             value={props.attribute.Type}
-            attribute={props.attribute}
-            displayField="Name"
-            options={props.attribute.AttributeTypes}
-            onChange={ (_, value) => handleTypeChange(value, props) }
-          />
+            onChange={e => {handleTypeChange(e, props)}}
+            // options={attributeTypes}
+            fullWidth
+            labelWidth={100}
+          >
+            {attributeTypes.map((type, i) => {
+              return (<MenuItem key={i} value={type}>{type}</MenuItem>);
+            })}
+          </Select>
+        </FormControl>
       </Grid>
       <Grid item sm={3} xs={12}>
         {type === "Options" ? (
@@ -195,17 +121,82 @@ export default function AttributeControl(props) {
             onChange={chips => handleOptionsChange(chips, props)}
           />
         ) : type === "Type" ? (
-          <AutoCompleteComboBox 
-            Label="Detail"
-            disabled={props.attribute.FromSupers.length > 0} 
-            value={props.attribute.Type2}
-            // attribute={props.attribute}
-            // displayField="Name"
-            options={attributeTypes2}
-            onChange={ (_, value) => handleType2Change(value, props) }
-          />
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel htmlFor="type2" id="type2-label">
+              Defined Type
+            </InputLabel>
+            <Select
+              labelId="type2-label"
+              id="type2"
+              disabled={props.attribute.FromSupers.length > 0} 
+              value={props.attribute.Type2}
+              onChange={e => {handleType2Change(e, props)}}
+              fullWidth
+              labelWidth={100}
+            >
+              {props.types.map((type, i) => {
+                return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
+              })}
+            </Select>
+          </FormControl>
         ) : type === "List" ? (
-          "List"
+          <Grid container spacing={1} direction="column">
+            <Grid item>
+              <FormControl variant="outlined" fullWidth>
+                <InputLabel htmlFor="list-type" id="list-type-label">
+                  List Type
+                </InputLabel>
+                <Select
+                  labelId="list-type-label"
+                  id="list-type"
+                  disabled={props.attribute.FromSupers.length > 0} 
+                  value={props.attribute.ListType}
+                  onChange={e => {handleListTypeChange(e, props)}}
+                  // options={attributeTypes}
+                  fullWidth
+                  labelWidth={70}
+                >
+                  {listTypes.map((type, i) => {
+                    return (<MenuItem key={i} value={type}>{type}</MenuItem>);
+                  })}
+                </Select>
+              </FormControl>
+            </Grid>
+            { props.attribute.ListType === "Type" ? 
+              (
+                <Grid item>
+                  <FormControl variant="outlined" fullWidth>
+                    <InputLabel htmlFor="type2" id="type2-label">
+                      Defined Type
+                    </InputLabel>
+                    <Select
+                      labelId="type2-label"
+                      id="type2"
+                      disabled={props.attribute.FromSupers.length > 0} 
+                      value={props.attribute.Type2}
+                      onChange={e => {handleType2Change(e, props)}}
+                      fullWidth
+                      labelWidth={100}
+                    >
+                      {props.types.map((type, i) => {
+                        return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
+                      })}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              ) : props.attribute.ListType === "Options" ?
+              (
+                <Grid item>
+                  <ChipInput
+                    variant="outlined"
+                    disabled={props.attribute.FromSupers.length > 0}
+                    defaultValue={props.attribute.Options}
+                    onChange={chips => handleOptionsChange(chips, props)}
+                  />
+                </Grid>
+              ) : ""
+            }
+          </Grid>
         ) : (
           ""
         )}

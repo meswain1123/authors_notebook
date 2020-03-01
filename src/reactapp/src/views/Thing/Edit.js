@@ -14,7 +14,8 @@ import InputLabel from "@material-ui/core/InputLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Grid from "@material-ui/core/Grid";
 import AttributesControl from "./AttributesControl";
-import TypesControl from "./TypesControl";
+// import TypesControl from "./TypesControl";
+import { Multiselect } from 'multiselect-react-dropdown';
 import API from "../../api";
 
 /* 
@@ -30,7 +31,8 @@ const mapStateToProps = state => {
     selectedWorld: state.app.selectedWorld,
     selectedWorldID: state.app.selectedWorldID,
     things: state.app.things,
-    types: state.app.types
+    types: state.app.types,
+    user: state.app.user
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -83,12 +85,16 @@ class Page extends Component {
             const things = this.props.things.filter(
               thing => res._id !== thing._id
             );
+            let Types = [];
+            res.TypeIDs.forEach(tID=> {
+              Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
+            });
             this.setState({
               Name: res.Name,
               Description: res.Description,
               _id: id,
               Things: things,
-              Types: res.Types
+              Types: Types
             });
             this.props.updateSelectedThing(res);
           });
@@ -138,6 +144,7 @@ class Page extends Component {
         // In the future I'll have List Types, in which case this will be more complicated.
         // Also I'll be adding default values.
         attribute.Value = "";
+        attribute.ListValues = [];
         attributes.push(attribute);
       } else {
         // It's an existing attribute,
@@ -258,9 +265,11 @@ class Page extends Component {
 
     if (thing._id === null) {
       this.api
-        .createThing(thing)
+        .createThing(this.props.user._id, thing)
         .then(res => {
+          console.log(thing);
           thing._id = res.thingID;
+          thing.Types = this.state.Types;
           this.props.addThing(thing);
           this.setState({
             waiting: false,
@@ -270,8 +279,9 @@ class Page extends Component {
         .catch(err => console.log(err));
     } else {
       this.api
-        .updateThing(thing)
+        .updateThing(this.props.user._id, thing)
         .then(res => {
+          thing.Types = this.state.Types;
           this.props.updateThing(thing);
           this.setState({
             waiting: false,
@@ -292,25 +302,26 @@ class Page extends Component {
     this.setState({ Types: types });
   };
 
-  addType = value => {
-    let types = [...this.state.Types];
-    types.push(value);
-    value.Supers.forEach(s=>{
-      if (types.filter(t=>t._id === s._id).length === 0) {
+  addType = (selectedList, selectedItem) => {
+    // console.log(selectedList);
+    // console.log(selectedItem);
+    selectedItem.Supers.forEach(s=>{
+      if (selectedList.filter(t=>t._id === s._id).length === 0) {
         let superType = this.props.types.filter(t=>t._id === s._id);
         if (superType.length > 0)
-          types.push(superType[0]);
+        selectedList.push(superType[0]);
       }
     });
+    // console.log(this);
     const thing = this.props.selectedThing;
     let attributes = [...thing.AttributesArr];
-    for (let i = 0; i < value.AttributesArr.length; i++) {
-      const attribute = value.AttributesArr[i];
+    for (let i = 0; i < selectedItem.AttributesArr.length; i++) {
+      const attribute = selectedItem.AttributesArr[i];
       if (attribute.FromTypes === undefined) {
         // TODO: Remove this once all attributes have been changed to include the field
         attribute.FromTypes = [];
       }
-      attribute.FromTypes.push(value._id);
+      attribute.FromTypes.push(selectedItem._id);
       const matches = attributes.filter(a => a.Name === attribute.Name);
       if (matches.length === 0) {
         // It's a new attribute.
@@ -332,19 +343,21 @@ class Page extends Component {
         matches[0].FromTypes = typeIDs;
       }
     }
-    this.setState({ Types: types });
+    this.setState({ Types: selectedList });
     thing.AttributesArr = attributes;
     this.props.updateSelectedThing(thing);
-  };
-
-  removeType = value => {
+  }
+  
+  removeType = (selectedList, removedItem) => {
+    // console.log(selectedList);
+    // console.log(removedItem);
     // TODO: Add a confirmation before doing this
     // to let them know it will also remove sub-types.
     let types = [];
     let removeUs = [];
     this.state.Types.forEach(checkMe => {
-      console.log(checkMe);
-      if (checkMe._id === value._id || checkMe.SuperIDs.includes(value._id))
+      // console.log(checkMe);
+      if (checkMe._id === removedItem._id || checkMe.SuperIDs.includes(removedItem._id))
         removeUs.push(checkMe._id);
       else types.push(checkMe);
     });
@@ -369,7 +382,7 @@ class Page extends Component {
     this.setState({ Types: types });
     thing.AttributesArr = attributes;
     this.props.updateSelectedThing(thing);
-  };
+  }
 
   renderHeader() {
     let typeStr = "Thing";
@@ -387,6 +400,8 @@ class Page extends Component {
   }
 
   render() {
+    console.log(this.state.Types);
+    // console.log(this.props.Types);
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else {
@@ -431,12 +446,20 @@ class Page extends Component {
             </FormControl>
           </Grid>
           <Grid item>
-            <TypesControl
+            {/* <TypesControl
               onAdd={this.addType}
               onRemove={this.removeType}
               onChange={this.typesChange}
               types={this.state.Types}
               allTypes={this.props.types}
+            /> */}
+            <Multiselect
+              placeholder="Types"
+              options={this.props.types} // Options to display in the dropdown
+              selectedValues={this.state.Types} // Preselected value to persist in dropdown
+              onSelect={this.addType} // Function will trigger on select event
+              onRemove={this.removeType} // Function will trigger on remove event
+              displayValue="Name" // Property name to display in the dropdown options
             />
           </Grid>
           <Grid item>

@@ -40,11 +40,11 @@ const initialState = {
   loadIt: true,
   menuOpen: true
 };
-// const api = API.getInstance();
 function rootReducer(state = initialState, action) {
   if (action.type === LOAD_FROM_STORAGE) {
     // const str = sessionStorage.getItem("selectedWorld");
     // console.log(str);
+    const user = JSON.parse(sessionStorage.getItem("user"));
     const worlds = JSON.parse(sessionStorage.getItem("worlds"));
     const publicWorlds = JSON.parse(sessionStorage.getItem("publicWorlds"));
     const selectedWorld = JSON.parse(sessionStorage.getItem("selectedWorld"));
@@ -52,6 +52,7 @@ function rootReducer(state = initialState, action) {
     const types = JSON.parse(sessionStorage.getItem("types"));
     const things = JSON.parse(sessionStorage.getItem("things"));
     return Object.assign({}, state, {
+      user: user,
       worlds: worlds === null ? [] : worlds,
       publicWorlds: publicWorlds === null ? [] : publicWorlds,
       selectedWorld,
@@ -107,10 +108,15 @@ function rootReducer(state = initialState, action) {
     //     // });
     //   }).catch(err => console.error(err));
     // }).catch(err => console.error(err));
+    sessionStorage.setItem("user", JSON.stringify(action.payload));
     return Object.assign({}, state, {
       user: action.payload
     });
   } else if (action.type === LOG_OUT) {
+    sessionStorage.removeItem("user");
+    return Object.assign({}, state, {
+      user: null
+    });
     // api.logout()
     //   .then(() => {
     //     sessionService.deleteSession();

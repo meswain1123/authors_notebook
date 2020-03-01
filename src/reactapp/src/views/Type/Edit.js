@@ -15,7 +15,8 @@ import OutlinedInput from "@material-ui/core/OutlinedInput";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import AttributesControl from "./AttributesControl";
-import SupersControl from "./SupersControl";
+// import SupersControl from "./SupersControl";
+import { Multiselect } from 'multiselect-react-dropdown';
 import Grid from "@material-ui/core/Grid";
 import API from "../../api";
 
@@ -31,7 +32,8 @@ const mapStateToProps = state => {
     selectedType: state.app.selectedType,
     selectedWorld: state.app.selectedWorld,
     selectedWorldID: state.app.selectedWorldID,
-    types: state.app.types
+    types: state.app.types,
+    user: state.app.user
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -152,9 +154,14 @@ class Page extends Component {
             message = "Attribute Names must be unique";
             break;
           }
-          else if (value[i].Type === "Type" && (value[i].Type2ID === undefined || value[i].Type2ID === null)) {
+          else if ((value[i].Type === "Type" || (value[i].Type === "List" && value[i].ListType === "Type")) && (value[i].Type2 === undefined || value[i].Type2 === null || value[i].Type2 === "")) {
             valid = false;
-            message = `${value[i].Type2} is not a valid attribute type.`;
+            message = `A Defined Type must be selected for ${value[i].Name}.`;
+            break;
+          }
+          else if ((value[i].Type === "Options" || (value[i].Type === "List" && value[i].ListType === "Options")) && (value[i].Options === undefined || value[i].Options === null || value[i].Options.length === 0)) {
+            valid = false;
+            message = `At least one Option must be set for ${value[i].Name}.`;
             break;
           }
         } 
@@ -210,13 +217,13 @@ class Page extends Component {
       WorldID: this.props.selectedWorld._id,
       Major: this.state.Major
     };
-    console.log(type);
+    // console.log(type);
 
     if (type._id === null) {
       this.api
-        .createType(type)
+        .createType(this.props.user._id, type)
         .then(res => {
-          console.log(res);
+          // console.log(res);
           if (res.typeID !== undefined) {
             type._id = res.typeID;
             this.props.addType(type);
@@ -226,13 +233,16 @@ class Page extends Component {
             });
           }
           else if (res.message !== undefined) {
-            this.setState({ message: res.message });
+            this.setState({
+              waiting: false, 
+              message: res.message 
+            });
           }
         })
         .catch(err => console.log(err));
     } else {
       this.api
-        .updateType(type)
+        .updateType(this.props.user._id, type)
         .then(res => {
           this.props.updateType(type);
           this.setState({
@@ -256,25 +266,111 @@ class Page extends Component {
     this.setState({ Supers: supers });
   };
 
-  addSuper = value => {
-    // console.log(value);
-    let supers = [...this.state.Supers];
-    supers.push(value);
-    // console.log(value.Supers);
+  // addSuper = value => {
+  //   // console.log(value);
+  //   let supers = [...this.state.Supers];
+  //   supers.push(value);
+  //   // console.log(value.Supers);
+  //   // console.log(supers);
+  //   // if (supers.length === 1){
+  //   value.Supers.forEach(s => {
+  //     if (supers.filter(s2 => s2._id === s._id).length === 0) supers.push(s);
+  //   });
+  //   const type = this.props.selectedType;
+  //   let attributes = [...type.AttributesArr];
+  //   for (let i = 0; i < value.AttributesArr.length; i++) {
+  //     const attribute = value.AttributesArr[i];
+  //     if (attribute.FromSupers === undefined) {
+  //       // TODO: Remove this once all attributes have been changed to include the field
+  //       attribute.FromSupers = [];
+  //     }
+  //     attribute.FromSupers.push(value._id);
+  //     const matches = attributes.filter(a => a.Name === attribute.Name);
+  //     if (matches.length === 0) {
+  //       // It's a new attribute.
+  //       attribute.index = attributes.length;
+  //       attributes.push(attribute);
+  //     } else {
+  //       // It's an existing attribute,
+  //       // so we just need to add the appropriate ids to FromSupers.
+  //       // TODO: I also need to make sure the type and details match.
+  //       const superIDs = [...matches[0].FromSupers];
+  //       for (let i = 0; i < attribute.FromSupers.length; i++) {
+  //         const superID = attribute.FromSupers[i];
+  //         if (!superIDs.includes(superID)) {
+  //           superIDs.push(superID);
+  //         }
+  //       }
+  //       matches[0].FromSupers = superIDs;
+  //     }
+  //   }
+  //   // // console.log(supers);
+  //   this.setState({ Supers: supers });
+  //   type.AttributesArr = attributes;
+  //   this.props.updateSelectedType(type);
+  // };
+
+  // removeSuper = value => {
+  //   // console.log(value);
+  //   // TODO: Add a confirmation before doing this
+  //   // to let them know it will also remove sub-supers.
+  //   let supers = [];
+  //   let removeUs = [];
+  //   for (let i = 0; i < this.state.Supers.length; i++) {
+  //     const checkMe = this.props.types.filter(
+  //       t => t._id === this.state.Supers[i]._id
+  //     )[0];
+  //     // console.log(checkMe);
+  //     if (checkMe._id === value._id || checkMe.SuperIDs.includes(value._id))
+  //       removeUs.push(checkMe._id);
+  //     else supers.push(checkMe);
+  //   }
+  //   // console.log(removeUs);
+  //   // console.log(supers);
+  //   const type = this.props.selectedType;
+  //   let attributes = [...type.AttributesArr];
+  //   for (let i = 0; i < attributes.length; i++) {
+  //     const attribute = attributes[i];
+  //     if (attribute.FromSupers === undefined) {
+  //       // TODO: Remove this once all attributes have been changed to include the field
+  //       attribute.FromSupers = [];
+  //     }
+  //     let j = 0;
+  //     while (j < attribute.FromSupers.length) {
+  //       const checkMe = attribute.FromSupers[j];
+  //       if (removeUs.includes(checkMe)) {
+  //         attribute.FromSupers.splice(j, 1);
+  //       } else {
+  //         j++;
+  //       }
+  //     }
+  //   }
+  //   // // console.log(supers);
+  //   this.setState({ Supers: supers });
+  //   type.AttributesArr = attributes;
+  //   this.props.updateSelectedType(type);
+  // };
+
+  addSuper = (selectedList, selectedItem) => {
+    // console.log(selectedList);
+    // console.log(selectedItem);
+    // let supers = [...this.state.Supers];
+    // supers.push(selectedItem);
+    // console.log(selectedItem.Supers);
     // console.log(supers);
     // if (supers.length === 1){
-    value.Supers.forEach(s => {
-      if (supers.filter(s2 => s2._id === s._id).length === 0) supers.push(s);
+    selectedItem.Supers.forEach(s => {
+      if (selectedList.filter(s2 => s2._id === s._id).length === 0) selectedList.push(s);
     });
     const type = this.props.selectedType;
     let attributes = [...type.AttributesArr];
-    for (let i = 0; i < value.AttributesArr.length; i++) {
-      const attribute = value.AttributesArr[i];
+    for (let i = 0; i < selectedItem.AttributesArr.length; i++) {
+      const attribute = selectedItem.AttributesArr[i];
       if (attribute.FromSupers === undefined) {
         // TODO: Remove this once all attributes have been changed to include the field
         attribute.FromSupers = [];
       }
-      attribute.FromSupers.push(value._id);
+      attribute.FromSupers.push(selectedItem._id);
       const matches = attributes.filter(a => a.Name === attribute.Name);
       if (matches.length === 0) {
         // It's a new attribute.
@@ -295,23 +391,23 @@ class Page extends Component {
       }
     }
     // // console.log(supers);
-    this.setState({ Supers: supers });
+    this.setState({ Supers: selectedList });
     type.AttributesArr = attributes;
     this.props.updateSelectedType(type);
-  };
-
-  removeSuper = value => {
-    // console.log(value);
-    // TODO: Add a confirmation before doing this
-    // to let them know it will also remove sub-supers.
+  }
+  
+  removeSuper = (selectedList, removedItem) => {
+    // console.log(selectedList);
+    // console.log(removedItem);
+    // console.log(this.state.Supers);
     let supers = [];
-    let removeUs = [];
+    let removeUs = [removedItem._id];
     for (let i = 0; i < this.state.Supers.length; i++) {
       const checkMe = this.props.types.filter(
         t => t._id === this.state.Supers[i]._id
       )[0];
       // console.log(checkMe);
-      if (checkMe._id === value._id || checkMe.SuperIDs.includes(value._id))
+      if (checkMe._id === removedItem._id || checkMe.SuperIDs.includes(removedItem._id))
         removeUs.push(checkMe._id);
       else supers.push(checkMe);
     }
@@ -321,13 +417,15 @@ class Page extends Component {
     let attributes = [...type.AttributesArr];
     for (let i = 0; i < attributes.length; i++) {
       const attribute = attributes[i];
-      if (attribute.FromSupers === undefined) {
-        // TODO: Remove this once all attributes have been changed to include the field
-        attribute.FromSupers = [];
-      }
+      // if (attribute.FromSupers === undefined) {
+      //   // TODO: Remove this once all attributes have been changed to include the field
+      //   attribute.FromSupers = [];
+      // }
       let j = 0;
       while (j < attribute.FromSupers.length) {
         const checkMe = attribute.FromSupers[j];
+        console.log(checkMe);
+        // console.log(removeUs);
         if (removeUs.includes(checkMe)) {
           attribute.FromSupers.splice(j, 1);
         } else {
@@ -335,11 +433,12 @@ class Page extends Component {
         }
       }
     }
-    // // console.log(supers);
+    console.log(supers);
+    console.log(type);
     this.setState({ Supers: supers });
     type.AttributesArr = attributes;
     this.props.updateSelectedType(type);
-  };
+  }
 
   render() {
     // console.log(this.props);
@@ -410,21 +509,43 @@ class Page extends Component {
             />
           </Grid>
           <Grid item>
-            <SupersControl
+            {/* <SupersControl
               onAdd={this.addSuper}
               onRemove={this.removeSuper}
               onChange={this.supersChange}
               supers={this.state.Supers}
               allTypes={types}
+            /> */}
+            <Multiselect
+              placeholder="Super Types"
+              options={types} // Options to display in the dropdown
+              selectedValues={this.state.Supers} // Preselected value to persist in dropdown
+              onSelect={this.addSuper} // Function will trigger on select event
+              onRemove={this.removeSuper} // Function will trigger on remove event
+              displayValue="Name" // Property name to display in the dropdown options
             />
           </Grid>
           <Grid item>
             <AttributesControl />
           </Grid>
           <Grid item>
-            <FormHelperText>
+            {/* <FormHelperText>
               {this.state.fieldValidation.AttributesArr.message}
-            </FormHelperText>
+            </FormHelperText> */}
+            {Object.keys(this.state.fieldValidation).map((fieldName, i) => {
+              if (
+                this.state.fieldValidation[fieldName] !== undefined &&
+                this.state.fieldValidation[fieldName].message.length > 0
+              ) {
+                return (
+                  <p className="redFont" key={i}>
+                    {this.state.fieldValidation[fieldName].message}
+                  </p>
+                );
+              } else {
+                return "";
+              }
+            })}
           </Grid>
           <Grid item>
             <div className="float-right">
@@ -460,7 +581,7 @@ class Page extends Component {
             </div>
           </Grid>
           <Grid item>{this.state.message}</Grid>
-          <Grid item>
+          {/* <Grid item>
             {Object.keys(this.state.fieldValidation).map((fieldName, i) => {
               if (
                 this.state.fieldValidation[fieldName] !== undefined &&
@@ -475,7 +596,7 @@ class Page extends Component {
                 return "";
               }
             })}
-          </Grid>
+          </Grid> */}
         </Grid>
       );
     }

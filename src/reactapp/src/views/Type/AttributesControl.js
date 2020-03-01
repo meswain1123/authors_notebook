@@ -64,7 +64,7 @@ class Control extends Component {
   }
 
   newAttribute = () => {
-    // // console.log(this.props);
+    // console.log(this.props);
     const type = this.props.selectedType;
     type.AttributesArr.push({
       index: type.AttributesArr.length,
@@ -72,10 +72,10 @@ class Control extends Component {
       Type: "Text",
       Options: [],
       Type2: "",
-      Type2ID: null,
+      // Type2ID: null,
       ListType: "",
       FromSupers: [],
-      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type"]
+      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
     });
     this.props.updateSelectedType(type);
     // const arr = this.props.attributesArr;
@@ -98,11 +98,11 @@ class Control extends Component {
       Type: value.Type,
       Options: value.Options,
       Type2: value.Type2,
-      Type2ID: value.Type2ID,
+      // Type2ID: value.Type2ID,
       ListType: value.ListType,
       // Default: value.Default
       FromSupers: value.FromSupers,
-      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type"]
+      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
     };
     // console.log(type);
     this.props.updateSelectedType(type);
@@ -121,12 +121,24 @@ class Control extends Component {
     // console.log(value);
     const type = this.props.selectedType;
     // console.log(type);
-    type.AttributesArr.splice(value.index);
+    const attributesArr = []; // type.AttributesArr.filter(t=>t.index !== value.index); 
+    type.AttributesArr.forEach(t => {
+      if (t.index !== value.index) {
+        if (t.index > value.index)
+          t.index--;
+        attributesArr.push(t);
+      }
+    });
+    type.AttributesArr = [];
     this.props.updateSelectedType(type);
+    setTimeout(() => {
+      type.AttributesArr = attributesArr;
+      this.props.updateSelectedType(type);
+    }, 500);
   };
 
   render() {
-    // // console.log(this.props);
+    // console.log(this.props);
     return (
       <Grid item xs={12} container spacing={0} direction="column">
         <Grid item>

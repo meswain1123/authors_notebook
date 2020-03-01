@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { sessionService } from 'redux-react-session';
+// import { sessionService } from 'redux-react-session';
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -35,7 +35,7 @@ import API from '../../api';
 const mapStateToProps = state => {
   return { 
     selectedPage: state.app.selectedPage, 
-    user: state.session.user, 
+    user: state.app.user, 
     loginError: state.app.loginError 
   };
 };
@@ -211,6 +211,7 @@ class Page extends Component {
     };
     if (this.state.formMode === "login") {
       this.api.login(user).then(res => {
+        console.log(res);
         if (res.user === null) {
           let errors = this.state.fieldValidation;
           errors.loginError = { message: res.message, valid: false, show: true };
@@ -222,16 +223,19 @@ class Page extends Component {
             cookies.set('email', this.state.email);
             cookies.set('password', this.state.password);
           }
-          this.api.getWorldsForUser().then(res => {
+          this.api.getWorldsForUser(res.user._id).then(res => {
+            console.log(res);
             this.props.setWorlds(res.worlds);
           });
-          const { token } = res.user;
-          sessionService.saveSession({ token })
-          .then(() => {
-            sessionService.saveUser(res.user)
-            .then(() => {
-            }).catch(err => console.error(err));
-          }).catch(err => console.error(err));
+          // const { token } = res.user;
+          // sessionService.saveSession({ token })
+          // .then(() => {
+          //   sessionService.saveUser(res.user)
+          //   .then(() => {
+          //   }).catch(err => console.error(err));
+          // }).catch(err => console.error(err));
+          // console.log('hi');
+          this.props.userLogin(res.user);
           this.setState({ redirectTo: "/" });
         }
       })
@@ -279,6 +283,7 @@ class Page extends Component {
   };
 
   render() {
+    console.log(this.props);
     if (this.state.redirectTo !== null && 
       this.props.user !== null && 
       this.props.user !== undefined && 
