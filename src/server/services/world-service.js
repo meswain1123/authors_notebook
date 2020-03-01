@@ -2,7 +2,6 @@
 
 import express from "express";
 import { NodeVM, VMScript } from "vm2";
-// import session from 'express-session';
 import db from "../db/world-db";
 var router = express.Router();
 let myEnv = process.env;
@@ -43,22 +42,17 @@ router
     }
   })
   .delete("/deleteWorld", function(req, res) {
-    // if (req.body.userID == undefined) {
-    //   res.send({ message: "Session lost.  Please log in again." });
-    // } else {
     function respond(message) {
       res.send({ message });
     }
 
     db.deleteWorld(respond, req.body.userID, req.body.worldID);
-    // }
   })
   .patch("/updateWorld", function(req, res) {
     if (req.body.userID == undefined) {
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function respond(message) {
-        // console.log(message);
         res.send(message);
       }
 
@@ -66,14 +60,11 @@ router
     }
   })
   .post("/selectWorld", function(req, res) {
-    // // console.log(req.session);
     if (req.body.userID == undefined) {
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function respond(world) {
         if (world != null) {
-          // req.session.worldID = world._id;
-          // // console.log(req.session);
           res.send({ message: `Welcome to ${world.Name}!` });
         } else {
           res.send({ message: "There was a problem getting the world." });
@@ -84,35 +75,27 @@ router
   })
   .get("/getTypesForWorld/:userID/:worldID", function(req, res) {
     function respond(types) {
-      // // console.log(types);
       res.send({ types });
     }
-    // // console.log(req.params);
-    // console.log(req.session);
 
     db.getTypesForWorld(respond, req.params.userID, req.params.worldID);
   })
   .get("/getType/:worldID/:typeID", function(req, res) {
     function respond(type) {
-      // console.log(type);
       if (type === null)
         res.send({ message: "Get Type Failed" });
       else
         res.send(type);
     }
-    // console.log(req.params);
 
     db.getType(respond, req.params.worldID, req.params.typeID);
   })
   .post("/createType", function(req, res) {
-    // console.log(req.body);
-    // console.log(req.body.userID);
     if (req.body.userID == undefined) {
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function gotType(type) {
         if (type.message == undefined || type.message != "Type not found") {
-          // console.log(115);
           res.send({ message: "This world already has a Type by that name." });
         } else {
           function respond(typeID) {
@@ -130,7 +113,6 @@ router
     function respond(message) {
       res.send(message);
     }
-    // console.log(req.body);
 
     db.deleteType(respond, req.body.userID, req.body.worldID, req.body.typeID);
   })
@@ -150,7 +132,6 @@ router
   })
   .get("/getThing/:thingID", function(req, res) {
     function respond(thing) {
-      // console.log(thing);
       res.send(thing);
     }
 

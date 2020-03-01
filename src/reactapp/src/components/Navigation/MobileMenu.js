@@ -1,14 +1,11 @@
 import React, { Component } from "react";
 import "../../App.css";
-// import logo from "../../logo.svg";
 import Button from "@material-ui/core/Button";
 import Add from "@material-ui/icons/Add";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import Icon from "@material-ui/core/Icon";
-// import Divider from "@material-ui/core/Divider";
-// import { NavLink } from "react-router-dom";
 import { connect } from "react-redux";
 import menuRoutes from "./routes";
 import { 

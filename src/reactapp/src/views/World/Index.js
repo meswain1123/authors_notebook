@@ -25,10 +25,6 @@ const mapStateToProps = state => {
 };
 function mapDispatchToProps(dispatch) {
   return {
-    // selectPage: page => dispatch(selectPage(page)),
-    // selectWorld: worldID => dispatch(selectWorld(worldID)),
-    // setThings: things => dispatch(setThings(things)),
-    // setThings: things => dispatch(setThings(things))
   };
 }
 class Index extends Component {
@@ -108,7 +104,6 @@ class Index extends Component {
   }
 
   render() {
-    // console.log(this.props);
     const majorless = this.props.things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
     return (
       <div>

@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import "../../App.css";
 import logo from "../../logo.svg";
-// import Drawer from "@material-ui/core/Drawer";
-// import Hidden from "@material-ui/core/Hidden";
 import Button from "@material-ui/core/Button";
 import Add from "@material-ui/icons/Add";
 import List from "@material-ui/core/List";
@@ -11,14 +9,6 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Icon from "@material-ui/core/Icon";
 import Divider from "@material-ui/core/Divider";
 import { NavLink } from "react-router-dom";
-// import Grid from "@material-ui/core/Grid";
-// import {
-//   BrowserRouter as Router,
-//   Route,
-//   Redirect,
-//   Link,
-//   Switch
-// } from "react-router-dom";
 import { connect } from "react-redux";
 import menuRoutes from "./routes";
 import { 
@@ -46,35 +36,23 @@ class Bar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      // left: false,
-      // right: false,
-      // top: false,
-      // bottom: false
     };
     this.api = API.getInstance();
   }
 
   componentDidMount() {
-    // console.log(this.props);
     this.api.getPublicWorlds().then(res => {
-      // console.log(res);
       this.props.setPublicWorlds(res.worlds);
     });
     if (this.props.user !== null) {
       this.api.getWorldsForUser(this.props.user._id).then(res => {
-        // console.log(res);
         if (res.worlds !== undefined)
           this.props.setWorlds(res.worlds);
       });
     }
   }
 
-  linkClick(name) {
-    // this.props.selectPage(name);
-  }
-
   links() {
-    // console.log(menuRoutes);
     return (
       <div>
         {menuRoutes.map((prop, key) => {
@@ -99,14 +77,9 @@ class Bar extends Component {
 
   brand() {
     return (
-      // <div className="sidebarHeader">
-      //   <img src={logo} alt="logo" className="App-logo" />
-      //   {this.props.logoText}
-      // </div>
       <NavLink
         to={`/`} className="blue blackFont"
         activeClassName="active"
-        onClick={() => {this.linkClick("Home")}}
       >
         <ListItem button className="curvedButton">
           <img src={logo} alt="logo" className="App-logo" />
@@ -117,7 +90,6 @@ class Bar extends Component {
   }
 
   publicWorlds() {
-    // console.log(this.props);
     const worldLinks = (this.props.publicWorlds === undefined || this.props.publicWorlds === null || this.props.publicWorlds.message !== undefined ? "" : this.props.publicWorlds.map((prop, key) => {
       return (
         <ListItem key={key}>

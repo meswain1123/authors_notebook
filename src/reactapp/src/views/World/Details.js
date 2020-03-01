@@ -1,10 +1,8 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
-// import { Redirect, BrowserRouter as Router, Route } from "react-router-dom";
 import { selectWorld, setTypes, setThings, setWorlds, setPublicWorlds } from "../../redux/actions/index";
 import API from "../../api";
-// import TypeIndex from "../Type/Index";
 import Index from "./Index";
 import Edit from "@material-ui/icons/Edit";
 import Delete from "@material-ui/icons/Delete";
@@ -13,11 +11,8 @@ import ListItem from "@material-ui/core/ListItem";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
 import Modal from '@material-ui/core/Modal';
-// import Autocomplete from '@material-ui/lab/Autocomplete';
-// import TextField from '@material-ui/core/TextField';
 
 const mapStateToProps = state => {
-  // console.log(state);
   return {
     selectedPage: state.app.selectedPage,
     selectedWorld: state.app.selectedWorld,
@@ -31,7 +26,6 @@ const mapStateToProps = state => {
 };
 function mapDispatchToProps(dispatch) {
   return {
-    // selectPage: page => dispatch(selectPage(page)),
     selectWorld: worldID => dispatch(selectWorld(worldID)),
     setTypes: types => dispatch(setTypes(types)),
     setThings: things => dispatch(setThings(things)),
@@ -52,35 +46,25 @@ class Page extends Component {
   componentDidMount() {
     setTimeout(() => {
       const { id } = this.props.match.params;
-      // this.api.selectWorld(this.props.user._id, id).then(res => {
-      // localStorage.setItem("selectedWorldID", id);
       this.props.selectWorld(id);
       this.getTypes();
-      // });
     }, 500);
   }
 
   getTypes() {
-    // console.log('Getting Types');
-    // console.log(this.props);
     this.api.getTypesForWorld(this.props.user._id, this.props.selectedWorldID).then(res => {
-      // console.log(res);
       if (res !== undefined) {
         // Add Supers to each type
         const types = res.types;
         types.forEach(t=> {
           t.Supers = [];
           t.SuperIDs.forEach(sID=> {
-            // console.log(sID);
-            // console.log(types.filter(t2=>t2._id === sID));
             t.Supers = t.Supers.concat(types.filter(t2=>t2._id === sID));
-            // console.log(t.Supers);
           });
         });
         this.props.setTypes(types);
         this.getThings();
       } else {
-        // // console.log('retry');
         setTimeout(() => {
           this.getTypes();
         }, 500);
@@ -90,7 +74,6 @@ class Page extends Component {
   getThings() {
     this.api.getThingsForWorld(this.props.user._id, this.props.selectedWorldID).then(res => {
       if (res !== undefined) {
-        // console.log(res);
         const things = res.things;
         things.forEach(t=> {
           t.Types = [];
@@ -100,7 +83,6 @@ class Page extends Component {
         });
         this.props.setThings(things);
       } else {
-        // // console.log('retry');
         setTimeout(() => {
           this.getThings();
         }, 500);
@@ -109,14 +91,12 @@ class Page extends Component {
   }
 
   delete = e => {
-    // console.log(this.state._id);
     this.api.deleteWorld(this.props.user._id, this.props.selectedWorldID).then(res=>{
-      // console.log(res);
-      this.props.selectWorld(null);
       let worlds = this.props.worlds.filter(t=>t._id!==this.props.selectedWorldID);
       this.props.setWorlds(worlds);
       worlds = this.props.publicWorlds.filter(t=>t._id!==this.props.selectedWorldID);
       this.props.setPublicWorlds(worlds);
+      this.props.selectWorld(null);
       this.setState({modalOpen: false, redirectTo: `/`});
     });
   }
@@ -162,9 +142,7 @@ class Page extends Component {
                       fullWidth
                       variant="contained"
                       color="primary"
-                      // href={`/world/delete/${this.props.selectedWorld._id}`}
                       onClick={e => {this.setState({modalOpen: true})}}
-                      // onClick={this.delete}
                     >
                       <Delete />
                     </Button>

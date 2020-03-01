@@ -128,10 +128,8 @@ const Listbox = styled('ul')`
 
 
 export default function OptionsControl(props) {
-  // console.log(props);
   const {
     getRootProps,
-    // getInputLabelProps,
     getInputProps,
     getTagProps,
     getListboxProps,
@@ -145,15 +143,13 @@ export default function OptionsControl(props) {
     value: props.attribute.Value,
     multiple: false,
     options: props.attribute.Options,
-    // getOptionLabel: option => option.Name,
     onChange: props.onChange
   });
 
-  // console.log(value);
   return (
     <div>
       <div {...getRootProps()}>
-        <Label>{/*  {...getInputLabelProps()} */}
+        <Label>
           {props.attribute.Name}
         </Label>
         <InputWrapper ref={setAnchorEl} className={focused ? 'focused' : ''}>

@@ -14,7 +14,6 @@ import InputLabel from "@material-ui/core/InputLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Grid from "@material-ui/core/Grid";
 import AttributesControl from "./AttributesControl";
-// import TypesControl from "./TypesControl";
 import { Multiselect } from 'multiselect-react-dropdown';
 import API from "../../api";
 
@@ -132,10 +131,6 @@ class Page extends Component {
     let attributes = [];
     for (let i = 0; i < type.AttributesArr.length; i++) {
       const attribute = type.AttributesArr[i];
-      if (attribute.FromTypes === undefined) {
-        // TODO: Remove this once all attributes have been changed to include the field
-        attribute.FromTypes = [];
-      }
       attribute.FromTypes.push(type._id);
       const matches = attributes.filter(a => a.Name === attribute.Name);
       if (matches.length === 0) {
@@ -267,7 +262,6 @@ class Page extends Component {
       this.api
         .createThing(this.props.user._id, thing)
         .then(res => {
-          // console.log(thing);
           thing._id = res.thingID;
           thing.Types = this.state.Types;
           this.props.addThing(thing);
@@ -303,8 +297,6 @@ class Page extends Component {
   };
 
   addType = (selectedList, selectedItem) => {
-    // console.log(selectedList);
-    // console.log(selectedItem);
     selectedItem.Supers.forEach(s=>{
       if (selectedList.filter(t=>t._id === s._id).length === 0) {
         let superType = this.props.types.filter(t=>t._id === s._id);
@@ -312,15 +304,10 @@ class Page extends Component {
         selectedList.push(superType[0]);
       }
     });
-    // console.log(this);
     const thing = this.props.selectedThing;
     let attributes = [...thing.AttributesArr];
     for (let i = 0; i < selectedItem.AttributesArr.length; i++) {
       const attribute = selectedItem.AttributesArr[i];
-      if (attribute.FromTypes === undefined) {
-        // TODO: Remove this once all attributes have been changed to include the field
-        attribute.FromTypes = [];
-      }
       attribute.FromTypes.push(selectedItem._id);
       const matches = attributes.filter(a => a.Name === attribute.Name);
       if (matches.length === 0) {
@@ -349,14 +336,11 @@ class Page extends Component {
   }
   
   removeType = (selectedList, removedItem) => {
-    // console.log(selectedList);
-    // console.log(removedItem);
     // TODO: Add a confirmation before doing this
     // to let them know it will also remove sub-types.
     let types = [];
     let removeUs = [];
     this.state.Types.forEach(checkMe => {
-      // console.log(checkMe);
       if (checkMe._id === removedItem._id || checkMe.SuperIDs.includes(removedItem._id))
         removeUs.push(checkMe._id);
       else types.push(checkMe);
@@ -400,8 +384,6 @@ class Page extends Component {
   }
 
   render() {
-    // console.log(this.state.Types);
-    // console.log(this.props.Types);
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else {
@@ -446,20 +428,13 @@ class Page extends Component {
             </FormControl>
           </Grid>
           <Grid item>
-            {/* <TypesControl
-              onAdd={this.addType}
-              onRemove={this.removeType}
-              onChange={this.typesChange}
-              types={this.state.Types}
-              allTypes={this.props.types}
-            /> */}
             <Multiselect
               placeholder="Types"
-              options={this.props.types} // Options to display in the dropdown
-              selectedValues={this.state.Types} // Preselected value to persist in dropdown
-              onSelect={this.addType} // Function will trigger on select event
-              onRemove={this.removeType} // Function will trigger on remove event
-              displayValue="Name" // Property name to display in the dropdown options
+              options={this.props.types}
+              selectedValues={this.state.Types}
+              onSelect={this.addType}
+              onRemove={this.removeType}
+              displayValue="Name"
             />
           </Grid>
           <Grid item>

@@ -4,13 +4,10 @@ import './App.css';
 import {
     fetchData, 
     postData,
-    // putData
   } from './api';
   import { 
     Button, 
     FormGroup, 
-    // FormControl, 
-    // ControlLabel 
   } from 'react-bootstrap';
 
 

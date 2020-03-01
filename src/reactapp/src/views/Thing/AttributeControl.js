@@ -1,92 +1,27 @@
 
 /* eslint-disable no-use-before-define */
 import React, { useState } from 'react';
-// import Dropdown from "react-bootstrap/Dropdown";
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import useAutocomplete from '@material-ui/lab/useAutocomplete';
-// import CheckIcon from '@material-ui/icons/Check';
-// import CloseIcon from '@material-ui/icons/Close';
-// import Checkbox from "@material-ui/core/Checkbox";
 import Grid from "@material-ui/core/Grid";
 import FormControl from '@material-ui/core/FormControl';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 import InputLabel from '@material-ui/core/InputLabel';
-// import TextField from '@material-ui/core/TextField';
-// import DeleteForever from '@material-ui/icons/DeleteForever';
-// import OptionsControl from "./OptionsControl";
-// import IconButton from '@material-ui/core/IconButton';
-// import InputAdornment from '@material-ui/core/InputAdornment';
-// import Visibility from '@material-ui/icons/Visibility';
-// import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
-// import FormControlLabel from '@material-ui/core/FormControlLabel';
-// import styled from 'styled-components';
-// import Autocomplete from '@material-ui/lab/Autocomplete';
-// import AutoCompleteComboBox from '../../components/AutoCompleteComboBox';
 import ChipInput from 'material-ui-chip-input';
 import { Multiselect } from 'multiselect-react-dropdown';
 
-
-// const inputBlur = (e, props) => {
-//   // // console.log(e);
-//   const name = e.target.name;
-//   const value = (e.target.type === "checkbox" ? e.target.checked : e.target.value);
-//   // // console.log(value);
-//   // // console.log(props);
-//   const attribute = props.attribute;
-//   attribute[name] = value;
-//   props.onBlur(attribute);
-// }
-
-// const typeChange = (e, value, props, respond) => {
-//   // // console.log(value);
-//   // // console.log(props);
-//   // // console.log(respond);
-//   respond(value);
-// }
-
-// const handleOptionChange = (e, props) => {
-//   // // console.log(e);
-//   // console.log(e.target.value);
-//   const attr = props.attribute;
-//   attr.Value = e.target.value;
-//   props.onChange(attr);
-// }
-
-// const handleOptionsChange = (e, props) => {
-//   // console.log(e);
-//   const attr = props.attribute;
-//   attr.Options = e;
-//   props.onChange(attr);
-// }
-
-// const detailsChange = (e, props) => {
-//   // console.log(e);
-//   // const attr = props.attribute;
-//   // attr["Type"] = e.target.value;
-//   // props.onChange(attr);
-// }
-
 const handleTextListChange = (e, props) => {
-  // console.log(e);
   const attr = props.attribute;
   attr.ListValues = e;
   props.onChange(attr);
 };
 const addOption = (selectedItem, props) => {
-  // console.log(selectedList);
-  // console.log(selectedItem);
-  // console.log(props);
   const attr = props.attribute;
   attr.ListValues.push(selectedItem.Name);
   props.onChange(attr);
 };
 const removeOption = (selectedList, props) => {
-  // console.log(selectedList);
-  // console.log(removedItem);
-  // console.log(props);
   const attr = props.attribute;
   attr.ListValues = [];
   selectedList.forEach(o => {
@@ -95,17 +30,11 @@ const removeOption = (selectedList, props) => {
   props.onChange(attr);
 };
 const addType = (selectedItem, props) => {
-  // console.log(selectedList);
-  // console.log(selectedItem);
-  // console.log(props);
   const attr = props.attribute;
   attr.ListValues.push(selectedItem._id);
   props.onChange(attr);
 };
 const removeType = (selectedList, props) => {
-  // console.log(selectedList);
-  // console.log(removedItem);
-  // console.log(props);
   const attr = props.attribute;
   attr.ListValues = [];
   selectedList.forEach(o => {
@@ -115,7 +44,6 @@ const removeType = (selectedList, props) => {
 };
 
 export default function AttributeControl(props) {
-  // console.log(props);
   const [value, changeValue] = useState(props.attribute.Value);
   const type = props.attribute.Type === "" ? "Text" : props.attribute.Type;
 
@@ -145,18 +73,13 @@ export default function AttributeControl(props) {
             fullWidth>
           <InputLabel htmlFor="Name">{ props.attribute.Name }</InputLabel>
           <OutlinedInput
-            // disabled={props.attribute.FromTypes.length > 0}
             id="Name"
             name="Name"
             type="text"
             error={ props.error }
             value={ value }
             autoComplete="off"
-            // onChange={ e => handleUserInput(e, props.onChange) }
-            // onBlur={ e => inputBlur(e, props.onBlur) }
-            // onChange={ e => { props.onChange(e); changeAttribute(e); } }
             onChange={ e => { changeValue(e.target.value) } }
-            // onBlur={ e => { inputBlur(e, props) } }
             onBlur={ e => {
                 const attr = {
                   index: props.attribute.index, 
@@ -182,18 +105,13 @@ export default function AttributeControl(props) {
             fullWidth>
           <InputLabel htmlFor="Name">{ props.attribute.Name }</InputLabel>
           <OutlinedInput
-            // disabled={props.attribute.FromTypes.length > 0}
             id="Name"
             name="Name"
             type="number"
             error={ props.error }
             value={ value }
             autoComplete="off"
-            // onChange={ e => handleUserInput(e, props.onChange) }
-            // onBlur={ e => inputBlur(e, props.onBlur) }
-            // onChange={ e => { props.onChange(e); changeAttribute(e); } }
             onChange={ e => { changeValue(e.target.value) } }
-            // onBlur={ e => { inputBlur(e, props) } }
             onBlur={ e => {
                 const attr = {
                   index: props.attribute.index, 
@@ -294,20 +212,20 @@ export default function AttributeControl(props) {
           : props.attribute.ListType === "Options" ?
             <Multiselect
               placeholder={props.attribute.Name}
-              options={listOptions} // Options to display in the dropdown
-              selectedValues={listOptionValues} // Preselected value to persist in dropdown
-              onSelect={(_, selectedItem) => {addOption(selectedItem, props)}} // Function will trigger on select event
-              onRemove={(selectedList, _) => {removeOption(selectedList, props)}} // Function will trigger on remove event
-              displayValue="Name" // Property name to display in the dropdown options
+              options={listOptions}
+              selectedValues={listOptionValues}
+              onSelect={(_, selectedItem) => {addOption(selectedItem, props)}}
+              onRemove={(selectedList, _) => {removeOption(selectedList, props)}}
+              displayValue="Name"
             />
           : props.attribute.ListType === "Type" ?
             <Multiselect
               placeholder={props.attribute.Name}
-              options={listOptions} // Options to display in the dropdown
-              selectedValues={listOptionValues} // Preselected value to persist in dropdown
-              onSelect={(_, selectedItem) => {addType(selectedItem, props)}} // Function will trigger on select event
-              onRemove={(selectedList, _) => {removeType(selectedList, props)}} // Function will trigger on remove event
-              displayValue="Name" // Property name to display in the dropdown options
+              options={listOptions}
+              selectedValues={listOptionValues}
+              onSelect={(_, selectedItem) => {addType(selectedItem, props)}}
+              onRemove={(selectedList, _) => {removeType(selectedList, props)}}
+              displayValue="Name"
             />
           : ""
           }

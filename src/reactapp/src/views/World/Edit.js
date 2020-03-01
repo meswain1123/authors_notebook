@@ -14,8 +14,6 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import OutlinedInput from "@material-ui/core/OutlinedInput";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
-// import AttributesControl from "./AttributesControl";
-// import SupersControl from "./SupersControl";
 import Grid from "@material-ui/core/Grid";
 import API from "../../api";
 
@@ -65,7 +63,6 @@ class Page extends Component {
       if (id !== undefined) {
         const { id } = this.props.match.params;
         let world = this.props.worlds.filter(w => w._id === id);
-        // console.log(world);
         if (world.length > 0) {
           world = world[0];
           this.setState({
@@ -75,24 +72,8 @@ class Page extends Component {
           });
           this.props.selectWorld(id);
         }
-        // this.api.getWorld(this.props.selectedWorldID, id).then(res => {
-        //   if (res.message === undefined) {
-        //     this.setState({
-        //       Name: res.Name,
-        //       _id: id
-        //     });
-        //     this.props.updateSelectedWorld(res);
-        //   }
-        //   else {
-        //     this.setState({ message: res.message });
-        //   }
-        // });
       } else {
         this.props.selectWorld(null);
-        // this.props.updateSelectedWorld({
-        //   _id: null,
-        //   Name: ""
-        // });
       }
     }, 500);
   }
@@ -161,7 +142,6 @@ class Page extends Component {
   };
 
   onSubmit = () => {
-    // console.log(this.props);
     function respond() {
       if (this.state.formValid) {
         this.setState({ waiting: true }, this.submitThroughAPI);
@@ -178,13 +158,11 @@ class Page extends Component {
       Public: this.state.Public,
       Owner: this.props.user._id
     };
-    // console.log(world);
 
     if (world._id === null) {
       this.api
         .createWorld(this.props.user._id, world)
         .then(res => {
-          // console.log(res);
           if (res.message  !== undefined) {
             this.setState({ message: res.message });
           }
@@ -202,7 +180,6 @@ class Page extends Component {
       this.api
         .updateWorld(this.props.user._id, world)
         .then(res => {
-          // console.log(res);
           if (res.message !== `World ${world.Name} updated!`) {
             this.setState({ message: res.message });
           }
@@ -219,8 +196,6 @@ class Page extends Component {
   };
 
   render() {
-    // console.log(this.state);
-    // console.log(this.props);
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else {

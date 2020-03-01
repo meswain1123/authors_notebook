@@ -10,7 +10,6 @@ const reducer = combineReducers(reducers);
 const store = createStore(reducer);
 const validateSession = session => {
   // check if your session is still valid
-  // // console.log(session);
   return true;
 };
 const options = {
@@ -33,5 +32,4 @@ sessionService
       "Redux React Session is ready and there is no session in your storage"
     )
   );
-// sessionService.initSessionService(store);
 export default store;

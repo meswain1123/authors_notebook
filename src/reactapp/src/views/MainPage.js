@@ -1,13 +1,9 @@
 import React, { Component } from "react";
-// import "./assets/css/material-dashboard-react.css";
 import { 
-  // BrowserRouter as Router, 
   Route, 
-  // Redirect, Link, 
   Switch } from "react-router-dom";
 import { connect } from "react-redux";
 import HomePage from "./Home";
-// import TemplatePage from "./Template";
 import ForumMenuPage from "./Forum/ForumMenu";
 import LoginPage from "./User/Login";
 import UserEditPage from "./User/Edit";
@@ -29,15 +25,9 @@ class Page extends Component {
     this.state = {
       version: "0"
     };
-    // this.api = API.getInstance();
   }
 
   componentDidMount() {
-    // this.api.getVersion()
-    //   .then(res => {
-    //     this.setState({ version: res.version });
-    //   })
-    //   .catch(err => console.log(err));
   }
 
   render() {

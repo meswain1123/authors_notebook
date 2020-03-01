@@ -119,9 +119,7 @@ class Page extends Component {
   }
 
   delete = e => {
-    // console.log(this.state._id);
     this.api.deleteType(this.props.user._id, this.props.selectedWorldID, this.state._id).then(res=>{
-      // console.log(res);
       const types = this.props.types.filter(t=>t._id!==this.state._id);
       this.props.setTypes(types);
       this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})
@@ -129,7 +127,6 @@ class Page extends Component {
   }
 
   render() { 
-    // console.log(this.props.selectedType);
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else {
@@ -170,7 +167,6 @@ class Page extends Component {
                     variant="contained"
                     color="primary"
                     onClick={e => {this.setState({modalOpen: true})}}
-                    // href={`/type/delete/${this.state._id}`}
                   >
                     <Delete />
                   </Button>

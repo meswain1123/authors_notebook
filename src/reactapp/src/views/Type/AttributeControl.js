@@ -37,7 +37,6 @@ const handleOptionsChange = (e, props) => {
 
 export default function AttributeControl(props) {
   const [name, changeName] = useState(props.attribute.Name);
-  // const [index, changeIndex] = useState(props.attribute.index);
 
   const attributeTypes = [
     "Text",
@@ -102,7 +101,6 @@ export default function AttributeControl(props) {
             disabled={props.attribute.FromSupers.length > 0} 
             value={props.attribute.Type}
             onChange={e => {handleTypeChange(e, props)}}
-            // options={attributeTypes}
             fullWidth
             labelWidth={100}
           >
@@ -152,7 +150,6 @@ export default function AttributeControl(props) {
                   disabled={props.attribute.FromSupers.length > 0} 
                   value={props.attribute.ListType}
                   onChange={e => {handleListTypeChange(e, props)}}
-                  // options={attributeTypes}
                   fullWidth
                   labelWidth={70}
                 >

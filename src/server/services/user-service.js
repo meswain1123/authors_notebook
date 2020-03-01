@@ -1,7 +1,6 @@
 // user service module
 
 import express from 'express';
-// import session from 'express-session';
 import db from '../db/user-db';
 var router = express.Router();
 let myEnv = process.env;
@@ -11,7 +10,6 @@ db.open();
 
 // User routes
 router.get('/getUsersByText/:text', function (req, res) {
-  // // console.log(req.params);
   function respond(docs) {
     res.send({ message: 'I love when you use me!', users: docs });
   };
@@ -19,12 +17,8 @@ router.get('/getUsersByText/:text', function (req, res) {
   db.getUsersByText(respond, req.params.text);
 }).post('/login', function (req, res) {
   function respond(user) {
-    // // console.log(Date.now());
-    // // console.log(user);
     if (user != null && user.password == req.body.password) {
-      // // console.log(res);
       req.session.userID = user._id;
-      // console.log(req.session.userID);
       const pwdStripped = {
         _id: user._id,
         email: user.email,

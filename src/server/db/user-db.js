@@ -9,17 +9,15 @@ const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology:
 function open() {
   console.log('opening');
   client.connect(function(err) {
-    // console.log(err);
+    console.log(err);
     assert.equal(null, err);
   });
 }
 function close() {
-  // // console.log('closing');
   client.close();
 }
 
 function getUsersByText(respond, text) {
-  // // console.log(`Getting users: ${text}`);
   const db = client.db(dbName);
 
   db.collection("user")
@@ -31,8 +29,6 @@ function getUsersByText(respond, text) {
 }
 
 function getUserByEmail(respond, email) {
-  // // console.log(`Getting user: ${email}`);
-  // respond(email);
   try {
     const db = client.db(dbName);
 
@@ -50,7 +46,6 @@ function getUserByEmail(respond, email) {
 }
 
 function register(respond, user) {
-  // // console.log(`Registering user: ${user.email}`);
   const db = client.db(dbName);
 
   db.collection("user")
@@ -74,7 +69,6 @@ function register(respond, user) {
 }
 
 function updateUser(respond, id, user) {
-  // // console.log(`Updating user: ${user.email}`);
   const db = client.db(dbName);
   db.collection("user").updateOne(
     { _id: ObjectID(id) },

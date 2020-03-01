@@ -7,7 +7,6 @@ import { selectPage } from "../../redux/actions/index";
 // All route props (match, location and history) are available to User
 
 const mapStateToProps = state => {
-  // // console.log(state);
   return {
     checked: state.session.checked,
     authenticated: state.session.authenticated,
@@ -20,15 +19,9 @@ function mapDispatchToProps(dispatch) {
   };
 }
 class TestComponent extends Component {
-  // constructor(props) {
-  //   super(props);
-
-  // }
   componentDidMount() {
-    // // console.log(this.props);
   }
   render() {
-    // // console.log(this.props);
     return <h1>Hello {this.props.match.params.testtext}!</h1>;
   }
     
@@ -36,10 +29,3 @@ class TestComponent extends Component {
 
 const Test = connect(mapStateToProps, mapDispatchToProps)(TestComponent);
 export default Test;
-
-// function Test(props) {
-//   // console.log(props);
-//   return <h1>Hello {props.match.params.testtext}!</h1>;
-// }
-
-// export default Test;

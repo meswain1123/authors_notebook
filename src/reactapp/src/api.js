@@ -1,4 +1,3 @@
-// import { sessionService, sessionReducer } from "redux-react-session";
 
 // This is our special type of Error that represents
 // when a request got a 401 Unauthorized response
@@ -28,16 +27,12 @@ var API = (function() {
 
 class APIClass {
   constructor() {
-    // this.state = {
-    //   user: null,
-    //   worldID: null
-    // };
     this.real = true;
   }
 
   logErrorReason = reason => {
     // log the error reason but keep the rejection
-    // console.log("Response error reason:", reason);
+    console.log("Response error reason:", reason);
     return Promise.reject(reason);
   };
 
@@ -66,9 +61,7 @@ class APIClass {
 
   // User
   login = async user => {
-    // // console.log(user);
     if (this.real) {
-      // this.state.user = user; // Saving for autofix
       const response = await this.postData("/user/login", user);
       return this.processResponse(response);
     } else {
@@ -83,8 +76,6 @@ class APIClass {
 
   logout = async user => {
     if (this.real) {
-      // this.state.user = null;
-      // this.state.worldID = null;
       await this.postData("/user/logout");
     }
   };
@@ -110,9 +101,6 @@ class APIClass {
   // World
   getWorldsForUser = async (userID) => {
     if (this.real) {
-      // console.log(this.state.user);
-      // if (this.state.user === null)
-      //   this.state.user = JSON.parse(sessionStorage.getItem("user"));
       const response = await this.fetchData(`/world/getWorldsForUser/${userID}`);
       return this.processResponse(response);
     } else {
@@ -162,7 +150,6 @@ class APIClass {
 
   selectWorld = async (userID, worldID) => {
     if (this.real) {
-      // this.state.worldID = worldID;
       const response = await this.postData("/world/selectWorld", { userID: userID, worldID: worldID });
       return this.processResponse(response);
     } else {
@@ -240,7 +227,6 @@ class APIClass {
 
   getThing = async (worldID, thingID) => {
     if (this.real) {
-      // console.log(thingID);
       const response = await this.fetchData(`/world/getThing/${thingID}`);
       return this.processResponse(response);
     } else {
@@ -281,7 +267,6 @@ class APIClass {
     }
   };
 
-  // I should probably change these to not be exported
   fetchData = async (path, options = {}) => {
     return await fetch(`${path}`, {
       mode: "cors",
@@ -366,8 +351,6 @@ class APIClass {
 
   processResponse = async response => {
     const body = await response.json();
-    // if (body.user !== undefined)
-    //   this.state.user = body.user;
     if (response.status !== 200) throw Error(body.message);
     else return body;
   };

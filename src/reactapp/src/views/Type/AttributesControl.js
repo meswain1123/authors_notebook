@@ -18,15 +18,6 @@ const Label = styled("label")`
   line-height: 1.5;
   display: block;
 `;
-// import Navbar from "react-bootstrap/lib/Navbar";
-// import { Button } from "reactstrap";
-// import {
-//   Form,
-//   FormGroup,
-//   FormControl,
-//   ControlLabel,
-//   Checkbox,
-// } from "react-bootstrap";
 
 // It will let you add and remove attributes.
 // Each needs to have a unique name as part of validation.
@@ -38,7 +29,6 @@ const Label = styled("label")`
 // Color, DateTime, Schedule.
 
 const mapStateToProps = state => {
-  // // console.log(state);
   return {
     selectedType: state.app.selectedType,
     attributesArr: state.app.attributesArr,
@@ -52,19 +42,10 @@ function mapDispatchToProps(dispatch) {
   };
 }
 class Control extends Component {
-  // constructor(props) {
-  //   super(props);
-  //   this.state = {
-  //     attributes:
-  //   };
-  // }
-
   componentDidMount() {
-    // // console.log(this.props);
   }
 
   newAttribute = () => {
-    // console.log(this.props);
     const type = this.props.selectedType;
     type.AttributesArr.push({
       index: type.AttributesArr.length,
@@ -72,56 +53,34 @@ class Control extends Component {
       Type: "Text",
       Options: [],
       Type2: "",
-      // Type2ID: null,
       ListType: "",
       FromSupers: [],
       AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
     });
     this.props.updateSelectedType(type);
-    // const arr = this.props.attributesArr;
-    // arr.push({Name: "", Type: ""});
-    // this.props.updateAttributesArr(arr);
-    // I need to put it into state and do setstate.
-    // Actually, I may need to put the active type into the main state.
   };
 
   changeAttribute = value => {
-    // console.log(value);
-    // const name = e.target.name;
-    // const value = (e.target.type === "checkbox" ? e.target.checked : e.target.value);
-    // // console.log(value);
     const type = this.props.selectedType;
-    // type.AttributesArr.push({Name: "", Type: ""});
     type.AttributesArr[value.index] = {
       index: value.index,
       Name: value.Name,
       Type: value.Type,
       Options: value.Options,
       Type2: value.Type2,
-      // Type2ID: value.Type2ID,
       ListType: value.ListType,
-      // Default: value.Default
       FromSupers: value.FromSupers,
       AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
     };
-    // console.log(type);
     this.props.updateSelectedType(type);
-    // this.setState({ [name]: value });
   };
 
   blurAttribute = e => {
-    // // console.log(e);
-    // const name = e.target.name;
-    // const value = (e.target.type === "checkbox" ? e.target.checked : e.target.value);
-    // // console.log(value);
-    // this.setState({ [name]: value });
   };
 
   deleteAttribute = value => {
-    // console.log(value);
     const type = this.props.selectedType;
-    // console.log(type);
-    const attributesArr = []; // type.AttributesArr.filter(t=>t.index !== value.index); 
+    const attributesArr = [];
     type.AttributesArr.forEach(t => {
       if (t.index !== value.index) {
         if (t.index > value.index)
@@ -138,7 +97,6 @@ class Control extends Component {
   };
 
   render() {
-    // console.log(this.props);
     return (
       <Grid item xs={12} container spacing={0} direction="column">
         <Grid item>

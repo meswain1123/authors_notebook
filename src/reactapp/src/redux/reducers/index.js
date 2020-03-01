@@ -20,8 +20,6 @@ import {
   LOAD_FROM_STORAGE,
   TOGGLE_MENU
 } from "../constants/actionTypes";
-// import { sessionService } from "redux-react-session";
-// import API from "../../api";
 
 const initialState = {
   selectedPage: "Test",
@@ -42,8 +40,6 @@ const initialState = {
 };
 function rootReducer(state = initialState, action) {
   if (action.type === LOAD_FROM_STORAGE) {
-    // const str = sessionStorage.getItem("selectedWorld");
-    // console.log(str);
     const user = JSON.parse(sessionStorage.getItem("user"));
     const worlds = JSON.parse(sessionStorage.getItem("worlds"));
     const publicWorlds = JSON.parse(sessionStorage.getItem("publicWorlds"));
@@ -69,45 +65,6 @@ function rootReducer(state = initialState, action) {
       articles: state.articles.concat(action.payload)
     });
   } else if (action.type === LOGIN) {
-    // I found that it worked better to do this api call in the page.
-    // I think the things I'm reading are saying the same as well.
-    // const user = action.payload;
-    // api.login(user).then(response => {
-    //   // console.log(response);
-    //   if (response.user === null) {
-    //     return Object.assign({}, state, {
-    //       loginError: response.message
-    //     });
-    //   }
-    //   else {
-    //     return Object.assign({}, state, {
-    //       user: response.user
-    //     });
-    //     // const { token } = response.user;
-    //     // sessionService.saveSession({ token })
-    //     // .then(() => {
-    //     //   sessionService.saveUser(response.user)
-    //     //   .then(() => {
-    //     //     return Object.assign({}, state, {
-    //     //       selectedPage: "/"
-    //     //     });
-    //     //   }).catch(err => console.error(err));
-    //     // }).catch(err => console.error(err));
-    //   }
-    // });
-    // const token = {};
-    // sessionService.saveSession({ token })
-    // .then(() => {
-    //   sessionService.saveUser(action.payload)
-    //   .then(() => {
-    //     return Object.assign({}, state, {
-    //       user: action.payload
-    //     });
-    //     // return Object.assign({}, state, {
-    //     //   selectedPage: "/"
-    //     // });
-    //   }).catch(err => console.error(err));
-    // }).catch(err => console.error(err));
     sessionStorage.setItem("user", JSON.stringify(action.payload));
     return Object.assign({}, state, {
       user: action.payload
@@ -117,19 +74,7 @@ function rootReducer(state = initialState, action) {
     return Object.assign({}, state, {
       user: null
     });
-    // api.logout()
-    //   .then(() => {
-    //     sessionService.deleteSession();
-    //     sessionService.deleteUser();
-    //     // return Object.assign({}, state, {
-    //     //   selectedPage: "login"
-    //     // });
-    //   })
-    //   .catch(err => {
-    //     throw err;
-    //   });
   } else if (action.type === SET_WORLDS) {
-    // console.log(action.payload);
     if (action.payload.message === undefined){
       sessionStorage.setItem("worlds", JSON.stringify(action.payload));
       if (state.selectedWorldID !== null && state.selectedWorld === null) {
@@ -138,24 +83,17 @@ function rootReducer(state = initialState, action) {
         );
         if (worldArr.length > 0) {
           let world = worldArr[0];
-
-          // sessionService.saveSession({ worlds: action.payload, selectedWorld: world })
-          // .then(() => {}).catch(err => console.error(err));
           sessionStorage.setItem("selectedWorld", JSON.stringify(world));
           return Object.assign({}, state, {
             worlds: action.payload,
             selectedWorld: world
           });
         } else {
-          // sessionService.saveSession({ worlds: action.payload })
-          // .then(() => {}).catch(err => console.error(err));
           return Object.assign({}, state, {
             worlds: action.payload
           });
         }
       } else {
-        // sessionService.saveSession({ worlds: action.payload })
-        // .then(() => {}).catch(err => console.error(err));
         return Object.assign({}, state, {
           worlds: action.payload
         });
@@ -165,7 +103,6 @@ function rootReducer(state = initialState, action) {
       return Object.assign({}, state, {});
     }
   } else if (action.type === SET_PUBLIC_WORLDS) {
-    // console.log(action.payload);
     if (action.payload.message === undefined){
       sessionStorage.setItem("publicWorlds", JSON.stringify(action.payload));
       if (state.selectedWorldID !== null && state.selectedWorld === null) {
@@ -174,16 +111,12 @@ function rootReducer(state = initialState, action) {
         );
         if (worldArr.length > 0) {
           let world = worldArr[0];
-          // sessionService.saveSession({ publicWorlds: action.payload, selectedWorld: world })
-          // .then(() => {}).catch(err => console.error(err));
           sessionStorage.setItem("selectedWorld", JSON.stringify(world));
           return Object.assign({}, state, {
             publicWorlds: action.payload,
             selectedWorld: world
           });
         } else {
-          // sessionService.saveSession({ publicWorlds: action.payload })
-          // .then(() => {}).catch(err => console.error(err));
           return Object.assign({}, state, {
             publicWorlds: action.payload
           });
@@ -255,18 +188,10 @@ function rootReducer(state = initialState, action) {
       }
     }
   } else if (action.type === SELECT_WORLD) {
-    // // console.log(action.payload);
-    // // console.log(state);
     let world = state.worlds.filter(world => world._id === action.payload);
-    // // console.log(world);
     if (world.length === 0)
       world = state.publicWorlds.filter(world => world._id === action.payload);
-    // // console.log(world);
     if (world.length > 0) {
-      // sessionService.saveSession({
-      //   selectedWorldID: action.payload, selectedWorld: world[0]
-      // })
-      // .then(() => {}).catch(err => console.error(err));
       sessionStorage.setItem("selectedWorldID", action.payload);
       sessionStorage.setItem("selectedWorld", JSON.stringify(world[0]));
       return Object.assign({}, state, {
@@ -274,10 +199,6 @@ function rootReducer(state = initialState, action) {
         selectedWorld: world[0]
       });
     } else {
-      // sessionService.saveSession({
-      //   selectedWorldID: action.payload, selectedWorld: null
-      // })
-      // .then(() => {}).catch(err => console.error(err));
       sessionStorage.setItem("selectedWorldID", action.payload);
       sessionStorage.removeItem("selectedWorld");
       return Object.assign({}, state, {
@@ -286,39 +207,22 @@ function rootReducer(state = initialState, action) {
       });
     }
   } else if (action.type === SET_TYPES) {
-    // // console.log(action.payload);
-    // sessionService.saveSession({
-    //   types: action.payload
-    // })
-    // .then(() => {}).catch(err => console.error(err));
     sessionStorage.setItem("types", JSON.stringify(action.payload));
     return Object.assign({}, state, {
       types: action.payload
     });
   } else if (action.type === ADD_TYPE) {
-    // sessionService.saveSession({
-    //   types: state.types.concat(action.payload)
-    // })
-    // .then(() => {}).catch(err => console.error(err));
     const types = state.types.concat(action.payload);
     sessionStorage.setItem("types", JSON.stringify(types));
     return Object.assign({}, state, {
       types
     });
   } else if (action.type === SET_THINGS) {
-    // sessionService.saveSession({
-    //   things: action.payload
-    // })
-    // .then(() => {}).catch(err => console.error(err));
     sessionStorage.setItem("things", JSON.stringify(action.payload));
     return Object.assign({}, state, {
       things: action.payload
     });
   } else if (action.type === ADD_THING) {
-    // sessionService.saveSession({
-    //   things: state.things.concat(action.payload)
-    // })
-    // .then(() => {}).catch(err => console.error(err));
     const things = state.things.concat(action.payload);
     sessionStorage.setItem("things", JSON.stringify(things));
     return Object.assign({}, state, {
@@ -328,7 +232,6 @@ function rootReducer(state = initialState, action) {
     // This is because Redux won't cause a rerender
     // on changes to arrays.
     const changedType = { ...action.payload, changedAt: Date.now() };
-    // // console.log(changedType);
     return Object.assign({}, state, {
       selectedType: changedType
     });
@@ -339,16 +242,11 @@ function rootReducer(state = initialState, action) {
     type.Description = action.payload.Description;
     type.Supers = action.payload.Supers;
     type.Attributes = action.payload.Attributes;
-    // sessionService.saveSession({
-    //   types: types
-    // })
-    // .then(() => {}).catch(err => console.error(err));
     sessionStorage.setItem("types", JSON.stringify(types));
     return Object.assign({}, state, {
       types: types
     });
   } else if (action.type === UPDATE_ATTRIBUTES_ARR) {
-    // // console.log(action.payload);
     return Object.assign({}, state, {
       attributesArr: action.payload
     });
@@ -356,7 +254,6 @@ function rootReducer(state = initialState, action) {
     // This is because Redux won't cause a rerender
     // on changes to arrays.
     const changedThing = { ...action.payload, changedAt: Date.now() };
-    // // console.log(changedThing);
     return Object.assign({}, state, {
       selectedThing: changedThing
     });
@@ -367,10 +264,6 @@ function rootReducer(state = initialState, action) {
     thing.Description = action.payload.Description;
     thing.Types = action.payload.Types;
     thing.Attributes = action.payload.Attributes;
-    // sessionService.saveSession({
-    //   things: things
-    // })
-    // .then(() => {}).catch(err => console.error(err));
     sessionStorage.setItem("things", JSON.stringify(things));
     return Object.assign({}, state, {
       things: things

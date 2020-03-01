@@ -1,7 +1,6 @@
 
 import express from 'express';
 import session from 'express-session';
-// const path = require('path');
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import uuidv1 from 'uuid/v1';
@@ -16,7 +15,6 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 if (app.get('env') === 'production') {
   app.set('trust proxy', 1); // trust first proxy
-  // sess.cookie.secure = true // serve secure cookies
   app.use(session({
     genid: function (req) {
       return uuidv1() // use UUIDs for session IDs
@@ -42,16 +40,13 @@ if (app.get('env') === 'production') {
 }
 let myEnv = process.env;
 process.env = {};
-// Access the session as req.session
-// app.use(express.json());       // to support JSON-encoded bodies
-// app.use(express.urlencoded()); // to support URL-encoded bodies
 
 import userService from './services/user-service.js';
 import worldService from './services/world-service.js';
 app.use('/user', userService);
 app.use('/world', worldService);
 const port = process.env.SERVER_PORT || 5010;
-// // console.log(process.env);
+
 const version = "0.0.1";
 
 // API calls
@@ -64,10 +59,6 @@ app.route('/version')
 process.stdin.resume();//so the program will not close instantly
 
 function exitHandler(options, exitCode) {
-  // console.log(options);
-  // console.log(exitCode);
-  // if (options.cleanup) // console.log('clean');
-  // if (exitCode || exitCode === 0) // console.log(exitCode);
   if (options.exit) {
     console.log('closing');
     userService.close();
@@ -81,10 +72,6 @@ process.on('exit', exitHandler.bind(null, { cleanup: true }));
 
 //catches ctrl+c event
 process.on('SIGINT', exitHandler.bind(null, { exit: true }));
-
-// // catches "kill pid" (for example: nodemon restart)
-// process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
-// process.on('SIGUSR2', exitHandler.bind(null, {exit:true}));
 
 //catches uncaught exceptions
 process.on('uncaughtException', exitHandler.bind(null, { exit: true }));

@@ -15,7 +15,6 @@ import OutlinedInput from "@material-ui/core/OutlinedInput";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import AttributesControl from "./AttributesControl";
-// import SupersControl from "./SupersControl";
 import { Multiselect } from 'multiselect-react-dropdown';
 import Grid from "@material-ui/core/Grid";
 import API from "../../api";
@@ -145,8 +144,6 @@ class Page extends Component {
       case "AttributesArr":
         valid = true;
         value = this.props.selectedType[fieldName];
-        // console.log(value);
-        // console.log(this.props);
         message = "";
         for (let i = 0; i < value.length; i++) {
           if (value.filter(attr2 => attr2.Name === value[i].Name).length > 1) {
@@ -190,7 +187,6 @@ class Page extends Component {
   };
 
   onSubmit = () => {
-    // console.log(this.props);
     function respond() {
       if (this.state.formValid) {
         this.setState({ waiting: true }, this.submitThroughAPI);
@@ -201,9 +197,6 @@ class Page extends Component {
   };
 
   submitThroughAPI = () => {
-    // const supers = this.state.Supers.map(s => {
-    //   return { _id: s._id, Name: s.Name };
-    // });
     const superIDs = this.state.Supers.map(s => {
       return s._id;
     });
@@ -212,18 +205,15 @@ class Page extends Component {
       Name: this.state.Name,
       Description: this.state.Description,
       SuperIDs: superIDs,
-      // Supers: supers,
       AttributesArr: this.props.selectedType.AttributesArr,
       WorldID: this.props.selectedWorld._id,
       Major: this.state.Major
     };
-    // console.log(type);
 
     if (type._id === null) {
       this.api
         .createType(this.props.user._id, type)
         .then(res => {
-          // console.log(res);
           if (res.typeID !== undefined) {
             type._id = res.typeID;
             this.props.addType(type);
@@ -255,110 +245,16 @@ class Page extends Component {
   };
 
   supersChange = (e, value) => {
-    // console.log(value);
     let supers = [];
     for (let i = 0; i < value.length; i++) {
       const t = value[i];
       supers.push(t);
       supers = supers.concat(t.Supers);
     }
-    // console.log(supers);
     this.setState({ Supers: supers });
   };
 
-  // addSuper = value => {
-  //   // console.log(value);
-  //   let supers = [...this.state.Supers];
-  //   supers.push(value);
-  //   // console.log(value.Supers);
-  //   // console.log(supers);
-  //   // if (supers.length === 1){
-  //   value.Supers.forEach(s => {
-  //     if (supers.filter(s2 => s2._id === s._id).length === 0) supers.push(s);
-  //   });
-  //   const type = this.props.selectedType;
-  //   let attributes = [...type.AttributesArr];
-  //   for (let i = 0; i < value.AttributesArr.length; i++) {
-  //     const attribute = value.AttributesArr[i];
-  //     if (attribute.FromSupers === undefined) {
-  //       // TODO: Remove this once all attributes have been changed to include the field
-  //       attribute.FromSupers = [];
-  //     }
-  //     attribute.FromSupers.push(value._id);
-  //     const matches = attributes.filter(a => a.Name === attribute.Name);
-  //     if (matches.length === 0) {
-  //       // It's a new attribute.
-  //       attribute.index = attributes.length;
-  //       attributes.push(attribute);
-  //     } else {
-  //       // It's an existing attribute,
-  //       // so we just need to add the appropriate ids to FromSupers.
-  //       // TODO: I also need to make sure the type and details match.
-  //       const superIDs = [...matches[0].FromSupers];
-  //       for (let i = 0; i < attribute.FromSupers.length; i++) {
-  //         const superID = attribute.FromSupers[i];
-  //         if (!superIDs.includes(superID)) {
-  //           superIDs.push(superID);
-  //         }
-  //       }
-  //       matches[0].FromSupers = superIDs;
-  //     }
-  //   }
-  //   // // console.log(supers);
-  //   this.setState({ Supers: supers });
-  //   type.AttributesArr = attributes;
-  //   this.props.updateSelectedType(type);
-  // };
-
-  // removeSuper = value => {
-  //   // console.log(value);
-  //   // TODO: Add a confirmation before doing this
-  //   // to let them know it will also remove sub-supers.
-  //   let supers = [];
-  //   let removeUs = [];
-  //   for (let i = 0; i < this.state.Supers.length; i++) {
-  //     const checkMe = this.props.types.filter(
-  //       t => t._id === this.state.Supers[i]._id
-  //     )[0];
-  //     // console.log(checkMe);
-  //     if (checkMe._id === value._id || checkMe.SuperIDs.includes(value._id))
-  //       removeUs.push(checkMe._id);
-  //     else supers.push(checkMe);
-  //   }
-  //   // console.log(removeUs);
-  //   // console.log(supers);
-  //   const type = this.props.selectedType;
-  //   let attributes = [...type.AttributesArr];
-  //   for (let i = 0; i < attributes.length; i++) {
-  //     const attribute = attributes[i];
-  //     if (attribute.FromSupers === undefined) {
-  //       // TODO: Remove this once all attributes have been changed to include the field
-  //       attribute.FromSupers = [];
-  //     }
-  //     let j = 0;
-  //     while (j < attribute.FromSupers.length) {
-  //       const checkMe = attribute.FromSupers[j];
-  //       if (removeUs.includes(checkMe)) {
-  //         attribute.FromSupers.splice(j, 1);
-  //       } else {
-  //         j++;
-  //       }
-  //     }
-  //   }
-  //   // // console.log(supers);
-  //   this.setState({ Supers: supers });
-  //   type.AttributesArr = attributes;
-  //   this.props.updateSelectedType(type);
-  // };
-
   addSuper = (selectedList, selectedItem) => {
-    // console.log(selectedList);
-    // console.log(selectedItem);
-    // let supers = [...this.state.Supers];
-    // supers.push(selectedItem);
-    // console.log(selectedItem.Supers);
-    // console.log(supers);
-    // if (supers.length === 1){
     selectedItem.Supers.forEach(s => {
       if (selectedList.filter(s2 => s2._id === s._id).length === 0) selectedList.push(s);
     });
@@ -366,10 +262,6 @@ class Page extends Component {
     let attributes = [...type.AttributesArr];
     for (let i = 0; i < selectedItem.AttributesArr.length; i++) {
       const attribute = selectedItem.AttributesArr[i];
-      if (attribute.FromSupers === undefined) {
-        // TODO: Remove this once all attributes have been changed to include the field
-        attribute.FromSupers = [];
-      }
       attribute.FromSupers.push(selectedItem._id);
       const matches = attributes.filter(a => a.Name === attribute.Name);
       if (matches.length === 0) {
@@ -390,42 +282,29 @@ class Page extends Component {
         matches[0].FromSupers = superIDs;
       }
     }
-    // // console.log(supers);
     this.setState({ Supers: selectedList });
     type.AttributesArr = attributes;
     this.props.updateSelectedType(type);
   }
   
   removeSuper = (selectedList, removedItem) => {
-    // console.log(selectedList);
-    // console.log(removedItem);
-    // console.log(this.state.Supers);
     let supers = [];
     let removeUs = [removedItem._id];
     for (let i = 0; i < this.state.Supers.length; i++) {
       const checkMe = this.props.types.filter(
         t => t._id === this.state.Supers[i]._id
       )[0];
-      // console.log(checkMe);
       if (checkMe._id === removedItem._id || checkMe.SuperIDs.includes(removedItem._id))
         removeUs.push(checkMe._id);
       else supers.push(checkMe);
     }
-    // console.log(removeUs);
-    // console.log(supers);
     const type = this.props.selectedType;
     let attributes = [...type.AttributesArr];
     for (let i = 0; i < attributes.length; i++) {
       const attribute = attributes[i];
-      // if (attribute.FromSupers === undefined) {
-      //   // TODO: Remove this once all attributes have been changed to include the field
-      //   attribute.FromSupers = [];
-      // }
       let j = 0;
       while (j < attribute.FromSupers.length) {
         const checkMe = attribute.FromSupers[j];
-        // console.log(checkMe);
-        // console.log(removeUs);
         if (removeUs.includes(checkMe)) {
           attribute.FromSupers.splice(j, 1);
         } else {
@@ -433,23 +312,17 @@ class Page extends Component {
         }
       }
     }
-    // console.log(supers);
-    // console.log(type);
     this.setState({ Supers: supers });
     type.AttributesArr = attributes;
     this.props.updateSelectedType(type);
   }
 
   render() {
-    // console.log(this.props);
-    // const { id } = this.props.match.params;
-    // console.log(id);
     const types =
       this.props.types === undefined || this.state._id === null
         ? this.props.types
         : this.props.types.filter(type => type._id !== this.state._id);
-    // console.log(types);
-
+    
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else {
@@ -486,13 +359,11 @@ class Page extends Component {
                 name="Description"
                 type="text"
                 value={this.state.Description}
-                // error={ !this.state.fieldValidation.Description.valid }
                 onChange={this.handleUserInput}
                 onBlur={this.inputBlur}
                 labelWidth={82}
                 fullWidth
               />
-              {/* <FormHelperText>{ this.state.fieldValidation.Description.message }</FormHelperText> */}
             </FormControl>
           </Grid>
           <Grid item>
@@ -509,20 +380,13 @@ class Page extends Component {
             />
           </Grid>
           <Grid item>
-            {/* <SupersControl
-              onAdd={this.addSuper}
-              onRemove={this.removeSuper}
-              onChange={this.supersChange}
-              supers={this.state.Supers}
-              allTypes={types}
-            /> */}
             <Multiselect
               placeholder="Super Types"
-              options={types} // Options to display in the dropdown
-              selectedValues={this.state.Supers} // Preselected value to persist in dropdown
-              onSelect={this.addSuper} // Function will trigger on select event
-              onRemove={this.removeSuper} // Function will trigger on remove event
-              displayValue="Name" // Property name to display in the dropdown options
+              options={types}
+              selectedValues={this.state.Supers}
+              onSelect={this.addSuper}
+              onRemove={this.removeSuper}
+              displayValue="Name"
             />
           </Grid>
           <Grid item>

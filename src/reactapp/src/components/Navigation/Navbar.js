@@ -1,14 +1,12 @@
 import React, { Component } from "react";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-// import Typography from "@material-ui/core/Typography";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import Icon from "@material-ui/core/Icon";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import { NavLink } from "react-router-dom";
-// import { BrowserRouter as Router, Route, Redirect, Link, Switch } from "react-router-dom";
 import { connect } from "react-redux";
 import {
   selectPage,
@@ -17,7 +15,6 @@ import {
   loadFromStorage,
   toggleMenu
 } from "../../redux/actions/index";
-// import Cookies from "universal-cookie";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import API from "../../api";

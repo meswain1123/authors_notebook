@@ -13,7 +13,6 @@ function open() {
   });
 }
 function close() {
-  // // console.log('closing');
   client.close();
 }
 
@@ -39,7 +38,6 @@ function getPublicWorlds(respond) {
     db.collection("world")
       .find({ Public: true })
       .toArray(function(err, docs) {
-        // console.log(docs);
         if (err) respond({ message: `Error: ${err}.` });
         else if (docs == null || docs.length == 0) respond([]);
         else respond(docs);
@@ -51,29 +49,22 @@ function getPublicWorlds(respond) {
 }
 
 function getWorld(respond, userID, worldID) {
-  // // console.log(`Getting world: ${worldID}`);
-  // // console.log(userID);
-  // respond(email);
   try {
     const db = client.db(dbName);
     db.collection("world")
       .find({ $or: [ { Public: true }, { Owner: userID }], _id: worldID }) // I'll add collaborators later
       .toArray(function(err, docs) {
-        // // console.log(docs);
         if (err) respond({ message: `Error: ${err}.` });
         else if (docs == null || docs.length == 0) respond(null);
         else respond(docs[0]);
       });
   } catch (err) {
-    // console.log('error 61');
     console.log(err);
     respond(err);
   }
 }
 
 function createWorld(respond, userID, world) {
-  // // console.log(userID);
-  // // console.log(world);
   const db = client.db(dbName);
 
   db.collection("world")
@@ -86,7 +77,6 @@ function createWorld(respond, userID, world) {
         respond({ message: `You already have a world named ${world.Name}.` });
       } else {
         db.collection("world").insertOne({
-          // world
           Owner: userID,
           Name: world.Name,
           Public: world.Public
@@ -98,7 +88,6 @@ function createWorld(respond, userID, world) {
 }
 
 function deleteWorld(respond, userID, worldID) {
-  // // console.log(`Registering user: ${user.email}`);
   const db = client.db(dbName);
 
   db.collection("world")
@@ -127,7 +116,6 @@ function deleteWorld(respond, userID, worldID) {
 }
 
 function updateWorld(respond, userID, world) {
-  // // console.log(`Updating user: ${user.email}`);
   const db = client.db(dbName);
 
   db.collection("world")
@@ -155,14 +143,12 @@ function updateWorld(respond, userID, world) {
 }
 
 function getTypesForWorld(respond, userID, worldID) {
-  // console.log(worldID);
   const db = client.db(dbName);
   db.collection("type")
     .find({ WorldID: worldID })
     .toArray(function(err, docs) {
       if (err) respond({ message: `Error: ${err}.` });
       else {
-        // console.log(docs);
         respond(docs);
       }
     });
@@ -174,11 +160,9 @@ function getType(respond, worldID, typeID) {
     db.collection("type")
       .findOne({ WorldID: worldID, _id: ObjectID(typeID) })
       .then(doc => {
-        // console.log(doc);
         respond(doc);
       });
   } catch (err) {
-    // console.log("Get Type Error");
     console.err(err);
     respond(err);
   }
@@ -190,7 +174,6 @@ function getTypeByName(respond, worldID, Name) {
     .find({ WorldID: worldID, Name: Name })
     .toArray(function(err, docs) {
       if (err) {
-        // console.log("Get Type By Name Error");
         respond({ message: "Get Type By Name Error", err: err });
       }
       else if (docs != null && docs.length > 0) {
@@ -202,45 +185,11 @@ function getTypeByName(respond, worldID, Name) {
 }
 
 function createType(respond, worldID, type) {
-  // I put this here to show all the fields that will be on the type collection.
-  // const type1 = {
-  //   _id: auto generated,
-  //   WorldID: worldID,
-  //   Name: type.Name, // str
-  //   Description: type.Description, // str
-  //   Supers: type.Supers, // List<ObjectID>
-  //   Attributes: type.Attributes, // List<str> names of the attributes
-  //   AttributeTypes: type.Attributes, // List<str> names of the types
-  //   TypeForRelationship: type.TypeForRelationship, // str: <_id>_<Name> if this has a value then it's a Relationship Type, and is meant to represent Relationships between two Things of the given Type.
-  //   ReversalName: type.ReversalName, // str only valid if it's a Relationship Type.  If it has a value then the second Thing in the Relationship will show this as their Relationship with the first Thing.  Example: Husband and Wife.
-  //   Defaults: type.Defaults // List<T>
-  // };
-  // // I may choose to do things this way as a security precaution.
-  // // I'm not going to code it now, but if I choose to go this way
-  // // then I'll need to do the same for World and Thing.
-  // const type1 = {
-  //   WorldID: worldID,
-  //   Name: type.Name,
-  //   Description: type.Description
-  // };
-  // if (type.Supers != undefined)
-  //   type1.Supers = type.Supers;
-  // if (type.Attributes != undefined)
-  //   type1.Attributes = type.Attributes;
-  // if (type.TypeForRelationship != undefined){
-  //   type1.TypeForRelationship = type.TypeForRelationship;
-  //   if (type.ReversalName != undefined)
-  //     type1.ReversalName = type.ReversalName;
-  // }
-  // if (type.Defaults != undefined)
-  //   type1.Defaults = type.Defaults;
   const db = client.db(dbName);
-  // console.log(type);
   db.collection("type").insertOne(type
   ).then(res => {
     respond(res.insertedId);
   }).catch(err => {
-    // console.log("Create Type Error");
     console.log(err);
   });
 }
@@ -256,7 +205,6 @@ function createType(respond, worldID, type) {
 // I shouldn't need to do anything for Defaults.
 // I may wish to change to having deletes just change a field to say it's inactive.
 function deleteType(respond, userID, worldID, typeID) {
-  // // console.log(`Registering user: ${user.email}`);
   const db = client.db(dbName);
 
   // Remove it from SuperIDs in Types
@@ -286,7 +234,6 @@ function deleteType(respond, userID, worldID, typeID) {
 }
 
 function deleteTypeSimple(respond, userID, typeID) {
-  // // console.log(`Registering user: ${user.email}`);
   const db = client.db(dbName);
 
   db.collection("type").deleteOne({
@@ -337,7 +284,6 @@ function getThing(respond, thingID) {
 
 function createThing(respond, userID, thing) {
   const db = client.db(dbName);
-  // console.log(thing);
   db.collection("thing")
     .find({ WorldID: thing.WorldID, Name: thing.Name })
     .toArray(function(err, docs) {
@@ -361,7 +307,6 @@ function createThing(respond, userID, thing) {
 function deleteThing(respond, userID, thingID) {
   const db = client.db(dbName);
   db.collection("thing").deleteOne({
-    // WorldID: worldID, 
     _id: ObjectID(thingID)
   });
   respond({ message: `Thing ${thingID} deleted!` });
@@ -369,7 +314,6 @@ function deleteThing(respond, userID, thingID) {
 
 function updateThing(respond, userID, thing) {
   const db = client.db(dbName);
-  // console.log(thing);
 
   thing._id = ObjectID(thing._id);
   db.collection("thing").updateOne(

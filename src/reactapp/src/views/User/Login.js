@@ -1,11 +1,9 @@
 import React, { Component } from "react";
-// import { sessionService } from 'redux-react-session';
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import Checkbox from "@material-ui/core/Checkbox";
 import Button from "@material-ui/core/Button";
 import FormControl from '@material-ui/core/FormControl';
-// import TextField from "@material-ui/core/TextField";
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 import InputLabel from '@material-ui/core/InputLabel';
 import IconButton from '@material-ui/core/IconButton';
@@ -13,20 +11,8 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import FormHelperText from '@material-ui/core/FormHelperText';
-// import CircularProgress from '@material-ui/core/CircularProgress';
-// import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { userLogin, selectPage, setWorlds } from "../../redux/actions/index";
-// import { Button } from "reactstrap";
-// import {
-//   Form,
-//   FormGroup,
-//   FormControl,
-//   // ControlLabel,
-//   Checkbox
-// } from "react-bootstrap";
-// import FormErrors from "../Controls/FormErrors";
-// import { Link } from "react-bootstrap/lib/Navbar";
 import Link from "@material-ui/core/Link";
 import Cookies from "universal-cookie";
 import API from '../../api';
@@ -66,8 +52,6 @@ class Page extends Component {
         firstName: { valid: true, message: "" },
         lastName: { valid: true, message: "" }
       },
-      // emailValid: false,
-      // passwordValid: false,
       formValid: false,
       remember: false,
       message: "",
@@ -112,9 +96,6 @@ class Page extends Component {
   };
 
   validateField = (fieldName) => {
-    // let fieldValidationErrors = this.state.fieldValidation;
-    // let emailValid = fieldValidationErrors.email.valid; // this.state.emailValid;
-    // let passwordValid = fieldValidationErrors.password.valid; // this.state.passwordValid;
     let valid = true;
     let message = "";
     let value = this.state[fieldName];
@@ -211,7 +192,6 @@ class Page extends Component {
     };
     if (this.state.formMode === "login") {
       this.api.login(user).then(res => {
-        // console.log(res);
         if (res.user === null) {
           let errors = this.state.fieldValidation;
           errors.loginError = { message: res.message, valid: false, show: true };
@@ -224,17 +204,8 @@ class Page extends Component {
             cookies.set('password', this.state.password);
           }
           this.api.getWorldsForUser(res.user._id).then(res => {
-            // console.log(res);
             this.props.setWorlds(res.worlds);
           });
-          // const { token } = res.user;
-          // sessionService.saveSession({ token })
-          // .then(() => {
-          //   sessionService.saveUser(res.user)
-          //   .then(() => {
-          //   }).catch(err => console.error(err));
-          // }).catch(err => console.error(err));
-          // console.log('hi');
           this.props.userLogin(res.user);
           this.setState({ redirectTo: "/" });
         }
@@ -283,7 +254,6 @@ class Page extends Component {
   };
 
   render() {
-    // console.log(this.props);
     if (this.state.redirectTo !== null && 
       this.props.user !== null && 
       this.props.user !== undefined && 
