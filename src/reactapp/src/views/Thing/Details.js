@@ -123,7 +123,7 @@ class Page extends Component {
   }
 
   delete = e => {
-    console.log(this.state._id);
+    // console.log(this.state._id);
     this.api.deleteThing(this.props.user._id, this.state._id).then(res=>{
       // console.log(res);
       const things = this.props.things.filter(t=>t._id!==this.state._id);

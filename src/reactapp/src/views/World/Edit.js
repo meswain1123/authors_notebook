@@ -193,7 +193,7 @@ class Page extends Component {
             this.props.addWorld(world);
             this.setState({
               waiting: false,
-              redirectTo: `/world/details/${this.props.selectedWorld._id}`
+              redirectTo: `/world/details/${res.worldID}`
             });
           }
         })

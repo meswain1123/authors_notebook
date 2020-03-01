@@ -211,7 +211,7 @@ class Page extends Component {
     };
     if (this.state.formMode === "login") {
       this.api.login(user).then(res => {
-        console.log(res);
+        // console.log(res);
         if (res.user === null) {
           let errors = this.state.fieldValidation;
           errors.loginError = { message: res.message, valid: false, show: true };
@@ -224,7 +224,7 @@ class Page extends Component {
             cookies.set('password', this.state.password);
           }
           this.api.getWorldsForUser(res.user._id).then(res => {
-            console.log(res);
+            // console.log(res);
             this.props.setWorlds(res.worlds);
           });
           // const { token } = res.user;
@@ -283,7 +283,7 @@ class Page extends Component {
   };
 
   render() {
-    console.log(this.props);
+    // console.log(this.props);
     if (this.state.redirectTo !== null && 
       this.props.user !== null && 
       this.props.user !== undefined && 

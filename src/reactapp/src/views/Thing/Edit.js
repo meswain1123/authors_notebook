@@ -267,7 +267,7 @@ class Page extends Component {
       this.api
         .createThing(this.props.user._id, thing)
         .then(res => {
-          console.log(thing);
+          // console.log(thing);
           thing._id = res.thingID;
           thing.Types = this.state.Types;
           this.props.addThing(thing);
@@ -400,7 +400,7 @@ class Page extends Component {
   }
 
   render() {
-    console.log(this.state.Types);
+    // console.log(this.state.Types);
     // console.log(this.props.Types);
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;

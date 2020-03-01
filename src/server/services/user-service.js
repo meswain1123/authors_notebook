@@ -24,7 +24,7 @@ router.get('/getUsersByText/:text', function (req, res) {
     if (user != null && user.password == req.body.password) {
       // // console.log(res);
       req.session.userID = user._id;
-      console.log(req.session.userID);
+      // console.log(req.session.userID);
       const pwdStripped = {
         _id: user._id,
         email: user.email,

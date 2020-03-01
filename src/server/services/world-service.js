@@ -43,15 +43,15 @@ router
     }
   })
   .delete("/deleteWorld", function(req, res) {
-    if (req.body.userID == undefined) {
-      res.send({ message: "Session lost.  Please log in again." });
-    } else {
-      function respond(message) {
-        res.send({ message });
-      }
-
-      db.deleteWorld(respond, req.body.userID, req.body.world);
+    // if (req.body.userID == undefined) {
+    //   res.send({ message: "Session lost.  Please log in again." });
+    // } else {
+    function respond(message) {
+      res.send({ message });
     }
+
+    db.deleteWorld(respond, req.body.userID, req.body.worldID);
+    // }
   })
   .patch("/updateWorld", function(req, res) {
     if (req.body.userID == undefined) {

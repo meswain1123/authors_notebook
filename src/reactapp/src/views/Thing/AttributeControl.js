@@ -70,7 +70,7 @@ import { Multiselect } from 'multiselect-react-dropdown';
 // }
 
 const handleTextListChange = (e, props) => {
-  console.log(e);
+  // console.log(e);
   const attr = props.attribute;
   attr.ListValues = e;
   props.onChange(attr);
@@ -115,7 +115,7 @@ const removeType = (selectedList, props) => {
 };
 
 export default function AttributeControl(props) {
-  console.log(props);
+  // console.log(props);
   const [value, changeValue] = useState(props.attribute.Value);
   const type = props.attribute.Type === "" ? "Text" : props.attribute.Type;
 

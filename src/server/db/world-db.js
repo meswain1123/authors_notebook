@@ -102,7 +102,7 @@ function deleteWorld(respond, userID, worldID) {
   const db = client.db(dbName);
 
   db.collection("world")
-    .find({ Owner: userID, _id: worldID })
+    .find({ Owner: userID, _id: ObjectID(worldID) })
     .toArray(function(err, docs) {
       if (err) {
         throw err;
@@ -117,7 +117,7 @@ function deleteWorld(respond, userID, worldID) {
         });
 
         db.collection("world").deleteOne({
-          _id: worldID
+          _id: ObjectID(worldID)
         });
         respond({ message: `World ${worldID} deleted!` });
       } else {

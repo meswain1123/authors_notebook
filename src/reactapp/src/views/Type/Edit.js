@@ -424,7 +424,7 @@ class Page extends Component {
       let j = 0;
       while (j < attribute.FromSupers.length) {
         const checkMe = attribute.FromSupers[j];
-        console.log(checkMe);
+        // console.log(checkMe);
         // console.log(removeUs);
         if (removeUs.includes(checkMe)) {
           attribute.FromSupers.splice(j, 1);
@@ -433,8 +433,8 @@ class Page extends Component {
         }
       }
     }
-    console.log(supers);
-    console.log(type);
+    // console.log(supers);
+    // console.log(type);
     this.setState({ Supers: supers });
     type.AttributesArr = attributes;
     this.props.updateSelectedType(type);

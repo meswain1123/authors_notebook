@@ -84,7 +84,7 @@ class Control extends Component {
     // console.log(value);
     // const name = e.target.name;
     // const value = (e.target.type === "checkbox" ? e.target.checked : e.target.value);
-    console.log(value);
+    // console.log(value);
     const thing = this.props.selectedThing;
     // thing.AttributesArr.push({Name: "", Type: ""});
     thing.AttributesArr[value.index] = {
