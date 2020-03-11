@@ -1,17 +1,22 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import AttributeControl from "./AttributeControl";
 import styled from "styled-components";
+import Modal from '@material-ui/core/Modal';
 import Button from "@material-ui/core/Button";
 import Add from "@material-ui/icons/Add";
 import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
+import FormControl from "@material-ui/core/FormControl";
+import InputLabel from "@material-ui/core/InputLabel";
+import OutlinedInput from "@material-ui/core/OutlinedInput";
+import FormHelperText from "@material-ui/core/FormHelperText";
 import {
   updateSelectedType,
   updateAttributesArr
 } from "../../redux/actions/index";
+import AttributeControl from "./AttributeControl";
 
 const Label = styled("label")`
   padding: 0 0 4px;
@@ -42,6 +47,19 @@ function mapDispatchToProps(dispatch) {
   };
 }
 class Control extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      modalOpen: false,
+      Name: "",
+      fieldValidation: {
+        Name: { valid: true, message: "" }
+      },
+      formValid: false,
+      message: "",
+    };
+  }
+
   componentDidMount() {
   }
 
@@ -95,6 +113,158 @@ class Control extends Component {
       this.props.updateSelectedType(type);
     }, 500);
   };
+  
+  getModalStyle = () => {
+    const top = Math.round(window.innerHeight / 2) - 50;
+    const left = Math.round(window.innerWidth / 2) - 200;
+  
+    return {
+      top: `${top}%`,
+      left: `${left}%`,
+      transform: `translate(${left}px, ${top}px)`,
+    };
+  }
+
+  addNewType = (respond) => {
+    // Opens a Modal where they enter a name.
+    console.log('hi');
+    // respond('hola');
+    this.setState({modalOpen: true, modalSubmit: respond});
+    // Calls API
+    // Adds to props 
+    // Calls respond, passing the type to it
+    // That part may need to be rethought.
+  }
+
+  handleUserInput = e => {
+    const name = e.target.name;
+    const value =
+      e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    this.setState({ [name]: value });
+  };
+
+  inputBlur = e => {
+    const name = e.target.name;
+    const validation = this.validateField(name);
+    const fieldValidation = this.state.fieldValidation;
+    if (
+      fieldValidation[name] !== undefined &&
+      fieldValidation[name].valid !== validation.valid
+    ) {
+      fieldValidation[name].valid = validation.valid;
+      fieldValidation[name].message = validation.message;
+      this.setState({ fieldValidation: fieldValidation });
+    }
+  };
+
+  validateField = fieldName => {
+    let value = null;
+    let valid = true;
+    let message = "";
+    switch (fieldName) {
+      case "Name":
+        value = this.state[fieldName];
+        valid = value.match(/^[a-zA-Z0-9 ]*$/i) !== null;
+        if (!valid)
+          message = "Only Letters, Numbers, and Spaces allowed in Type Names";
+        else if (value.length < 2) {
+          valid = false;
+          message = "Type Name is too short";
+        } else {
+          valid =
+            this.props.types.filter(
+              t => t.Name === value && t._id !== this.state._id
+            ).length === 0;
+          if (!valid) message = "This Type Name is already in use";
+        }
+        break;
+      default:
+        break;
+    }
+    const response = { valid: valid, message: message };
+    return response;
+  };
+
+  validateForm = respond => {
+    const nameValid = this.validateField("Name");
+    const formValid = nameValid.valid;
+    const fieldValidation = this.state.fieldValidation;
+    fieldValidation.Name = nameValid;
+    this.setState(
+      {
+        formValid: formValid,
+        fieldValidation: fieldValidation
+      },
+      respond
+    );
+  };
+
+  saveNewType = () => {
+    this.state.modalSubmit(this.state.Name);
+    // function respond() {
+    //   if (this.state.formValid) {
+    //     this.setState({ waiting: true }, this.submitThroughAPI);
+    //   }
+    // }
+
+    // this.validateForm(respond);
+  };
+
+  submitThroughAPI = () => {
+    // const superIDs = this.state.Supers.map(s => {
+    //   return s._id;
+    // });
+    // const type = {
+    //   _id: this.state._id,
+    //   Name: this.state.Name,
+    //   Description: this.state.Description,
+    //   SuperIDs: superIDs,
+    //   AttributesArr: this.props.selectedType.AttributesArr,
+    //   WorldID: this.props.selectedWorld._id,
+    //   Major: this.state.Major
+    // };
+
+    // if (type._id === null) {
+    //   this.api
+    //     .createType(type)
+    //     .then(res => {
+    //       if (res.typeID !== undefined) {
+    //         type._id = res.typeID;
+    //         this.props.addType(type);
+    //         this.setState({
+    //           waiting: false,
+    //           redirectTo: `/world/details/${this.props.selectedWorld._id}`
+    //         });
+    //       }
+    //       else if (res.message !== undefined) {
+    //         this.setState({
+    //           waiting: false, 
+    //           message: res.message 
+    //         });
+    //       }
+    //     })
+    //     .catch(err => console.log(err));
+    // } else {
+    //   this.api
+    //     .updateType(type)
+    //     .then(res => {
+    //       if (res.message === `Type ${type.Name} updated!`) {
+    //         this.props.updateType(type);
+    //         this.setState({
+    //           waiting: false,
+    //           redirectTo: `/world/details/${this.props.selectedWorld._id}`
+    //         });
+    //       }
+    //       else {
+    //         this.setState({
+    //           waiting: false, 
+    //           message: res.message 
+    //         });
+    //       }
+    //     })
+    //     .catch(err => console.log(err));
+    // }
+  };
 
   render() {
     return (
@@ -123,12 +293,71 @@ class Control extends Component {
                         onDelete={this.deleteAttribute}
                         onBlur={this.blurAttribute}
                         types={this.props.types}
+                        onNewType={this.addNewType}
                       />
                     </ListItem>
                   );
                 })}
           </List>
         </Grid>
+        <Modal
+          aria-labelledby="new-type-modal"
+          aria-describedby="new-type-modal-description"
+          open={this.state.modalOpen}
+          onClose={e => {this.setState({modalOpen: false})}}
+        >
+          <div style={this.getModalStyle()} className="paper">
+            <Grid container spacing={1} direction="column">
+              <Grid item>
+                Just give the new Type a name.
+              </Grid>
+              <Grid item>
+                (You can do the rest later.)
+              </Grid>
+              <Grid item>
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel htmlFor="name">Name</InputLabel>
+                  <OutlinedInput
+                    id="name"
+                    name="Name"
+                    type="text"
+                    autoComplete="Off"
+                    error={!this.state.fieldValidation.Name.valid}
+                    value={this.state.Name}
+                    onChange={this.handleUserInput}
+                    onBlur={this.inputBlur}
+                    labelWidth={43}
+                    fullWidth
+                  />
+                  <FormHelperText>
+                    {this.state.fieldValidation.Name.message}
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item container spacing={1} direction="row">
+                <Grid item xs={6}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    onClick={this.saveNewType}
+                  >
+                    Submit
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={e => {this.setState({modalOpen: false})}}
+                  >
+                    Cancel
+                  </Button>
+                </Grid>
+              </Grid>
+            </Grid>
+          </div>
+        </Modal>
       </Grid>
     );
   }

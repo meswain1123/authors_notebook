@@ -80,7 +80,7 @@ class Page extends Component {
         }
         else {
           // We're editing an existing Thing
-          this.api.getThing(this.props.selectedWorldID, id).then(res => {
+          this.api.getThing(id).then(res => {
             const things = this.props.things.filter(
               thing => res._id !== thing._id
             );
@@ -88,6 +88,37 @@ class Page extends Component {
             res.TypeIDs.forEach(tID=> {
               Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
             });
+            let attributes = [...res.AttributesArr];
+            Types.forEach(type=> {
+              for (let i = 0; i < type.AttributesArr.length; i++) {
+                const attribute = {...type.AttributesArr[i]};
+                attribute.FromTypes = [...attribute.FromSupers];
+                delete attribute.FromSupers;
+                attribute.FromTypes.push(type._id);
+                const matches = attributes.filter(a => a.Name === attribute.Name);
+                if (matches.length === 0) {
+                  // It's a new attribute.
+                  // Thing Attributes have Values, so we need to add that field.
+                  // In the future I'll have List Types, in which case this will be more complicated.
+                  // Also I'll be adding default values.
+                  attribute.Value = "";
+                  attribute.ListValues = [];
+                  attributes.push(attribute);
+                } else {
+                  // It's an existing attribute,
+                  // so we just need to add the appropriate ids to FromTypes.
+                  const typeIDs = [...matches[0].FromTypes];
+                  for (let i = 0; i < attribute.FromTypes.length; i++) {
+                    const typeID = attribute.FromTypes[i];
+                    if (!typeIDs.includes(typeID)) {
+                      typeIDs.push(typeID);
+                    }
+                  }
+                  matches[0].FromTypes = typeIDs;
+                }
+              }
+            });
+            res.AttributesArr = attributes;
             this.setState({
               Name: res.Name,
               Description: res.Description,
@@ -130,7 +161,9 @@ class Page extends Component {
     };
     let attributes = [];
     for (let i = 0; i < type.AttributesArr.length; i++) {
-      const attribute = type.AttributesArr[i];
+      const attribute = {...type.AttributesArr[i]};
+      attribute.FromTypes = [...attribute.FromSupers];
+      delete attribute.FromSupers;
       attribute.FromTypes.push(type._id);
       const matches = attributes.filter(a => a.Name === attribute.Name);
       if (matches.length === 0) {
@@ -190,7 +223,7 @@ class Page extends Component {
         valid = value.match(/^[a-zA-Z0-9 ]*$/i) !== null;
         if (!valid)
           message = "Only Letters, Numbers, and Spaces allowed in Thing Names";
-        else if (value.length < 4) {
+        else if (value.length < 2) {
           valid = false;
           message = "Thing Name is too short";
         } else {
@@ -260,7 +293,7 @@ class Page extends Component {
 
     if (thing._id === null) {
       this.api
-        .createThing(this.props.user._id, thing)
+        .createThing(thing)
         .then(res => {
           thing._id = res.thingID;
           thing.Types = this.state.Types;
@@ -273,7 +306,7 @@ class Page extends Component {
         .catch(err => console.log(err));
     } else {
       this.api
-        .updateThing(this.props.user._id, thing)
+        .updateThing(thing)
         .then(res => {
           thing.Types = this.state.Types;
           this.props.updateThing(thing);
@@ -386,6 +419,8 @@ class Page extends Component {
   render() {
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
+    } else if (this.props.selectedWorld !== null && this.props.selectedWorld.Owner !== this.props.user._id) {
+      return <Redirect to="/" />;
     } else {
       return (
         <Grid item xs={12} container spacing={1} direction="column">

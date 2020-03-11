@@ -44,12 +44,19 @@ class Bar extends Component {
     this.api.getPublicWorlds().then(res => {
       this.props.setPublicWorlds(res.worlds);
     });
-    if (this.props.user !== null) {
-      this.api.getWorldsForUser(this.props.user._id).then(res => {
-        if (res.worlds !== undefined)
-          this.props.setWorlds(res.worlds);
-      });
-    }
+    // These kinds of things can also be done in render, 
+    // but I prefer to put it here because it's only run once.
+    // The downside is that it's run before props gets populated
+    // so, it needs to be put into setTimeout to give the props
+    // a chance to get populated.
+    setTimeout(() => {
+      if (this.props.user !== null) {
+        this.api.getWorldsForUser().then(res => {
+          if (res.worlds !== undefined)
+            this.props.setWorlds(res.worlds);
+        });
+      }
+    }, 500);
   }
 
   links() {
@@ -146,6 +153,15 @@ class Bar extends Component {
   }
 
   render() {
+    // I normally like to put things like this in componentDidMount, 
+    // but there it won't have access to anything in this.props.
+    // console.log(this.props.user);
+    // if (this.props.user !== null) {
+    //   this.api.getWorldsForUser().then(res => {
+    //     if (res.worlds !== undefined)
+    //       this.props.setWorlds(res.worlds);
+    //   });
+    // }
     return (
       <List className="Sidebar">
         {this.brand()}

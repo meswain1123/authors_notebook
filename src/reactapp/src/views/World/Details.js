@@ -44,16 +44,19 @@ class Page extends Component {
     this.api = API.getInstance();
   }
   componentDidMount() {
+    const { id } = this.props.match.params;
+    this.props.selectWorld(id);
     setTimeout(() => {
-      const { id } = this.props.match.params;
-      this.props.selectWorld(id);
-      this.getTypes();
+      this.api.selectWorld(id).then(res => {
+        this.getTypes();
+      });
     }, 500);
   }
 
   getTypes() {
-    this.api.getTypesForWorld(this.props.user._id, this.props.selectedWorldID).then(res => {
-      if (res !== undefined) {
+    this.api.getTypesForWorld().then(res => {
+      // console.log(res);
+      if (res !== undefined && res.message === undefined) {
         // Add Supers to each type
         const types = res.types;
         types.forEach(t=> {
@@ -64,16 +67,12 @@ class Page extends Component {
         });
         this.props.setTypes(types);
         this.getThings();
-      } else {
-        setTimeout(() => {
-          this.getTypes();
-        }, 500);
       }
     });
   }
   getThings() {
-    this.api.getThingsForWorld(this.props.user._id, this.props.selectedWorldID).then(res => {
-      if (res !== undefined) {
+    this.api.getThingsForWorld().then(res => {
+      if (res !== undefined && res.message === undefined) {
         const things = res.things;
         things.forEach(t=> {
           t.Types = [];
@@ -82,20 +81,17 @@ class Page extends Component {
           });
         });
         this.props.setThings(things);
-      } else {
-        setTimeout(() => {
-          this.getThings();
-        }, 500);
       }
     });
   }
 
   delete = e => {
-    this.api.deleteWorld(this.props.user._id, this.props.selectedWorldID).then(res=>{
+    this.api.deleteWorld(this.props.selectedWorldID).then(res=>{
       let worlds = this.props.worlds.filter(t=>t._id!==this.props.selectedWorldID);
       this.props.setWorlds(worlds);
       worlds = this.props.publicWorlds.filter(t=>t._id!==this.props.selectedWorldID);
       this.props.setPublicWorlds(worlds);
+      this.api.selectWorld(null);
       this.props.selectWorld(null);
       this.setState({modalOpen: false, redirectTo: `/`});
     });
@@ -115,6 +111,8 @@ class Page extends Component {
   render() {
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
+    } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && this.props.selectedWorld.Owner !== this.props.user._id) {
+      return <Redirect to="/" />;
     } else {
       return (
         <Grid item xs={12} container spacing={0} direction="column">
@@ -126,6 +124,7 @@ class Page extends Component {
                 <h2>{this.props.selectedWorld.Name}</h2>
               </Grid>
               <Grid item xs={3}>
+                { this.props.selectedWorld.Owner === this.props.user._id ?
                 <List>
                   <ListItem>
                     <Button
@@ -148,6 +147,7 @@ class Page extends Component {
                     </Button>
                   </ListItem>
                 </List>
+                : "" }
               </Grid>
             </Grid>
           )}

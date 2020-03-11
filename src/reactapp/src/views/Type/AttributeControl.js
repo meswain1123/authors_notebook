@@ -20,7 +20,14 @@ const handleTypeChange = (e, props) => {
 const handleType2Change = (e, props) => {
   const attr = props.attribute;
   attr["Type2"] = e.target.value;
-  props.onChange(attr);
+  if (e.target.value === "new") {
+    function respond(newType) {
+      console.log(newType);
+    }
+    props.onNewType(respond);
+  }
+  else 
+    props.onChange(attr);
 };
 
 const handleListTypeChange = (e, props) => {
@@ -132,6 +139,7 @@ export default function AttributeControl(props) {
               fullWidth
               labelWidth={100}
             >
+              <MenuItem value="new">+ Create New Type</MenuItem>
               {props.types.map((type, i) => {
                 return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
               })}
@@ -175,6 +183,7 @@ export default function AttributeControl(props) {
                       fullWidth
                       labelWidth={100}
                     >
+                      <MenuItem value="new">+ Create New Type</MenuItem>
                       {props.types.map((type, i) => {
                         return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
                       })}

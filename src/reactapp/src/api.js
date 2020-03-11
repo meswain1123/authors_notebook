@@ -99,9 +99,9 @@ class APIClass {
   };
 
   // World
-  getWorldsForUser = async (userID) => {
+  getWorldsForUser = async () => {
     if (this.real) {
-      const response = await this.fetchData(`/world/getWorldsForUser/${userID}`);
+      const response = await this.fetchData(`/world/getWorldsForUser`);
       return this.processResponse(response);
     } else {
       return [
@@ -121,36 +121,36 @@ class APIClass {
     }
   };
 
-  createWorld = async (userID, world) => {
+  createWorld = async (world) => {
     if (this.real) {
-      const response = await this.postData("/world/createWorld", { userID: userID, world: world });
+      const response = await this.postData("/world/createWorld", { world: world });
       return this.processResponse(response);
     } else {
       return -1;
     }
   };
 
-  deleteWorld = async (userID, worldID) => {
+  deleteWorld = async (worldID) => {
     if (this.real) {
-      const response = await this.deleteData("/world/deleteWorld", { userID: userID, worldID: worldID });
+      const response = await this.deleteData("/world/deleteWorld", { worldID: worldID });
       return this.processResponse(response);
     } else {
       return "success";
     }
   };
 
-  updateWorld = async (userID, world) => {
+  updateWorld = async (world) => {
     if (this.real) {
-      const response = await this.patchData("/world/updateWorld", { userID: userID, world: world });
+      const response = await this.patchData("/world/updateWorld", { world: world });
       return this.processResponse(response);
     } else {
       return "success";
     }
   };
 
-  selectWorld = async (userID, worldID) => {
+  selectWorld = async (worldID) => {
     if (this.real) {
-      const response = await this.postData("/world/selectWorld", { userID: userID, worldID: worldID });
+      const response = await this.postData("/world/selectWorld", { worldID: worldID });
       return this.processResponse(response);
     } else {
       return "success";
@@ -158,10 +158,10 @@ class APIClass {
   };
 
   // Type
-  getTypesForWorld = async (userID, worldID) => {
+  getTypesForWorld = async () => {
     if (this.real) {
       const response = await this.fetchData(
-        `/world/getTypesForWorld/${userID}/${worldID}`
+        `/world/getTypesForWorld`
       );
       return this.processResponse(response);
     } else {
@@ -169,10 +169,10 @@ class APIClass {
     }
   };
 
-  getType = async (worldID, typeID) => {
+  getType = async (typeID) => {
     if (this.real) {
       const response = await this.fetchData(
-        `/world/getType/${worldID}/${typeID}`
+        `/world/getType/${typeID}`
       );
       return this.processResponse(response);
     } else {
@@ -186,27 +186,27 @@ class APIClass {
     }
   };
 
-  createType = async (userID, type) => {
+  createType = async (type) => {
     if (this.real) {
-      const response = await this.postData("/world/createType", { userID: userID, type: type });
+      const response = await this.postData("/world/createType", { type: type });
       return this.processResponse(response);
     } else {
       return -1;
     }
   };
 
-  deleteType = async (userID, worldID, typeID) => {
+  deleteType = async (typeID) => {
     if (this.real) {
-      const response = await this.deleteData("/world/deleteType", { userID: userID, worldID: worldID, typeID: typeID });
+      const response = await this.deleteData("/world/deleteType", { typeID: typeID });
       return this.processResponse(response);
     } else {
       return "success";
     }
   };
 
-  updateType = async (userID, type) => {
+  updateType = async (type) => {
     if (this.real) {
-      const response = await this.patchData("/world/updateType", { userID: userID, type: type });
+      const response = await this.patchData("/world/updateType", { type: type });
       return this.processResponse(response);
     } else {
       return "success";
@@ -214,10 +214,10 @@ class APIClass {
   };
 
   // Thing
-  getThingsForWorld = async (userID, worldID) => {
+  getThingsForWorld = async () => {
     if (this.real) {
       const response = await this.fetchData(
-        `/world/getThingsForWorld/${userID}/${worldID}`
+        `/world/getThingsForWorld`
       );
       return this.processResponse(response);
     } else {
@@ -225,7 +225,7 @@ class APIClass {
     }
   };
 
-  getThing = async (worldID, thingID) => {
+  getThing = async (thingID) => {
     if (this.real) {
       const response = await this.fetchData(`/world/getThing/${thingID}`);
       return this.processResponse(response);
@@ -240,27 +240,27 @@ class APIClass {
     }
   };
 
-  createThing = async (userID, thing) => {
+  createThing = async (thing) => {
     if (this.real) {
-      const response = await this.postData("/world/createThing", { userID: userID, thing: thing });
+      const response = await this.postData("/world/createThing", { thing: thing });
       return this.processResponse(response);
     } else {
       return -1;
     }
   };
 
-  deleteThing = async (userID, thingID) => {
+  deleteThing = async (thingID) => {
     if (this.real) {
-      const response = await this.deleteData("/world/deleteThing", { userID: userID, thingID: thingID });
+      const response = await this.deleteData("/world/deleteThing", { thingID: thingID });
       return this.processResponse(response);
     } else {
       return "success";
     }
   };
 
-  updateThing = async (userID, thing) => {
+  updateThing = async (thing) => {
     if (this.real) {
-      const response = await this.patchData("/world/updateThing", { userID: userID, thing: thing });
+      const response = await this.patchData("/world/updateThing", { thing: thing });
       return this.processResponse(response);
     } else {
       return "success";

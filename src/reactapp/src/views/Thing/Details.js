@@ -64,7 +64,7 @@ class Page extends Component {
     setTimeout(() => {
       const { id } = this.props.match.params;
       if (id !== undefined) {
-        this.api.getThing(this.props.selectedWorldID, id).then(res => {
+        this.api.getThing(id).then(res => {
           let Types = [];
           res.TypeIDs.forEach(tID=> {
             Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
@@ -101,7 +101,7 @@ class Page extends Component {
   }
 
   delete = e => {
-    this.api.deleteThing(this.props.user._id, this.state._id).then(res=>{
+    this.api.deleteThing(this.state._id).then(res=>{
       const things = this.props.things.filter(t=>t._id!==this.state._id);
       this.props.setThings(things);
       this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})
@@ -111,6 +111,8 @@ class Page extends Component {
   render() {
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
+    } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && this.props.selectedWorld.Owner !== this.props.user._id) {
+      return <Redirect to="/" />;
     } else {
       return (
         <Grid item xs={12} container spacing={0} direction="column">
@@ -119,6 +121,7 @@ class Page extends Component {
               <h2>{this.state.Name}</h2>
             </Grid>
             <Grid item xs={3}>
+              { this.props.selectedWorld !== null &&  this.props.selectedWorld.Owner === this.props.user._id ?
               <List>
                 <ListItem>
                   <Button
@@ -141,6 +144,7 @@ class Page extends Component {
                   </Button>
                 </ListItem>
               </List>
+              : "" }
             </Grid>
           </Grid>
           <Grid item container spacing={0} direction="row">

@@ -68,7 +68,7 @@ class Page extends Component {
     setTimeout(() => {
       const { id } = this.props.match.params;
       if (id !== undefined) {
-        this.api.getType(this.props.selectedWorldID, id).then(res => {
+        this.api.getType(id).then(res => {
           if (res.message === undefined) {
             const supers = this.props.types.filter(type =>
               res.SuperIDs.includes(type._id)
@@ -130,7 +130,7 @@ class Page extends Component {
         valid = value.match(/^[a-zA-Z0-9 ]*$/i) !== null;
         if (!valid)
           message = "Only Letters, Numbers, and Spaces allowed in Type Names";
-        else if (value.length < 4) {
+        else if (value.length < 2) {
           valid = false;
           message = "Type Name is too short";
         } else {
@@ -212,7 +212,7 @@ class Page extends Component {
 
     if (type._id === null) {
       this.api
-        .createType(this.props.user._id, type)
+        .createType(type)
         .then(res => {
           if (res.typeID !== undefined) {
             type._id = res.typeID;
@@ -232,13 +232,21 @@ class Page extends Component {
         .catch(err => console.log(err));
     } else {
       this.api
-        .updateType(this.props.user._id, type)
+        .updateType(type)
         .then(res => {
-          this.props.updateType(type);
-          this.setState({
-            waiting: false,
-            redirectTo: `/world/details/${this.props.selectedWorld._id}`
-          });
+          if (res.message === `Type ${type.Name} updated!`) {
+            this.props.updateType(type);
+            this.setState({
+              waiting: false,
+              redirectTo: `/world/details/${this.props.selectedWorld._id}`
+            });
+          }
+          else {
+            this.setState({
+              waiting: false, 
+              message: res.message 
+            });
+          }
         })
         .catch(err => console.log(err));
     }
@@ -318,14 +326,16 @@ class Page extends Component {
   }
 
   render() {
-    const types =
-      this.props.types === undefined || this.state._id === null
-        ? this.props.types
-        : this.props.types.filter(type => type._id !== this.state._id);
-    
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
+    } else if (this.props.selectedWorld !== null && this.props.selectedWorld.Owner !== this.props.user._id) {
+      return <Redirect to="/" />;
     } else {
+      const types =
+        this.props.types === undefined || this.state._id === null
+          ? this.props.types
+          : this.props.types.filter(type => type._id !== this.state._id);
+      
       return (
         <Grid item xs={12} container spacing={1} direction="column">
           <Grid item>

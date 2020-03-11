@@ -81,7 +81,7 @@ class Page extends Component {
     setTimeout(() => {
       const { id } = this.props.match.params;
       if (id !== undefined) { // When I move to storing more in session, this is the kind of place where I'll check.
-        this.api.getType(this.props.selectedWorldID, id).then(res => {
+        this.api.getType(id).then(res => {
           const supers = this.props.types.filter(type =>
             res.SuperIDs.includes(type._id)
           );
@@ -119,7 +119,7 @@ class Page extends Component {
   }
 
   delete = e => {
-    this.api.deleteType(this.props.user._id, this.props.selectedWorldID, this.state._id).then(res=>{
+    this.api.deleteType(this.state._id).then(res=>{
       const types = this.props.types.filter(t=>t._id!==this.state._id);
       this.props.setTypes(types);
       this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})
@@ -129,7 +129,10 @@ class Page extends Component {
   render() { 
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
+    } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && this.props.selectedWorld.Owner !== this.props.user._id) {
+      return <Redirect to="/" />;
     } else {
+      console.log(this.props);
       return (
         <Grid item xs={12} container spacing={0} direction="column">
           <Grid item container spacing={0} direction="row">
@@ -140,6 +143,7 @@ class Page extends Component {
               <h3>{this.state.Major ? "Major Type" : ""}</h3>
             </Grid>
             <Grid item sm={3} xs={12}>
+              { this.props.selectedWorld !== null && this.props.selectedWorld.Owner === this.props.user._id ?
               <List>
                 <ListItem>
                   <Button
@@ -172,6 +176,7 @@ class Page extends Component {
                   </Button>
                 </ListItem>
               </List>
+              : "" }
             </Grid>
           </Grid>
           <Grid item container spacing={0} direction="row">

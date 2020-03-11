@@ -70,9 +70,11 @@ class Page extends Component {
             Public: world.Public,
             _id: id
           });
+          this.api.selectWorld(id);
           this.props.selectWorld(id);
         }
       } else {
+        this.api.selectWorld(null);
         this.props.selectWorld(null);
       }
     }, 500);
@@ -161,7 +163,7 @@ class Page extends Component {
 
     if (world._id === null) {
       this.api
-        .createWorld(this.props.user._id, world)
+        .createWorld(world)
         .then(res => {
           if (res.message  !== undefined) {
             this.setState({ message: res.message });
@@ -178,7 +180,7 @@ class Page extends Component {
         .catch(err => console.log(err));
     } else {
       this.api
-        .updateWorld(this.props.user._id, world)
+        .updateWorld(world)
         .then(res => {
           if (res.message !== `World ${world.Name} updated!`) {
             this.setState({ message: res.message });
@@ -198,6 +200,8 @@ class Page extends Component {
   render() {
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
+    } else if (this.props.selectedWorld !== null && this.props.selectedWorld.Owner !== this.props.user._id) {
+      return <Redirect to="/" />;
     } else {
       return (
         <Grid item xs={12} container spacing={1} direction="column">

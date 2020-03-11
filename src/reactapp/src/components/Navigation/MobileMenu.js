@@ -42,7 +42,7 @@ class Menu extends Component {
       this.props.setPublicWorlds(res.worlds);
     });
     if (this.props.user !== null) {
-      this.api.getWorldsForUser(this.props.user._id).then(res => {
+      this.api.getWorldsForUser().then(res => {
         if (res.worlds !== undefined)
           this.props.setWorlds(res.worlds);
       });

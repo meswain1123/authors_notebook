@@ -27,7 +27,7 @@ router.get('/getUsersByText/:text', function (req, res) {
       };
       res.send({ message: `Welcome to World Building, ${user.firstName}!  Let's make a World!`, user: pwdStripped });
     } else {
-      console.log(user);
+      console.log(`Login error: ${user}`);
       res.send({ message: 'There was a problem with your credentials.', user: null });
     }
   };
