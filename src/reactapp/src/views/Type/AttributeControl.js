@@ -22,7 +22,8 @@ const handleType2Change = (e, props) => {
   attr["Type2"] = e.target.value;
   if (e.target.value === "new") {
     function respond(newType) {
-      console.log(newType);
+      attr["Type2"] = newType._id;
+      props.onChange(attr);
     }
     props.onNewType(respond);
   }

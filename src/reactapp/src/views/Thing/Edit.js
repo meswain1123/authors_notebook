@@ -57,7 +57,8 @@ class Page extends Component {
       },
       formValid: false,
       message: "",
-      redirectTo: null
+      redirectTo: null,
+      waiting: false
     };
     this.api = API.getInstance();
   }
@@ -341,6 +342,8 @@ class Page extends Component {
     let attributes = [...thing.AttributesArr];
     for (let i = 0; i < selectedItem.AttributesArr.length; i++) {
       const attribute = selectedItem.AttributesArr[i];
+      if (attribute.FromTypes === undefined)
+        attribute.FromTypes = [];
       attribute.FromTypes.push(selectedItem._id);
       const matches = attributes.filter(a => a.Name === attribute.Name);
       if (matches.length === 0) {
@@ -349,6 +352,7 @@ class Page extends Component {
         // In the future I'll have List Types, in which case this will be more complicated.
         // Also I'll be adding default values.
         attribute.Value = "";
+        attribute.ListValues = [];
         attributes.push(attribute);
       } else {
         // It's an existing attribute,

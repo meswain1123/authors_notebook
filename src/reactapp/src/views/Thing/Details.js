@@ -65,17 +65,22 @@ class Page extends Component {
       const { id } = this.props.match.params;
       if (id !== undefined) {
         this.api.getThing(id).then(res => {
-          let Types = [];
-          res.TypeIDs.forEach(tID=> {
-            Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
-          });
-          this.setState({
-            Name: res.Name,
-            Description: res.Description,
-            _id: id,
-            Types: Types
-          });
-          this.props.updateSelectedThing(res);
+          if (res.message === undefined) {
+            let Types = [];
+            res.TypeIDs.forEach(tID=> {
+              Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
+            });
+            this.setState({
+              Name: res.Name,
+              Description: res.Description,
+              _id: id,
+              Types: Types
+            });
+            this.props.updateSelectedThing(res);
+          }
+          else {
+            console.log(res.message);
+          }
         });
       } else {
         this.props.updateSelectedThing({

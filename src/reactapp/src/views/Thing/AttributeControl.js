@@ -16,10 +16,36 @@ const handleTextListChange = (e, props) => {
   attr.ListValues = e;
   props.onChange(attr);
 };
+const handleType2Change = (e, props, respond) => {
+  // const attr = props.attribute;
+  // attr["Type2"] = e.target.value;
+  if (e.target.value === "new") {
+    function respond2(newType) {
+      // attr["Type2"] = newType._id;
+      // props.onChange(attr);
+      respond(newType._id);
+    }
+    props.onNewType(respond2);
+  }
+  else {
+    // props.onChange(attr);
+    respond(e.target.value);
+  }
+};
 const addOption = (selectedItem, props) => {
-  const attr = props.attribute;
-  attr.ListValues.push(selectedItem.Name);
-  props.onChange(attr);
+  if (selectedItem._id === "new") {
+    function respond2(newType) {
+      const attr = props.attribute;
+      attr.ListValues.push(newType.Name);
+      props.onChange(attr);
+    }
+    props.onNewType(respond2);
+  }
+  else {
+    const attr = props.attribute;
+    attr.ListValues.push(selectedItem.Name);
+    props.onChange(attr);
+  }
 };
 const removeOption = (selectedList, props) => {
   const attr = props.attribute;
@@ -58,6 +84,8 @@ export default function AttributeControl(props) {
     });
   }
   else if (type === "List" && props.attribute.ListType === "Type") {
+    const type2 = props.types.filter(t=>t._id === props.attribute.Type2)[0];
+    listOptions.push({Name: `+ Create New ${type2.Name}`, _id: "new"});
     props.things.filter(t=>t.TypeIDs.includes(props.attribute.Type2)).forEach(t => {
       listOptions.push({Name: t.Name, _id: t._id});
     });
@@ -176,7 +204,7 @@ export default function AttributeControl(props) {
             labelId="type-select-label"
             id="type-select"
             value={value}
-            onChange={ e => { changeValue(e.target.value) } }
+            onChange={ e => { handleType2Change(e, props, changeValue) } }
             onBlur={ e => {
                 const attr = {
                   index: props.attribute.index, 
@@ -195,6 +223,7 @@ export default function AttributeControl(props) {
             fullWidth
             labelWidth={props.attribute.Name.length * 9}
           >
+            <MenuItem value="new">+ Create New {props.types.filter(t=>t._id === props.attribute.Type2)[0].Name}</MenuItem>
             {props.things.filter(t=>t.TypeIDs.includes(props.attribute.Type2)).map((thing, i) => {
               return (<MenuItem key={i} value={thing._id}>{thing.Name}</MenuItem>);
             })}
