@@ -82,17 +82,22 @@ class Page extends Component {
       const { id } = this.props.match.params;
       if (id !== undefined) { // When I move to storing more in session, this is the kind of place where I'll check.
         this.api.getType(id).then(res => {
-          const supers = this.props.types.filter(type =>
-            res.SuperIDs.includes(type._id)
-          );
-          this.setState({
-            Name: res.Name,
-            Description: res.Description,
-            _id: id,
-            Supers: supers,
-            Major: res.Major
-          });
-          this.props.updateSelectedType(res);
+          if (res.message === undefined) {
+            const supers = this.props.types.filter(type =>
+              res.SuperIDs.includes(type._id)
+            );
+            this.setState({
+              Name: res.Name,
+              Description: res.Description,
+              _id: id,
+              Supers: supers,
+              Major: res.Major
+            });
+            this.props.updateSelectedType(res);
+          }
+          else {
+            console.log(res.message);
+          }
         });
       } else {
         this.props.updateSelectedType({

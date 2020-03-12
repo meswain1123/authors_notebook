@@ -20,12 +20,12 @@ const handleType2Change = (e, props, respond) => {
   // const attr = props.attribute;
   // attr["Type2"] = e.target.value;
   if (e.target.value === "new") {
-    function respond2(newType) {
+    function respond2(newThing) {
       // attr["Type2"] = newType._id;
       // props.onChange(attr);
-      respond(newType._id);
+      respond(newThing._id);
     }
-    props.onNewType(respond2);
+    props.onNewThing(respond2, props.types.filter(t=>t._id === props.attribute.Type2)[0]);
   }
   else {
     // props.onChange(attr);
@@ -33,19 +33,9 @@ const handleType2Change = (e, props, respond) => {
   }
 };
 const addOption = (selectedItem, props) => {
-  if (selectedItem._id === "new") {
-    function respond2(newType) {
-      const attr = props.attribute;
-      attr.ListValues.push(newType.Name);
-      props.onChange(attr);
-    }
-    props.onNewType(respond2);
-  }
-  else {
-    const attr = props.attribute;
-    attr.ListValues.push(selectedItem.Name);
-    props.onChange(attr);
-  }
+  const attr = props.attribute;
+  attr.ListValues.push(selectedItem.Name);
+  props.onChange(attr);
 };
 const removeOption = (selectedList, props) => {
   const attr = props.attribute;
@@ -56,9 +46,19 @@ const removeOption = (selectedList, props) => {
   props.onChange(attr);
 };
 const addType = (selectedItem, props) => {
-  const attr = props.attribute;
-  attr.ListValues.push(selectedItem._id);
-  props.onChange(attr);
+  if (selectedItem._id === "new") {
+    function respond2(newThing) {
+      const attr = props.attribute;
+      attr.ListValues.push(newThing._id);
+      props.onChange(attr);
+    }
+    props.onNewThing(respond2, props.types.filter(t=>t._id === props.attribute.Type2)[0]);
+  }
+  else {
+    const attr = props.attribute;
+    attr.ListValues.push(selectedItem._id);
+    props.onChange(attr);
+  }
 };
 const removeType = (selectedList, props) => {
   const attr = props.attribute;

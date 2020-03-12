@@ -107,6 +107,7 @@ class Index extends Component {
   }
 
   render() {
+    console.log(this.props.things);
     const majorless = this.props.things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
     return (
       <div>

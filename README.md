@@ -66,4 +66,6 @@ List filtering
 General Encryption
 World Encryption (Owner is the only one who gets access to World, and they have to enter a key for encryption/decryption which is only stored in their browser session.  If they lose the key then it's just gone.)
 World Export (Creates a single Json file which has everything from the World in it and downloads it.)
+On Type Details pages add '+ Create New Sub Type' button
+Make it so session logout responses trigger a redirect to the login page.  Also find a way to keep it from happening so much.
 

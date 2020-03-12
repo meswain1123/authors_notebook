@@ -1,8 +1,14 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import AttributeControl from "./AttributeControl";
 import Grid from "@material-ui/core/Grid";
+import Modal from '@material-ui/core/Modal';
+import FormControl from "@material-ui/core/FormControl";
+import InputLabel from "@material-ui/core/InputLabel";
+import OutlinedInput from "@material-ui/core/OutlinedInput";
+import FormHelperText from "@material-ui/core/FormHelperText";
+import Button from "@material-ui/core/Button";
 import { updateSelectedThing, addThing } from "../../redux/actions/index";
+import AttributeControl from "./AttributeControl";
 import API from "../../api";
 
 const mapStateToProps = state => {
@@ -30,7 +36,8 @@ class Control extends Component {
       },
       formValid: false,
       message: "",
-      waiting: false
+      waiting: false,
+      newThingType: null
     };
     this.api = API.getInstance();
   }
@@ -82,9 +89,9 @@ class Control extends Component {
   optionsChange = (e, props) => {
   }
 
-  addNewType = (respond) => {
+  addNewThing = (respond, type) => {
     // Opens a Modal where they enter a name.
-    this.setState({modalOpen: true, modalSubmit: respond});
+    this.setState({modalOpen: true, modalSubmit: respond, newThingType: type});
   }
   
   getModalStyle = () => {
@@ -128,16 +135,16 @@ class Control extends Component {
         value = this.state[fieldName];
         valid = value.match(/^[a-zA-Z0-9 ]*$/i) !== null;
         if (!valid)
-          message = "Only Letters, Numbers, and Spaces allowed in Type Names";
+          message = "Only Letters, Numbers, and Spaces allowed in Thing Names";
         else if (value.length < 2) {
           valid = false;
-          message = "Type Name is too short";
+          message = "Thing Name is too short";
         } else {
           valid =
-            this.props.types.filter(
+            this.props.things.filter(
               t => t.Name === value && t._id !== this.state._id
             ).length === 0;
-          if (!valid) message = "This Type Name is already in use";
+          if (!valid) message = "This Thing Name is already in use";
         }
         break;
       default:
@@ -161,7 +168,7 @@ class Control extends Component {
     );
   };
 
-  saveNewType = () => {
+  saveNewThing = () => {
     function respond() {
       if (this.state.formValid) {
         this.setState({ waiting: true }, this.submitThroughAPI);
@@ -172,26 +179,30 @@ class Control extends Component {
   };
 
   submitThroughAPI = () => {
-    const type = {
-      _id: null,
+    const types = this.props.types.filter(t=> t._id === this.state.newThingType._id || this.state.newThingType.SuperIDs.includes(t._id));
+    const typeIDs = types.map(s => {
+      return s._id;
+    });
+    const thing = {
+      _id: this.state._id,
       Name: this.state.Name,
       Description: "",
-      SuperIDs: [],
+      TypeIDs: typeIDs,
       AttributesArr: [],
-      WorldID: this.props.selectedWorldID,
-      Major: false
+      WorldID: this.props.selectedWorldID
     };
 
     // Calls API
     this.api
-      .createType(type)
+      .createThing(thing)
       .then(res => {
-        if (res.typeID !== undefined) {
-          type._id = res.typeID;
+        if (res.thingID !== undefined) {
+          thing._id = res.thingID;
+          thing.Types = types;
           // Adds to props 
-          this.props.addType(type);
-          // Calls respond back to Attribute to set the type
-          this.state.modalSubmit(type);
+          this.props.addThing(thing);
+          // Calls respond back to Attribute to set the thing
+          this.state.modalSubmit(thing);
           this.setState({
             waiting: false, 
             modalOpen: false
@@ -223,7 +234,7 @@ class Control extends Component {
                 onBlur={this.blurAttribute}
                 things={this.props.things}
                 types={this.props.types}
-                onNewType={this.addNewType}
+                onNewThing={this.addNewThing}
               />
             );
           })
@@ -237,7 +248,7 @@ class Control extends Component {
           <div style={this.getModalStyle()} className="paper">
             <Grid container spacing={1} direction="column">
               <Grid item>
-                Just give the new {this.state.newThingType.Name} a name.
+                Just give the new {this.state.newThingType === null ? "" : this.state.newThingType.Name} a name.
               </Grid>
               <Grid item>
                 (You can do the rest later.)
@@ -269,7 +280,7 @@ class Control extends Component {
                     variant="contained"
                     color="primary"
                     disabled={this.state.waiting}
-                    onClick={this.saveNewType}
+                    onClick={this.saveNewThing}
                   >
                     {this.state.waiting ? "Please Wait" : "Submit"}
                   </Button>
