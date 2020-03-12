@@ -14,9 +14,11 @@ import OutlinedInput from "@material-ui/core/OutlinedInput";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import {
   updateSelectedType,
-  updateAttributesArr
+  updateAttributesArr,
+  addType
 } from "../../redux/actions/index";
 import AttributeControl from "./AttributeControl";
+import API from "../../api";
 
 const Label = styled("label")`
   padding: 0 0 4px;
@@ -37,13 +39,15 @@ const mapStateToProps = state => {
   return {
     selectedType: state.app.selectedType,
     attributesArr: state.app.attributesArr,
-    types: state.app.types
+    types: state.app.types,
+    selectedWorldID: state.app.selectedWorldID
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
     updateSelectedType: type => dispatch(updateSelectedType(type)),
-    updateAttributesArr: arr => dispatch(updateAttributesArr(arr))
+    updateAttributesArr: arr => dispatch(updateAttributesArr(arr)),
+    addType: type => dispatch(addType(type)),
   };
 }
 class Control extends Component {
@@ -57,7 +61,9 @@ class Control extends Component {
       },
       formValid: false,
       message: "",
+      waiting: false
     };
+    this.api = API.getInstance();
   }
 
   componentDidMount() {
@@ -127,13 +133,7 @@ class Control extends Component {
 
   addNewType = (respond) => {
     // Opens a Modal where they enter a name.
-    console.log('hi');
-    // respond('hola');
     this.setState({modalOpen: true, modalSubmit: respond});
-    // Calls API
-    // Adds to props 
-    // Calls respond, passing the type to it
-    // That part may need to be rethought.
   }
 
   handleUserInput = e => {
@@ -200,70 +200,49 @@ class Control extends Component {
   };
 
   saveNewType = () => {
-    this.state.modalSubmit(this.state.Name);
-    // function respond() {
-    //   if (this.state.formValid) {
-    //     this.setState({ waiting: true }, this.submitThroughAPI);
-    //   }
-    // }
+    function respond() {
+      if (this.state.formValid) {
+        this.setState({ waiting: true }, this.submitThroughAPI);
+      }
+    }
 
-    // this.validateForm(respond);
+    this.validateForm(respond);
   };
 
   submitThroughAPI = () => {
-    // const superIDs = this.state.Supers.map(s => {
-    //   return s._id;
-    // });
-    // const type = {
-    //   _id: this.state._id,
-    //   Name: this.state.Name,
-    //   Description: this.state.Description,
-    //   SuperIDs: superIDs,
-    //   AttributesArr: this.props.selectedType.AttributesArr,
-    //   WorldID: this.props.selectedWorld._id,
-    //   Major: this.state.Major
-    // };
+    const type = {
+      _id: null,
+      Name: this.state.Name,
+      Description: "",
+      SuperIDs: [],
+      AttributesArr: [],
+      WorldID: this.props.selectedWorldID,
+      Major: false
+    };
 
-    // if (type._id === null) {
-    //   this.api
-    //     .createType(type)
-    //     .then(res => {
-    //       if (res.typeID !== undefined) {
-    //         type._id = res.typeID;
-    //         this.props.addType(type);
-    //         this.setState({
-    //           waiting: false,
-    //           redirectTo: `/world/details/${this.props.selectedWorld._id}`
-    //         });
-    //       }
-    //       else if (res.message !== undefined) {
-    //         this.setState({
-    //           waiting: false, 
-    //           message: res.message 
-    //         });
-    //       }
-    //     })
-    //     .catch(err => console.log(err));
-    // } else {
-    //   this.api
-    //     .updateType(type)
-    //     .then(res => {
-    //       if (res.message === `Type ${type.Name} updated!`) {
-    //         this.props.updateType(type);
-    //         this.setState({
-    //           waiting: false,
-    //           redirectTo: `/world/details/${this.props.selectedWorld._id}`
-    //         });
-    //       }
-    //       else {
-    //         this.setState({
-    //           waiting: false, 
-    //           message: res.message 
-    //         });
-    //       }
-    //     })
-    //     .catch(err => console.log(err));
-    // }
+    // Calls API
+    this.api
+      .createType(type)
+      .then(res => {
+        if (res.typeID !== undefined) {
+          type._id = res.typeID;
+          // Adds to props 
+          this.props.addType(type);
+          // Calls respond back to Attribute to set the type
+          this.state.modalSubmit(type);
+          this.setState({
+            waiting: false, 
+            modalOpen: false
+          });
+        }
+        else if (res.message !== undefined) {
+          this.setState({
+            waiting: false, 
+            message: res.message 
+          });
+        }
+      })
+      .catch(err => console.log(err));
   };
 
   render() {
@@ -340,9 +319,10 @@ class Control extends Component {
                     fullWidth
                     variant="contained"
                     color="primary"
+                    disabled={this.state.waiting}
                     onClick={this.saveNewType}
                   >
-                    Submit
+                    {this.state.waiting ? "Please Wait" : "Submit"}
                   </Button>
                 </Grid>
                 <Grid item xs={6}>
