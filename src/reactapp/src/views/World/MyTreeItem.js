@@ -5,7 +5,7 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import Button from "@material-ui/core/Button";
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import Grid from '@material-ui/core/Grid';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -48,40 +48,86 @@ class Item extends Component {
     console.log(this.props);
   }
 
+  edit = () => {
+    console.log(this.props);
+  }
+
+  new = () => {
+    console.log(this.props);
+  }
+
+  // delete = () => {
+  //   console.log(this.props);
+  // }
+
   render() {
     return (
-      <Grid item container spacing={0} direction="column">
+      <Grid item container spacing={1} direction="column">
         <Grid item>
           {
-            this.props.expanded ? 
+            this.props.item.children === null || this.props.item.children === undefined ?
+            "" :
+            this.props.item.expanded ? 
             <ChevronRightIcon 
               style={{cursor: "pointer"}} 
-              onClick={this.props.collapse(this.props.type)} /> : 
+              onClick={_ => {this.props.collapse(this.props.item)}} 
+              // onClick={e => console.log(e)} 
+              /> : 
             <ExpandMoreIcon 
               style={{cursor: "pointer"}} 
-              onClick={this.props.expand(this.props.type)} />
+              onClick={_ => {this.props.expand(this.props.item)}} 
+              // onClick={e => console.log(e)} 
+              />
           }
+          { this.props.item.navigateTo === null ?
+          this.props.item.Name :
           <span 
             style={{cursor:"pointer"}} 
-            onClick={this.navigate()}>
-              {this.props.type.Name}
+            onClick={_ => {this.navigate()}}>
+              {this.props.item.Name}
           </span>
+          }
+          { this.props.item.editTo === null ?
+          "" :
+          <span 
+            style={{cursor:"pointer"}} 
+            onClick={_ => {this.edit()}}>
+              edit
+          </span>
+          }
+          { this.props.item.newTo === null ?
+          "" :
+          <span 
+            style={{cursor:"pointer"}} 
+            onClick={_ => {this.new()}}>
+              new
+          </span>
+          }
+          {/* { this.props.item.deleteTo === null ?
+          "" :
+          <span 
+            style={{cursor:"pointer"}} 
+            onClick={_ => this.delete()}>
+              delete
+          </span>
+          } */}
         </Grid>
-        {
-          this.props.expanded ?
-            this.props.types.filter(t=>t.SuperIDs.includes(this.props.type._id)).map((type, i) => {
-              return (
-                <MyTreeItem key={i} 
-                  type={type} 
-                  collapse={e => {this.props.collapse(e)}} 
-                  expand={e => {this.props.expand(e)}}
-                />
-              );
-            })
-          : 
-          ""
-        }
-
+        <Grid item>
+          {
+            this.props.item.expanded ?
+              this.props.item.children.map((item, i) => {
+                return (
+                  <MyTreeItem key={i} 
+                    item={item} 
+                    collapse={e => {this.props.collapse(e)}} 
+                    expand={e => {this.props.expand(e)}}
+                  />
+                );
+              })
+            : 
+            ""
+          }
+        </Grid>
       </Grid>
     );
   }

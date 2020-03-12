@@ -1,13 +1,13 @@
 // world service module
 
 import express from "express";
-import { NodeVM, VMScript } from "vm2";
+// import { NodeVM, VMScript } from "vm2";
 import db from "../db/world-db";
 var router = express.Router();
-let myEnv = process.env;
+// let myEnv = process.env;
 process.env = {};
 
-const vm = new NodeVM();
+// const vm = new NodeVM();
 db.open();
 
 // Test route
@@ -16,6 +16,7 @@ router
     res.send({ message: "Becky is hot!" });
   })
   .get("/getWorldsForUser", function(req, res) {
+    console.log(req.session);
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
       res.send({ message: "Session lost.  Please log in again." });
@@ -116,13 +117,13 @@ router
   })
   .post("/createType", function(req, res) {
     // console.log(`${Date.now()}`);
-    console.log(req.session);
+    // console.log(req.session);
     // console.log(req.body.type);
     if (req.session.userID == undefined || req.session.worldID == undefined || req.session.worldID !== req.body.type.WorldID) {
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
-        console.log(world);
+        // console.log(world);
         if (world === null || world.Owner !== req.session.userID) {
           res.send({ message: "Problem with creating the Type" });
         }
@@ -169,7 +170,7 @@ router
     }
   })
   .patch("/updateType", function(req, res) {
-    console.log(req.body.type);
+    // console.log(req.body.type);
     if (req.session.userID == undefined || req.session.worldID == undefined || req.session.worldID !== req.body.type.WorldID) {
       res.send({ message: "Session lost.  Please log in again." });
     } else {
@@ -207,7 +208,7 @@ router
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function respond(thing) {
-        console.log(thing);
+        // console.log(thing);
         res.send(thing);
       }
 

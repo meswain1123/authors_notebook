@@ -12,6 +12,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 // import TreeView from '@material-ui/lab/TreeView';
 // import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 // import TreeItem from '@material-ui/lab/TreeItem';
+import MyTree from './MyTree';
 
 /* 
   This component will be used by the WorldDetails component.  It will
@@ -109,8 +110,68 @@ class Index extends Component {
   render() {
     console.log(this.props.things);
     const majorless = this.props.things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
+    const treeItems = [
+      {
+        _id: null, 
+        Name: "Types", 
+        navigateTo: null, 
+        editTo: null, 
+        expanded: false,
+        newTo: `/type/create`, 
+        children: this.props.types.map((type, i) => { 
+          return {
+            _id: type._id, 
+            Name: type.Name, 
+            navigateTo: `/type/details/${type._id}`, 
+            editTo: `/type/edit/${type._id}`, 
+            newTo: `/thing/create/type_id_${type._id}`
+          }; 
+        })
+      }
+    ];
+    this.props.types.filter(t=>t.Major).forEach(t => {
+      const things = this.props.things.filter(thing => thing.TypeIDs.includes(t._id));
+      treeItems.push({
+        _id: t._id, 
+        Name: t.Name, 
+        navigateTo: `/type/details/${t._id}`, 
+        editTo: `/type/edit/${t._id}`, 
+        expanded: false,
+        newTo: `/thing/create/type_id_${t._id}`, 
+        children: things.map((thing, i) => { 
+          return {
+            _id: thing._id, 
+            Name: thing.Name, 
+            navigateTo: `/thing/details/${thing._id}`, 
+            editTo: `/thing/edit/${thing._id}`, 
+            newTo: null
+          }; 
+        })
+      });
+    });
+    treeItems.push({
+      _id: null, 
+      Name: "Other Things", 
+      navigateTo: null, 
+      editTo: null, 
+      expanded: false,
+      newTo: `/thing/create`, 
+      children: majorless.map((thing, i) => { 
+        return {
+          _id: thing._id, 
+          Name: thing.Name, 
+          navigateTo: `/thing/details/${thing._id}`, 
+          editTo: `/thing/edit/${thing._id}`, 
+          newTo: null
+        }; 
+      })
+    });
+    console.log(treeItems);
+
     return (
       <div>
+        <MyTree rootItems={treeItems}>
+        </MyTree>
         {/* <TreeView
           // className={classes.root}
           defaultCollapseIcon={<ExpandMoreIcon />}

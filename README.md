@@ -50,6 +50,8 @@ None that I'm aware of.
 
 ### Additional TODOs
 
+Type Details - Add links to all Types which have the Type in an Attribute.
+Thing Details - Add links to all Things which have the Thing in an Attribute.
 Move a bunch of things from Views into Components.
 Change SelectedWorld stuff to be able to have different Worlds open in different tabs.
 Do Worlds for famous story worlds for people to see as examples: Harry Potter, Cosmere, LOTR, Star Wars, Dresden, VTM, Vampire Diaries, etc.
@@ -67,5 +69,6 @@ General Encryption
 World Encryption (Owner is the only one who gets access to World, and they have to enter a key for encryption/decryption which is only stored in their browser session.  If they lose the key then it's just gone.)
 World Export (Creates a single Json file which has everything from the World in it and downloads it.)
 On Type Details pages add '+ Create New Sub Type' button
-Make it so session logout responses trigger a redirect to the login page.  Also find a way to keep it from happening so much.
+Make it so session logout responses trigger a redirect to the login page.  Also find a way to keep it from happening so much.  I've increased the session length to 1 hour, and I'm thinking I also want to add a 'stay logged in' option, which will make it periodically ping the server to keep the session alive.
+Better UI for World Details.  I want to be able to have edit and create new buttons for Types and each Major Type which can be clicked without having to expand their section.  I also want to make it so the regular Types have edit and create new buttons next to their details links, and Things could have edit buttons next to their details links.  Once I've done those things I'll consider adding delete buttons for all of those as well, but I like having delete access only on the details pages for now.  I'm thinking I'll do these as part of my treeview control.
 

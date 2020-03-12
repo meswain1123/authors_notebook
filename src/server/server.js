@@ -21,7 +21,8 @@ if (app.get('env') === 'production') {
     },
     secret: 'keyboard cat',
     cookie: {
-      maxAge: 900000,
+      // maxAge: 900000, // 15 minutes
+      maxAge: 3600000, // 1 hour
       secure: true
     },
     resave: true,
@@ -33,7 +34,10 @@ if (app.get('env') === 'production') {
       return uuidv1() // use UUIDs for session IDs
     },
     secret: 'keyboard cat',
-    cookie: { maxAge: 900000 }, // This is in milliseconds.  The example had 60000, which is 1 minute.  I'm going to make it 15 minutes.
+    cookie: { 
+      // maxAge: 900000, // 15 minutes
+      maxAge: 3600000, // 1 hour
+    }, // This is in milliseconds.  The example had 60000, which is 1 minute.  I'm going to make it 15 minutes.
     resave: true,
     saveUninitialized: true
   }));

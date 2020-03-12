@@ -18,7 +18,8 @@ import {
   UPDATE_THING,
   UPDATE_SELECTED_THING,
   LOAD_FROM_STORAGE,
-  TOGGLE_MENU
+  TOGGLE_MENU,
+  UPDATE_TREE_ITEMS
 } from "../constants/actionTypes";
 
 export function selectPage(payload) {
@@ -81,3 +82,7 @@ export function loadFromStorage(payload) {
 export function toggleMenu(payload) {
   return { type: TOGGLE_MENU, payload };
 }
+export function updateTreeItems(payload) {
+  return { type: UPDATE_TREE_ITEMS, payload };
+}
+
