@@ -18,8 +18,7 @@ import {
   UPDATE_THING,
   UPDATE_SELECTED_THING,
   LOAD_FROM_STORAGE,
-  TOGGLE_MENU,
-  UPDATE_TREE_ITEMS
+  TOGGLE_MENU
 } from "../constants/actionTypes";
 
 const initialState = {
@@ -37,8 +36,7 @@ const initialState = {
   attributesArr: [],
   selectedThing: null,
   loadIt: true,
-  menuOpen: true,
-  treeItems: []
+  menuOpen: true
 };
 function rootReducer(state = initialState, action) {
   if (action.type === LOAD_FROM_STORAGE) {
@@ -57,8 +55,7 @@ function rootReducer(state = initialState, action) {
       selectedWorld,
       selectedWorldID,
       types: types === null ? [] : types,
-      things: things === null ? [] : things,
-      treeItems: getTreeItems(types, things)
+      things: things === null ? [] : things
     });
   } else if (action.type === SELECT_PAGE) {
     return Object.assign({}, state, {
@@ -213,28 +210,24 @@ function rootReducer(state = initialState, action) {
   } else if (action.type === SET_TYPES) {
     sessionStorage.setItem("types", JSON.stringify(action.payload));
     return Object.assign({}, state, {
-      types: action.payload,
-      treeItems: getTreeItems(action.payload, state.things)
+      types: action.payload
     });
   } else if (action.type === ADD_TYPE) {
     const types = state.types.concat(action.payload);
     sessionStorage.setItem("types", JSON.stringify(types));
     return Object.assign({}, state, {
-      types: types,
-      treeItems: getTreeItems(types, state.things)
+      types: types
     });
   } else if (action.type === SET_THINGS) {
     sessionStorage.setItem("things", JSON.stringify(action.payload));
     return Object.assign({}, state, {
-      things: action.payload,
-      treeItems: getTreeItems(state.types, action.payload)
+      things: action.payload
     });
   } else if (action.type === ADD_THING) {
     const things = state.things.concat(action.payload);
     sessionStorage.setItem("things", JSON.stringify(things));
     return Object.assign({}, state, {
-      things: things,
-      treeItems: getTreeItems(state.types, things)
+      things: things
     });
   } else if (action.type === UPDATE_SELECTED_TYPE) {
     // This is because Redux won't cause a rerender
@@ -252,8 +245,7 @@ function rootReducer(state = initialState, action) {
     type.Attributes = action.payload.Attributes;
     sessionStorage.setItem("types", JSON.stringify(types));
     return Object.assign({}, state, {
-      types: types,
-      treeItems: getTreeItems(types, state.things)
+      types: types
     });
   } else if (action.type === UPDATE_ATTRIBUTES_ARR) {
     return Object.assign({}, state, {
@@ -275,85 +267,14 @@ function rootReducer(state = initialState, action) {
     thing.Attributes = action.payload.Attributes;
     sessionStorage.setItem("things", JSON.stringify(things));
     return Object.assign({}, state, {
-      things: things,
-      treeItems: getTreeItems(state.types, things)
+      things: things
     });
   } else if (action.type === TOGGLE_MENU) {
     return Object.assign({}, state, {
       menuOpen: !state.menuOpen
     });
-  } else if (action.type === UPDATE_TREE_ITEMS) {
-    return Object.assign({}, state, {
-      treeItems: action.payload
-    });
   }
   return state;
-}
-
-function getTreeItems(types, things) {
-  if (types === null || types === [] || things === null || things === []) {
-    return [];
-  }
-  else {
-    const majorless = things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
-    const treeItems = [
-      {
-        _id: null, 
-        Name: "Types", 
-        navigateTo: null, 
-        editTo: null, 
-        expanded: false,
-        newTo: `/type/create`, 
-        children: types.map((type, i) => { 
-          return {
-            _id: type._id, 
-            Name: type.Name, 
-            navigateTo: `/type/details/${type._id}`, 
-            editTo: `/type/edit/${type._id}`, 
-            newTo: `/thing/create/type_id_${type._id}`
-          }; 
-        })
-      }
-    ];
-    types.filter(t=>t.Major).forEach(t => {
-      const subThings = things.filter(thing => thing.TypeIDs.includes(t._id));
-      treeItems.push({
-        _id: t._id, 
-        Name: t.Name, 
-        navigateTo: `/type/details/${t._id}`, 
-        editTo: `/type/edit/${t._id}`, 
-        expanded: false,
-        newTo: `/thing/create/type_id_${t._id}`, 
-        children: subThings.map((thing, i) => { 
-          return {
-            _id: thing._id, 
-            Name: thing.Name, 
-            navigateTo: `/thing/details/${thing._id}`, 
-            editTo: `/thing/edit/${thing._id}`, 
-            newTo: null
-          }; 
-        })
-      });
-    });
-    treeItems.push({
-      _id: null, 
-      Name: "Other Things", 
-      navigateTo: null, 
-      editTo: null, 
-      expanded: false,
-      newTo: `/thing/create`, 
-      children: majorless.map((thing, i) => { 
-        return {
-          _id: thing._id, 
-          Name: thing.Name, 
-          navigateTo: `/thing/details/${thing._id}`, 
-          editTo: `/thing/edit/${thing._id}`, 
-          newTo: null
-        }; 
-      })
-    });
-    return treeItems;
-  }
 }
 
 export default rootReducer;

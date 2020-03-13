@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 import Add from "@material-ui/icons/Add";
+import Edit from "@material-ui/icons/Edit";
+import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
@@ -9,10 +11,8 @@ import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-// import TreeView from '@material-ui/lab/TreeView';
-// import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-// import TreeItem from '@material-ui/lab/TreeItem';
-import MyTree from './MyTree';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 
 /* 
   This component will be used by the WorldDetails component.  It will
@@ -42,8 +42,11 @@ class Index extends Component {
   componentDidMount() {
   }
 
-  handleChange = panel => (event, isExpanded) => {
+  handleChange_old = panel => (event, isExpanded) => {
     this.setState({expandedPanel: isExpanded ? panel : false});
+  };
+  handleChange = panel => {
+    this.setState({expandedPanel: this.state.expandedPanel === panel ? false : panel });
   };
 
   renderListForType(type) {
@@ -107,91 +110,11 @@ class Index extends Component {
     );
   }
 
-  render() {
-    console.log(this.props.things);
+  render_old() {
     const majorless = this.props.things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
-    const treeItems = [
-      {
-        _id: null, 
-        Name: "Types", 
-        navigateTo: null, 
-        editTo: null, 
-        expanded: false,
-        newTo: `/type/create`, 
-        children: this.props.types.map((type, i) => { 
-          return {
-            _id: type._id, 
-            Name: type.Name, 
-            navigateTo: `/type/details/${type._id}`, 
-            editTo: `/type/edit/${type._id}`, 
-            newTo: `/thing/create/type_id_${type._id}`
-          }; 
-        })
-      }
-    ];
-    this.props.types.filter(t=>t.Major).forEach(t => {
-      const things = this.props.things.filter(thing => thing.TypeIDs.includes(t._id));
-      treeItems.push({
-        _id: t._id, 
-        Name: t.Name, 
-        navigateTo: `/type/details/${t._id}`, 
-        editTo: `/type/edit/${t._id}`, 
-        expanded: false,
-        newTo: `/thing/create/type_id_${t._id}`, 
-        children: things.map((thing, i) => { 
-          return {
-            _id: thing._id, 
-            Name: thing.Name, 
-            navigateTo: `/thing/details/${thing._id}`, 
-            editTo: `/thing/edit/${thing._id}`, 
-            newTo: null
-          }; 
-        })
-      });
-    });
-    treeItems.push({
-      _id: null, 
-      Name: "Other Things", 
-      navigateTo: null, 
-      editTo: null, 
-      expanded: false,
-      newTo: `/thing/create`, 
-      children: majorless.map((thing, i) => { 
-        return {
-          _id: thing._id, 
-          Name: thing.Name, 
-          navigateTo: `/thing/details/${thing._id}`, 
-          editTo: `/thing/edit/${thing._id}`, 
-          newTo: null
-        }; 
-      })
-    });
-    console.log(treeItems);
 
     return (
       <div>
-        <MyTree rootItems={treeItems}>
-        </MyTree>
-        {/* <TreeView
-          // className={classes.root}
-          defaultCollapseIcon={<ExpandMoreIcon />}
-          defaultExpandIcon={<ChevronRightIcon />}
-        >
-          <TreeItem nodeId="1" label={`Types (${this.props.types.length})`}>
-            <TreeItem nodeId="2" label="Calendar" />
-            <TreeItem nodeId="3" label="Chrome" />
-            <TreeItem nodeId="4" label="Webstorm" />
-          </TreeItem>
-          <TreeItem nodeId="5" label="Documents">
-            <TreeItem nodeId="10" label="OSS" />
-            <TreeItem nodeId="6" label="Material-UI">
-              <TreeItem nodeId="7" label="src">
-                <TreeItem nodeId="8" label="index.js" />
-                <TreeItem nodeId="9" label="tree-view.js" />
-              </TreeItem>
-            </TreeItem>
-          </TreeItem>
-        </TreeView> */}
         <ExpansionPanel expanded={this.state.expandedPanel === "TYPES"} onChange={this.handleChange("TYPES")}>
           <ExpansionPanelSummary
             expandIcon={<ExpandMoreIcon />}
@@ -290,6 +213,165 @@ class Index extends Component {
             </List>
           </ExpansionPanelDetails>
         </ExpansionPanel>
+      </div>
+    );
+  }
+
+  render() {
+    const majorless = this.props.things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
+
+    return (
+      <div>
+        <List>
+          <ListItem>
+            <Grid container spacing={1} direction="column">
+              <Grid item>
+                {this.state.expandedPanel === "TYPES" ? 
+                  <Button 
+                    onClick={_ => {this.handleChange("TYPES")}}>
+                    <KeyboardArrowDownIcon/>
+                  </Button>
+                  :
+                  <Button 
+                    onClick={_ => {this.handleChange("TYPES")}}>
+                    <KeyboardArrowRightIcon/>
+                  </Button>
+                }
+                <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Types (${this.props.types.length})`}</span>
+                <Button 
+                  href={`/type/create`}>
+                  <Add/>
+                </Button>
+              </Grid>
+              {this.state.expandedPanel === "TYPES" ? 
+                <Grid item>
+                  <List style={{ maxWidth: "300px" }}>
+                    {
+                      this.props.types.map((type, i) => {
+                        return (
+                          <ListItem key={i}>
+                            <Button 
+                              fullWidth variant="contained" color="primary" 
+                              href={`/type/details/${type._id}`}>
+                              <ListItemText primary={type.Name} className="marginLeft" />
+                            </Button>
+                            <Button 
+                              href={`/thing/create/type_id_${type._id}`}>
+                              <Add/>
+                            </Button>
+                            <Button 
+                              href={`/type/edit/${type._id}`}>
+                              <Edit/>
+                            </Button>
+                          </ListItem>
+                        );
+                      })
+                    }
+                  </List>
+                </Grid>
+              : "" }
+            </Grid>
+          </ListItem>
+          { this.props.types.filter(t=>t.Major).map((type, i) => {
+            const things = this.props.things.filter(thing => thing.TypeIDs.includes(type._id));
+            return (
+              <ListItem key={i}>
+                <Grid container spacing={1} direction="column">
+                  <Grid item>
+                    {this.state.expandedPanel === "TYPES" ? 
+                      <Button 
+                        onClick={_ => {this.handleChange(type._id)}}>
+                        <KeyboardArrowDownIcon/>
+                      </Button>
+                      :
+                      <Button 
+                        onClick={_ => {this.handleChange(type._id)}}>
+                        <KeyboardArrowRightIcon/>
+                      </Button>
+                    }
+                    <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{type.Name}s ({things.length})</span>
+                    <Button 
+                      href={`/thing/create/type_id_${type._id}`}>
+                      <Add/>
+                    </Button>
+                    <Button 
+                      href={`/type/edit/${type._id}`}>
+                      <Edit/>
+                    </Button>
+                  </Grid>
+                  {this.state.expandedPanel === type._id ? 
+                    <Grid item>
+                      <List style={{ maxWidth: "300px" }}>
+                        {
+                          things.map((thing, j) => {
+                            return (
+                              <ListItem key={j}>
+                                <Button 
+                                  fullWidth variant="contained" color="primary" 
+                                  href={`/thing/details/${thing._id}`}>
+                                  <ListItemText primary={thing.Name} className="marginLeft" />
+                                </Button>
+                                <Button 
+                                  href={`/thing/edit/${thing._id}`}>
+                                  <Edit/>
+                                </Button>
+                              </ListItem>
+                            );
+                          })
+                        }
+                      </List>
+                    </Grid>
+                  : "" }
+                </Grid>
+              </ListItem>
+            );
+          })}
+          <ListItem>
+            <Grid container spacing={1} direction="column">
+              <Grid item>
+                {this.state.expandedPanel === "OTHER" ? 
+                  <Button 
+                    onClick={_ => {this.handleChange("OTHER")}}>
+                    <KeyboardArrowDownIcon/>
+                  </Button>
+                  :
+                  <Button 
+                    onClick={_ => {this.handleChange("OTHER")}}>
+                    <KeyboardArrowRightIcon/>
+                  </Button>
+                }
+                <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Other Things (${majorless.length})`}</span>
+                <Button 
+                  href={`/thing/create`}>
+                  <Add/>
+                </Button>
+              </Grid>
+              {this.state.expandedPanel === "OTHER" ? 
+                <Grid item>
+                  <List style={{ maxWidth: "300px" }}>
+                    {
+                      majorless.map((thing, i) => {
+                        return (
+                          <ListItem key={i}>
+                            <Button 
+                              fullWidth variant="contained" color="primary" 
+                              href={`/thing/details/${thing._id}`}>
+                              <ListItemText primary={thing.Name} className="marginLeft" />
+                            </Button>
+                            <Button 
+                              href={`/thing/edit/${thing._id}`}>
+                              <Edit/>
+                            </Button>
+                          </ListItem>
+                        );
+                      })
+                    }
+                  </List>
+                </Grid>
+              : "" }
+            </Grid>
+          </ListItem>
+        </List>
       </div>
     );
   }
