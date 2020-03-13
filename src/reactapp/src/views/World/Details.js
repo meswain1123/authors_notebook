@@ -72,6 +72,7 @@ class Page extends Component {
   }
   getThings() {
     this.api.getThingsForWorld().then(res => {
+      console.log(res);
       if (res !== undefined && res.message === undefined) {
         const things = res.things;
         things.forEach(t=> {

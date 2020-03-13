@@ -207,8 +207,14 @@ class Page extends Component {
       SuperIDs: superIDs,
       AttributesArr: this.props.selectedType.AttributesArr,
       WorldID: this.props.selectedWorld._id,
-      Major: this.state.Major
+      Major: this.state.Major,
+      ReferenceIDs: []
     };
+    this.props.selectedType.AttributesArr.filter(a=>a.Type === "Type" || (a.Type === "List" && a.ListType === "Type")).forEach(a=>{
+      if (!type.ReferenceIDs.includes(a.Type2)) {
+        type.ReferenceIDs.push(a.Type2);
+      }
+    });
 
     if (type._id === null) {
       this.api

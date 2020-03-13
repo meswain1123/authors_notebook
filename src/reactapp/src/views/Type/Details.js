@@ -18,6 +18,8 @@ import Button from "@material-ui/core/Button";
 import API from "../../api";
 import Grid from "@material-ui/core/Grid";
 import Modal from '@material-ui/core/Modal';
+import Tooltip from '@material-ui/core/Tooltip';
+import { Fab } from "@material-ui/core";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -137,7 +139,7 @@ class Page extends Component {
     } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && this.props.selectedWorld.Owner !== this.props.user._id) {
       return <Redirect to="/" />;
     } else {
-      console.log(this.props);
+      const references = this.props.types.filter(t=>t.ReferenceIDs.includes(this.state._id));
       return (
         <Grid item xs={12} container spacing={0} direction="column">
           <Grid item container spacing={0} direction="row">
@@ -151,34 +153,34 @@ class Page extends Component {
               { this.props.selectedWorld !== null && this.props.selectedWorld.Owner === this.props.user._id ?
               <List>
                 <ListItem>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    href={`/thing/create/type_id_${this.state._id}`}
-                  >
-                    <Add /><ListItemText primary={`Create New ${this.state.Name}`}/>
-                  </Button>
+                  <Tooltip title={`Create New ${this.state.Name}`}>
+                    <Fab size="small"
+                      color="primary"
+                      href={`/thing/create/type_id_${this.state._id}`}
+                    >
+                      <Add />
+                    </Fab>
+                  </Tooltip>
                 </ListItem>
                 <ListItem>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    href={`/type/edit/${this.state._id}`}
-                  >
-                    <Edit />
-                  </Button>
+                  <Tooltip title={`Edit ${this.state.Name}`}>
+                    <Fab size="small"
+                      color="primary"
+                      href={`/type/edit/${this.state._id}`}
+                    >
+                      <Edit />
+                    </Fab>
+                  </Tooltip>
                 </ListItem>
                 <ListItem>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    onClick={e => {this.setState({modalOpen: true})}}
-                  >
-                    <Delete />
-                  </Button>
+                  <Tooltip title={`Delete ${this.state.Name}`}>
+                    <Fab size="small"
+                      color="primary"
+                      onClick={e => {this.setState({modalOpen: true})}}
+                    >
+                      <Delete />
+                    </Fab>
+                  </Tooltip>
                 </ListItem>
               </List>
               : "" }
@@ -299,6 +301,30 @@ class Page extends Component {
                             href={`/type/details/${sub._id}`}
                           >
                             <ListItemText primary={sub.Name} />
+                          </Button>
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                </Grid>
+              )}
+              {references.length === 0 ? (
+                ""
+              ) : (
+                <Grid item>
+                  <List>
+                    <ListItem>
+                      <ListItemText primary={"Referenced in:"} />
+                    </ListItem>
+                    {references.map((type, i) => {
+                      return (
+                        <ListItem key={i}>
+                          <Button fullWidth
+                            variant="contained"
+                            color="primary"
+                            href={`/type/details/${type._id}`}
+                          >
+                            <ListItemText primary={type.Name} />
                           </Button>
                         </ListItem>
                       );

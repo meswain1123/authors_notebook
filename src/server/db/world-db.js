@@ -145,7 +145,7 @@ function updateWorld(respond, userID, world) {
 function getTypesForWorld(respond, worldID) {
   const db = client.db(dbName);
   db.collection("type")
-    .find({ WorldID: worldID })
+    .find({ WorldID: worldID }, { _id: 1, Name: 1, SuperIDs: 1, ReferenceIDs: 1 })
     .toArray(function(err, docs) {
       if (err) respond({ message: `Error: ${err}.` });
       else {
@@ -258,7 +258,7 @@ function getThingsForWorld(respond, userID, worldID) {
   try {
     const db = client.db(dbName);
     db.collection("thing")
-      .find({ WorldID: worldID }, { _id: 1, Name: 1, Types: 1 })
+      .find({ WorldID: worldID }, { _id: 1, Name: 1, TypeIDs: 1, ReferenceIDs: 1 })
       .toArray(function(err, docs) {
         if (err) respond({ message: `Error: ${err}.` });
         else respond(docs);

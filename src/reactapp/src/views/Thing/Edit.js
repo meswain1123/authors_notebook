@@ -289,8 +289,21 @@ class Page extends Component {
       Description: this.state.Description,
       TypeIDs: typeIDs,
       AttributesArr: this.props.selectedThing.AttributesArr,
-      WorldID: this.props.selectedWorld._id
+      WorldID: this.props.selectedWorld._id,
+      ReferenceIDs: []
     };
+    this.props.selectedThing.AttributesArr.filter(a=>a.Type === "Type").forEach(a=>{
+      if (!thing.ReferenceIDs.includes(a.Value)) {
+        thing.ReferenceIDs.push(a.Type2);
+      }
+    });
+    this.props.selectedThing.AttributesArr.filter(a=>a.Type === "List" && a.ListType === "Type").forEach(a=>{
+      a.ListValues.forEach(v=> {
+        if (!thing.ReferenceIDs.includes(v)) {
+          thing.ReferenceIDs.push(v);
+        }
+      });
+    });
 
     if (thing._id === null) {
       this.api
