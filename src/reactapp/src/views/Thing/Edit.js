@@ -82,6 +82,7 @@ class Page extends Component {
         else {
           // We're editing an existing Thing
           this.api.getThing(id).then(res => {
+            console.log(res);
             const things = this.props.things.filter(
               thing => res._id !== thing._id
             );

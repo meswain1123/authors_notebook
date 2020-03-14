@@ -66,6 +66,7 @@ class Page extends Component {
       const { id } = this.props.match.params;
       if (id !== undefined) {
         this.api.getThing(id).then(res => {
+          console.log(res);
           if (res.message === undefined) {
             let Types = [];
             res.TypeIDs.forEach(tID=> {
@@ -120,7 +121,8 @@ class Page extends Component {
     } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && this.props.selectedWorld.Owner !== this.props.user._id) {
       return <Redirect to="/" />;
     } else {
-      const references = this.props.things.filter(t=>t.ReferenceIDs.includes(this.state._id));
+      console.log(this.props.things);
+      const references = this.props.things.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));
 
       return (
         <Grid item xs={12} container spacing={0} direction="column">

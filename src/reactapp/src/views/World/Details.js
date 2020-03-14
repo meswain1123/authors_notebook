@@ -11,6 +11,8 @@ import ListItem from "@material-ui/core/ListItem";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
 import Modal from '@material-ui/core/Modal';
+import Tooltip from '@material-ui/core/Tooltip';
+import { Fab } from "@material-ui/core";
 
 const mapStateToProps = state => {
   return {
@@ -128,24 +130,22 @@ class Page extends Component {
                 { this.props.selectedWorld.Owner === this.props.user._id ?
                 <List>
                   <ListItem>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      href={`/world/edit/${this.props.selectedWorld._id}`}
-                    >
+                    <Tooltip title={`Edit ${this.props.selectedWorld.Name}`}>
+                      <Fab size="small" color="primary"
+                        href={`/world/edit/${this.props.selectedWorld._id}`}
+                      >
                       <Edit />
-                    </Button>
+                      </Fab>
+                    </Tooltip>
                   </ListItem>
                   <ListItem>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      onClick={e => {this.setState({modalOpen: true})}}
-                    >
-                      <Delete />
-                    </Button>
+                    <Tooltip title={`Delete ${this.props.selectedWorld.Name}`}>
+                      <Fab size="small" color="primary"
+                        onClick={e => {this.setState({modalOpen: true})}}
+                      >
+                        <Delete />
+                      </Fab>
+                    </Tooltip>
                   </ListItem>
                 </List>
                 : "" }

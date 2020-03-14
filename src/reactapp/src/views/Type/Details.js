@@ -139,7 +139,7 @@ class Page extends Component {
     } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && this.props.selectedWorld.Owner !== this.props.user._id) {
       return <Redirect to="/" />;
     } else {
-      const references = this.props.types.filter(t=>t.ReferenceIDs.includes(this.state._id));
+      const references = this.props.types.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));
       return (
         <Grid item xs={12} container spacing={0} direction="column">
           <Grid item container spacing={0} direction="row">

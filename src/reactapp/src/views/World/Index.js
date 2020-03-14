@@ -13,6 +13,8 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
+import Tooltip from '@material-ui/core/Tooltip';
+// import { Fab } from "@material-ui/core";
 
 /* 
   This component will be used by the WorldDetails component.  It will
@@ -227,21 +229,27 @@ class Index extends Component {
             <Grid container spacing={1} direction="column">
               <Grid item>
                 {this.state.expandedPanel === "TYPES" ? 
-                  <Button 
-                    onClick={_ => {this.handleChange("TYPES")}}>
-                    <KeyboardArrowDownIcon/>
-                  </Button>
+                    <Tooltip title={`Collapse Types`}>
+                      <Button 
+                        onClick={_ => {this.handleChange("TYPES")}}>
+                          <KeyboardArrowDownIcon/>
+                      </Button>
+                    </Tooltip>
                   :
-                  <Button 
-                    onClick={_ => {this.handleChange("TYPES")}}>
-                    <KeyboardArrowRightIcon/>
-                  </Button>
+                    <Tooltip title={`Expand Types`}>
+                      <Button 
+                        onClick={_ => {this.handleChange("TYPES")}}>
+                        <KeyboardArrowRightIcon/>
+                      </Button>
+                    </Tooltip>
                 }
                 <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Types (${this.props.types.length})`}</span>
-                <Button 
-                  href={`/type/create`}>
-                  <Add/>
-                </Button>
+                <Tooltip title={`Create New Type`}>
+                  <Button 
+                    href={`/type/create`}>
+                    <Add/>
+                  </Button>
+                </Tooltip>
               </Grid>
               {this.state.expandedPanel === "TYPES" ? 
                 <Grid item>
@@ -250,19 +258,25 @@ class Index extends Component {
                       this.props.types.map((type, i) => {
                         return (
                           <ListItem key={i}>
-                            <Button 
-                              fullWidth variant="contained" color="primary" 
-                              href={`/type/details/${type._id}`}>
-                              <ListItemText primary={type.Name} className="marginLeft" />
-                            </Button>
-                            <Button 
-                              href={`/thing/create/type_id_${type._id}`}>
-                              <Add/>
-                            </Button>
-                            <Button 
-                              href={`/type/edit/${type._id}`}>
-                              <Edit/>
-                            </Button>
+                            <Tooltip title={`Details for ${type.Name}`}>
+                              <Button 
+                                fullWidth variant="contained" color="primary" 
+                                href={`/type/details/${type._id}`}>
+                                <ListItemText primary={type.Name} className="marginLeft" />
+                              </Button>
+                            </Tooltip>
+                            <Tooltip title={`Create New ${type.Name}`}>
+                              <Button 
+                                href={`/thing/create/type_id_${type._id}`}>
+                                <Add/>
+                              </Button>
+                            </Tooltip>
+                            <Tooltip title={`Edit ${type.Name}`}>
+                              <Button 
+                                href={`/type/edit/${type._id}`}>
+                                <Edit/>
+                              </Button>
+                            </Tooltip>
                           </ListItem>
                         );
                       })
@@ -278,26 +292,39 @@ class Index extends Component {
               <ListItem key={i}>
                 <Grid container spacing={1} direction="column">
                   <Grid item>
-                    {this.state.expandedPanel === "TYPES" ? 
-                      <Button 
-                        onClick={_ => {this.handleChange(type._id)}}>
-                        <KeyboardArrowDownIcon/>
-                      </Button>
+                    {this.state.expandedPanel === type._id ? 
+                      <Tooltip title={`Collapse ${type.Name}s`}>
+                        <Button 
+                          onClick={_ => {this.handleChange(type._id)}}>
+                          <KeyboardArrowDownIcon/>
+                        </Button>
+                      </Tooltip>
                       :
-                      <Button 
-                        onClick={_ => {this.handleChange(type._id)}}>
-                        <KeyboardArrowRightIcon/>
-                      </Button>
+                      <Tooltip title={`Expand ${type.Name}s`}>
+                        <Button 
+                          onClick={_ => {this.handleChange(type._id)}}>
+                          <KeyboardArrowRightIcon/>
+                        </Button>
+                      </Tooltip>
                     }
-                    <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{type.Name}s ({things.length})</span>
-                    <Button 
-                      href={`/thing/create/type_id_${type._id}`}>
-                      <Add/>
-                    </Button>
-                    <Button 
-                      href={`/type/edit/${type._id}`}>
-                      <Edit/>
-                    </Button>
+                    <Tooltip title={`Details for ${type.Name}`}>
+                      <Button 
+                        href={`/type/details/${type._id}`}>
+                        <ListItemText>{type.Name}s ({things.length})</ListItemText>
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title={`Create New ${type.Name}`}>
+                      <Button 
+                        href={`/thing/create/type_id_${type._id}`}>
+                        <Add/>
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title={`Edit ${type.Name}`}>
+                      <Button 
+                        href={`/type/edit/${type._id}`}>
+                        <Edit/>
+                      </Button>
+                    </Tooltip>
                   </Grid>
                   {this.state.expandedPanel === type._id ? 
                     <Grid item>
@@ -306,15 +333,19 @@ class Index extends Component {
                           things.map((thing, j) => {
                             return (
                               <ListItem key={j}>
-                                <Button 
-                                  fullWidth variant="contained" color="primary" 
-                                  href={`/thing/details/${thing._id}`}>
-                                  <ListItemText primary={thing.Name} className="marginLeft" />
-                                </Button>
-                                <Button 
-                                  href={`/thing/edit/${thing._id}`}>
-                                  <Edit/>
-                                </Button>
+                                <Tooltip title={`Details for ${thing.Name}`}>
+                                  <Button 
+                                    fullWidth variant="contained" color="primary" 
+                                    href={`/thing/details/${thing._id}`}>
+                                    <ListItemText primary={thing.Name} className="marginLeft" />
+                                  </Button>
+                                </Tooltip>
+                                <Tooltip title={`Edit ${thing.Name}`}>
+                                  <Button 
+                                    href={`/thing/edit/${thing._id}`}>
+                                    <Edit/>
+                                  </Button>
+                                </Tooltip>
                               </ListItem>
                             );
                           })
@@ -330,21 +361,27 @@ class Index extends Component {
             <Grid container spacing={1} direction="column">
               <Grid item>
                 {this.state.expandedPanel === "OTHER" ? 
-                  <Button 
-                    onClick={_ => {this.handleChange("OTHER")}}>
-                    <KeyboardArrowDownIcon/>
-                  </Button>
+                  <Tooltip title={`Collapse Other Things`}>
+                    <Button 
+                      onClick={_ => {this.handleChange("OTHER")}}>
+                      <KeyboardArrowDownIcon/>
+                    </Button>
+                  </Tooltip>
                   :
-                  <Button 
-                    onClick={_ => {this.handleChange("OTHER")}}>
-                    <KeyboardArrowRightIcon/>
-                  </Button>
+                  <Tooltip title={`Expand Other Things`}>
+                    <Button 
+                      onClick={_ => {this.handleChange("OTHER")}}>
+                      <KeyboardArrowRightIcon/>
+                    </Button>
+                  </Tooltip>
                 }
                 <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Other Things (${majorless.length})`}</span>
-                <Button 
-                  href={`/thing/create`}>
-                  <Add/>
-                </Button>
+                <Tooltip title={`Create New Thing`}>
+                  <Button 
+                    href={`/thing/create`}>
+                    <Add/>
+                  </Button>
+                </Tooltip>
               </Grid>
               {this.state.expandedPanel === "OTHER" ? 
                 <Grid item>
@@ -353,15 +390,19 @@ class Index extends Component {
                       majorless.map((thing, i) => {
                         return (
                           <ListItem key={i}>
-                            <Button 
-                              fullWidth variant="contained" color="primary" 
-                              href={`/thing/details/${thing._id}`}>
-                              <ListItemText primary={thing.Name} className="marginLeft" />
-                            </Button>
-                            <Button 
-                              href={`/thing/edit/${thing._id}`}>
-                              <Edit/>
-                            </Button>
+                            <Tooltip title={`Details for ${thing.Name}`}>
+                              <Button 
+                                fullWidth variant="contained" color="primary" 
+                                href={`/thing/details/${thing._id}`}>
+                                <ListItemText primary={thing.Name} className="marginLeft" />
+                              </Button>
+                            </Tooltip>
+                            <Tooltip title={`Edit ${thing.Name}`}>
+                              <Button 
+                                href={`/thing/edit/${thing._id}`}>
+                                <Edit/>
+                              </Button>
+                            </Tooltip>
                           </ListItem>
                         );
                       })
