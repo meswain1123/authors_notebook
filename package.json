@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "nodemon starter.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start_old": "nodemon starter.js",
-    "dockerBuild": "docker build -t mattvacasa/worldBuilding_server .",
-    "heroku-postbuild": "cd client && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "assert": "^1.4.1",
