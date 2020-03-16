@@ -45,8 +45,8 @@ if (app.get('env') === 'production') {
     saveUninitialized: true
   }));
 }
-let myEnv = process.env;
-process.env = {};
+// let myEnv = process.env;
+// process.env = {};
 
 import userService from './services/user-service.js';
 import worldService from './services/world-service.js';
