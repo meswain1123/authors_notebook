@@ -1,0 +1,16 @@
+{
+  "name": "ANB",
+  "version": "1.0.0",
+  "scripts": {
+    "client": "cd src/reactapp && node scripts/start.js",
+    "server": "cd src/server && npm start",
+    "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\""
+  },
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "concurrently": "^5.1.0",
+    "express": "^4.16.4",
+    "yarn": "^1.22.4"
+  },
+  "devDependencies": {}
+}

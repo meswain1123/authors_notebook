@@ -1,4 +1,5 @@
 
+import path from 'path';
 import express from 'express';
 import session from 'express-session';
 import dotenv from 'dotenv';
@@ -8,6 +9,8 @@ import uuidv1 from 'uuid/v1';
 dotenv.config({ silent: true });
 
 const app = express();
+app.use(express.static(path.join(__dirname, 'client', 'build')));
+
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
