@@ -42,6 +42,7 @@ class Bar extends Component {
 
   componentDidMount() {
     this.api.getPublicWorlds().then(res => {
+      console.log(res);
       this.props.setPublicWorlds(res.worlds);
     });
     // These kinds of things can also be done in render, 

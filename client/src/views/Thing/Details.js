@@ -118,7 +118,7 @@ class Page extends Component {
   render() {
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
-    } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && this.props.selectedWorld.Owner !== this.props.user._id) {
+    } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
       console.log(this.props.things);
@@ -131,7 +131,7 @@ class Page extends Component {
               <h2>{this.state.Name}</h2>
             </Grid>
             <Grid item xs={3}>
-              { this.props.selectedWorld !== null &&  this.props.selectedWorld.Owner === this.props.user._id ?
+              { this.props.user !== null && this.props.selectedWorld !== null &&  this.props.selectedWorld.Owner === this.props.user._id ?
               <List>
                 <ListItem>
                   <Tooltip title={`Edit ${this.state.Name}`}>

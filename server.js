@@ -1,16 +1,33 @@
 
+// import path from 'path';
+// import express from 'express';
+// const PORT = process.env.HTTP_PORT || 4001;
+// const app = express();
+// app.use(express.static(path.join(__dirname, 'client', 'build')));
+// app.get('/', (req, res) => {
+//   res.send('just gonna send it');
+// });
+// app.get('/flower', (req, res) => {
+//   res.json({
+//     name: 'Dandelion',
+//     colour: 'Blue-ish'
+//   });
+// });
+// app.listen(PORT, () => {
+//   console.log(`Server listening at port ${PORT}.`);
+// });
+
+
 import path from 'path';
 import express from 'express';
 import session from 'express-session';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
-import uuidv1 from 'uuid/v1';
+import {v1 as uuidv1} from 'uuid';
 
 dotenv.config({ silent: true });
 
 const app = express();
-app.use(express.static(path.join(__dirname, 'client', 'build')));
-
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
@@ -50,8 +67,9 @@ if (app.get('env') === 'production') {
 
 import userService from './services/user-service.js';
 import worldService from './services/world-service.js';
-app.use('/user', userService);
-app.use('/world', worldService);
+app.use(express.static(path.join(__dirname, 'client/build')));
+app.use('/api/user', userService);
+app.use('/api/world', worldService);
 const port = process.env.SERVER_PORT || 5010;
 
 const version = "0.0.1";
@@ -62,6 +80,10 @@ app.route('/version')
     console.log('version called');
     res.send({ version: version });
   });
+// app.use(express.static(path.join(__dirname, 'client', 'build')));
+app.get('*', (req,res) =>{
+  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+});
 
 process.stdin.resume();//so the program will not close instantly
 
@@ -84,3 +106,4 @@ process.on('SIGINT', exitHandler.bind(null, { exit: true }));
 process.on('uncaughtException', exitHandler.bind(null, { exit: true }));
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
+
