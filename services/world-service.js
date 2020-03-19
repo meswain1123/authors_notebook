@@ -1,13 +1,12 @@
 // world service module
 
-import express from "express";
-// import { NodeVM, VMScript } from "vm2";
-import db from "../db/world-db";
-var router = express.Router();
-// let myEnv = process.env;
-process.env = {};
+// import express from "express";
+// import db from "../db/world-db";
+var express = require("express");
+var db = require("../db/world-db");
 
-// const vm = new NodeVM();
+var router = express.Router();
+
 db.open();
 
 // Test route

@@ -1,10 +1,11 @@
 // user service module
 
-import express from 'express';
-import db from '../db/user-db';
+// import express from 'express';
+// import db from '../db/user-db';
+var express = require("express");
+var db = require("../db/user-db");
+
 var router = express.Router();
-let myEnv = process.env;
-process.env = {};
 
 db.open();
 

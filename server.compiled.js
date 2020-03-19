@@ -121,6 +121,7 @@ process.on('exit', exitHandler.bind(null, {
 process.on('SIGINT', exitHandler.bind(null, {
   exit: true
 })); //catches uncaught exceptions
+// process.on('uncaughtException', function(e){console.log(e)});
 
 process.on('uncaughtException', exitHandler.bind(null, {
   exit: true

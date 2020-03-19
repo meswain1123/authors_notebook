@@ -1,8 +1,17 @@
-import dotenv from "dotenv";
+// import dotenv from "dotenv";
+// dotenv.config({ silent: true });
+// import { MongoClient, ObjectID } from "mongodb";
+// import assert from "assert";
+
+var dotenv = require("dotenv");
 dotenv.config({ silent: true });
-import { MongoClient, ObjectID } from "mongodb";
-import assert from "assert";
-const dbType = process.env.DB_TYPE;
+var mongodb = require("mongodb");
+var MongoClient = mongodb.MongoClient;
+var ObjectID = mongodb.ObjectID;
+var assert = require("assert");
+
+
+// const dbType = process.env.DB_TYPE;
 const dbName = process.env.DB_NAME;
 const url = process.env.DB_CONNECTION_STRING;
 const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });

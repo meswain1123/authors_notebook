@@ -136,7 +136,7 @@ class Page extends Component {
   render() { 
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
-    } else if (this.props.user === null || (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && this.props.selectedWorld.Owner !== this.props.user._id)) {
+    } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
       const references = this.props.types.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));
