@@ -70,7 +70,7 @@ import worldService from './services/world-service.js';
 app.use(express.static(path.join(__dirname, 'client/build')));
 app.use('/api/user', userService);
 app.use('/api/world', worldService);
-const port = process.env.SERVER_PORT || 5010;
+const port = process.env.SERVER_PORT || 4001;
 
 const version = "0.0.1";
 

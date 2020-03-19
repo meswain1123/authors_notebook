@@ -86,7 +86,7 @@ if (app.get('env') === 'production') {
 app.use(_express["default"]["static"](_path["default"].join(__dirname, 'client/build')));
 app.use('/api/user', _userService["default"]);
 app.use('/api/world', _worldService["default"]);
-var port = process.env.SERVER_PORT || 5010;
+var port = process.env.SERVER_PORT || 4001;
 var version = "0.0.1"; // API calls
 
 app.route('/version').get(function (req, res) {
