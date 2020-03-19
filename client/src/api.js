@@ -158,10 +158,10 @@ class APIClass {
   };
 
   // Type
-  getTypesForWorld = async () => {
+  getTypesForWorld = async (worldID) => {
     if (this.real) {
       const response = await this.fetchData(
-        `/api/world/getTypesForWorld`
+        `/api/world/getTypesForWorld/${worldID}`
       );
       return this.processResponse(response);
     } else {
@@ -169,10 +169,10 @@ class APIClass {
     }
   };
 
-  getType = async (typeID) => {
+  getType = async (worldID, typeID) => {
     if (this.real) {
       const response = await this.fetchData(
-        `/api/world/getType/${typeID}`
+        `/api/world/getType/${worldID}/${typeID}`
       );
       return this.processResponse(response);
     } else {
@@ -195,9 +195,9 @@ class APIClass {
     }
   };
 
-  deleteType = async (typeID) => {
+  deleteType = async (worldID, typeID) => {
     if (this.real) {
-      const response = await this.deleteData("/api/world/deleteType", { typeID: typeID });
+      const response = await this.deleteData("/api/world/deleteType", { worldID: worldID, typeID: typeID });
       return this.processResponse(response);
     } else {
       return "success";
@@ -214,10 +214,10 @@ class APIClass {
   };
 
   // Thing
-  getThingsForWorld = async () => {
+  getThingsForWorld = async (worldID) => {
     if (this.real) {
       const response = await this.fetchData(
-        `/api/world/getThingsForWorld`
+        `/api/world/getThingsForWorld/${worldID}`
       );
       return this.processResponse(response);
     } else {
@@ -225,9 +225,9 @@ class APIClass {
     }
   };
 
-  getThing = async (thingID) => {
+  getThing = async (worldID, thingID) => {
     if (this.real) {
-      const response = await this.fetchData(`/api/world/getThing/${thingID}`);
+      const response = await this.fetchData(`/api/world/getThing/${worldID}/${thingID}`);
       return this.processResponse(response);
     } else {
       return {
@@ -249,9 +249,9 @@ class APIClass {
     }
   };
 
-  deleteThing = async (thingID) => {
+  deleteThing = async (worldID, thingID) => {
     if (this.real) {
-      const response = await this.deleteData("/api/world/deleteThing", { thingID: thingID });
+      const response = await this.deleteData("/api/world/deleteThing", { worldID: worldID, thingID: thingID });
       return this.processResponse(response);
     } else {
       return "success";

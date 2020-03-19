@@ -50,13 +50,14 @@ class Page extends Component {
     this.props.selectWorld(id);
     setTimeout(() => {
       this.api.selectWorld(id).then(res => {
+        console.log(res);
         this.getTypes();
       });
     }, 500);
   }
 
   getTypes() {
-    this.api.getTypesForWorld().then(res => {
+    this.api.getTypesForWorld(this.props.selectedWorldID).then(res => {
       // console.log(res);
       if (res !== undefined && res.message === undefined) {
         // Add Supers to each type
@@ -73,7 +74,7 @@ class Page extends Component {
     });
   }
   getThings() {
-    this.api.getThingsForWorld().then(res => {
+    this.api.getThingsForWorld(this.props.selectedWorldID).then(res => {
       console.log(res);
       if (res !== undefined && res.message === undefined) {
         const things = res.things;

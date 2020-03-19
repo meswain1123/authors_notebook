@@ -57,7 +57,7 @@ class Menu extends Component {
             <ListItem key={key}>
               <Button 
                 fullWidth variant="contained" color="primary" 
-                href={`/world/details/${prop._id}`}>
+                href={prop.path}>
                 {typeof prop.icon === "string" ? (
                   <Icon className="marginLeft">{prop.icon}</Icon>
                 ) : (

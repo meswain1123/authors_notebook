@@ -223,6 +223,7 @@ class Index extends Component {
 
   render() {
     const majorless = this.props.things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
+    const buttons = this.props.selectedWorld !== null && this.props.user !== null && this.props.selectedWorld.Owner === this.props.user._id;
 
     return (
       <div>
@@ -246,7 +247,7 @@ class Index extends Component {
                     </Tooltip>
                 }
                 <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Types (${this.props.types.length})`}</span>
-                { this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id) ?
+                { buttons ?
                   <Tooltip title={`Create New Type`}>
                     <Button 
                       href={`/type/create`}>
@@ -269,8 +270,8 @@ class Index extends Component {
                                 <ListItemText primary={type.Name} className="marginLeft" />
                               </Button>
                             </Tooltip>
-                            { this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id) ?
-                              <div>
+                            { buttons ?
+                              <span>
                                 <Tooltip title={`Create New ${type.Name}`}>
                                   <Button 
                                     href={`/thing/create/type_id_${type._id}`}>
@@ -283,7 +284,7 @@ class Index extends Component {
                                     <Edit/>
                                   </Button>
                                 </Tooltip>
-                              </div>
+                              </span>
                             : "" }
                           </ListItem>
                         );
@@ -321,8 +322,8 @@ class Index extends Component {
                         <ListItemText>{type.Name}s ({things.length})</ListItemText>
                       </Button>
                     </Tooltip>
-                    { this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id) ?
-                      <div>
+                    { buttons ?
+                      <span>
                         <Tooltip title={`Create New ${type.Name}`}>
                           <Button 
                             href={`/thing/create/type_id_${type._id}`}>
@@ -335,7 +336,7 @@ class Index extends Component {
                             <Edit/>
                           </Button>
                         </Tooltip>
-                      </div>
+                      </span>
                     : "" }
                   </Grid>
                   {this.state.expandedPanel === type._id ? 
@@ -352,7 +353,7 @@ class Index extends Component {
                                     <ListItemText primary={thing.Name} className="marginLeft" />
                                   </Button>
                                 </Tooltip>
-                                { this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id) ?
+                                { buttons ?
                                 <Tooltip title={`Edit ${thing.Name}`}>
                                   <Button 
                                     href={`/thing/edit/${thing._id}`}>
@@ -390,7 +391,7 @@ class Index extends Component {
                   </Tooltip>
                 }
                 <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Other Things (${majorless.length})`}</span>
-                { this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id) ?
+                { buttons ?
                 <Tooltip title={`Create New Thing`}>
                   <Button 
                     href={`/thing/create`}>
@@ -413,7 +414,7 @@ class Index extends Component {
                                 <ListItemText primary={thing.Name} className="marginLeft" />
                               </Button>
                             </Tooltip>
-                            { this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id) ?
+                            { buttons ?
                             <Tooltip title={`Edit ${thing.Name}`}>
                               <Button 
                                 href={`/thing/edit/${thing._id}`}>

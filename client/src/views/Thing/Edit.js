@@ -81,7 +81,7 @@ class Page extends Component {
         }
         else {
           // We're editing an existing Thing
-          this.api.getThing(id).then(res => {
+          this.api.getThing(this.props.selectedWorldID, id).then(res => {
             console.log(res);
             const things = this.props.things.filter(
               thing => res._id !== thing._id
@@ -293,6 +293,7 @@ class Page extends Component {
       WorldID: this.props.selectedWorld._id,
       ReferenceIDs: []
     };
+    console.log(thing);
     this.props.selectedThing.AttributesArr.filter(a=>a.Type === "Type").forEach(a=>{
       if (!thing.ReferenceIDs.includes(a.Value)) {
         thing.ReferenceIDs.push(a.Type2);
@@ -437,7 +438,7 @@ class Page extends Component {
   render() {
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
-    } else if (this.props.user === null || (this.props.selectedWorld !== null && this.props.selectedWorld.Owner !== this.props.user._id)) {
+    } else if (this.props.selectedWorld !== null && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
       return (

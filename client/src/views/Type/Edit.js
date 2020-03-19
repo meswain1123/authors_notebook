@@ -68,7 +68,7 @@ class Page extends Component {
     setTimeout(() => {
       const { id } = this.props.match.params;
       if (id !== undefined) {
-        this.api.getType(id).then(res => {
+        this.api.getType(this.props.selectedWorldID, id).then(res => {
           if (res.message === undefined) {
             const supers = this.props.types.filter(type =>
               res.SuperIDs.includes(type._id)

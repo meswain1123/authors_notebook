@@ -18,6 +18,7 @@ router
     console.log(req.session);
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
+      console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function respond(worlds) {
@@ -38,6 +39,7 @@ router
   .post("/createWorld", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
+      console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function respond(worldID) {
@@ -51,6 +53,7 @@ router
   .delete("/deleteWorld", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
+      console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } 
     else {
@@ -65,6 +68,7 @@ router
   .patch("/updateWorld", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
+      console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function respond(message) {
@@ -92,41 +96,44 @@ router
     }
     // res.send({message: 'Testing'});
   })
-  .get("/getTypesForWorld", function(req, res) {
+  .get("/getTypesForWorld/:worldID", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}, ${req.session.worldID}`);
-    if (req.session.worldID == undefined) {
-      res.send({ message: "Session lost.  Please log in again." });
-    } else {
+    // if (req.params.worldID == undefined) {
+    //   console.log(req.session);
+    //   res.send({ message: "Session lost.  Please log in again." });
+    // } else {
       function respond(types) {
         res.send({ types });
       }
 
-      db.getTypesForWorld(respond, req.session.worldID);
-    }
+      db.getTypesForWorld(respond, req.params.worldID);
+    // }
     // res.send({message: 'Testing'});
   })
-  .get("/getType/:typeID", function(req, res) {
+  .get("/getType/:worldID/:typeID", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.worldID === undefined) {
-      res.send({ message: "Session lost.  Please log in again." });
+    // if (req.session.worldID === undefined) {
+    //   console.log(req.session);
+    //   res.send({ message: "Session lost.  Please log in again." });
+    // }
+    // else {
+    function respond(type) {
+      if (type === null)
+        res.send({ message: "Get Type Failed" });
+      else
+        res.send(type);
     }
-    else {
-      function respond(type) {
-        if (type === null)
-          res.send({ message: "Get Type Failed" });
-        else
-          res.send(type);
-      }
 
-      db.getType(respond, req.session.worldID, req.params.typeID);
-    }
+    db.getType(respond, req.params.worldID, req.params.typeID);
+    // }
     // res.send({message: 'Testing'});
   })
   .post("/createType", function(req, res) {
     // console.log(`${Date.now()}`);
     // console.log(req.session);
     // console.log(req.body.type);
-    if (req.session.userID == undefined || req.session.worldID == undefined || req.session.worldID !== req.body.type.WorldID) {
+    if (req.session.userID == undefined) {
+      console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
@@ -147,17 +154,18 @@ router
             }
           }
 
-          db.getTypeByName(gotType, req.session.worldID, req.body.type.Name);
+          db.getTypeByName(gotType, req.body.type.worldID, req.body.type.Name);
         }
       }
 
-      db.getWorld(gotWorld, req.session.userID, req.session.worldID);
+      db.getWorld(gotWorld, req.session.userID, req.body.type.worldID);
     }
     // res.send({message: 'Testing'});
   })
   .delete("/deleteType", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.userID == undefined || req.session.worldID == undefined) {
+    if (req.session.userID == undefined) {
+      console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
@@ -170,17 +178,18 @@ router
             res.send(message);
           }
 
-          db.deleteType(respond, req.session.worldID, req.body.typeID);
+          db.deleteType(respond, req.body.worldID, req.body.typeID);
         }
       }
 
-      db.getWorld(gotWorld, req.session.userID, req.session.worldID);
+      db.getWorld(gotWorld, req.session.userID, req.body.worldID);
     }
     // res.send({message: 'Testing'});
   })
   .patch("/updateType", function(req, res) {
     // console.log(req.body.type);
-    if (req.session.userID == undefined || req.session.worldID == undefined || req.session.worldID !== req.body.type.WorldID) {
+    if (req.session.userID == undefined) {
+      console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
@@ -192,44 +201,47 @@ router
             res.send(message);
           }
 
-          db.updateType(respond, req.session.worldID, req.body.type);
+          db.updateType(respond, req.body.type.worldID, req.body.type);
         }
       }
 
-      db.getWorld(gotWorld, req.session.userID, req.session.worldID);
+      db.getWorld(gotWorld, req.session.userID, req.body.type.worldID);
     }
     // res.send({message: 'Testing'});
   })
-  .get("/getThingsForWorld", function(req, res) {
+  .get("/getThingsForWorld/:worldID", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.worldID == undefined) {
-      res.send({ message: "Session lost.  Please log in again." });
-    } else {
+    // if (req.session.worldID == undefined) {
+    //   console.log(req.session);
+    //   res.send({ message: "Session lost.  Please log in again." });
+    // } else {
       function respond(things) {
         res.send({ things });
       }
 
-      db.getThingsForWorld(respond, req.session.userID, req.session.worldID);
-    }
+      db.getThingsForWorld(respond, req.session.userID, req.params.worldID);
+    // }
     // res.send({message: 'Testing'});
   })
-  .get("/getThing/:thingID", function(req, res) {
+  .get("/getThing/:worldID/:thingID", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.worldID == undefined) {
-      res.send({ message: "Session lost.  Please log in again." });
-    } else {
+    // if (req.session.worldID == undefined) {
+    //   console.log(req.session);
+    //   res.send({ message: "Session lost.  Please log in again." });
+    // } else {
       function respond(thing) {
         // console.log(thing);
         res.send(thing);
       }
 
-      db.getThing(respond, req.session.worldID, req.params.thingID);
-    }
+      db.getThing(respond, req.params.worldID, req.params.thingID);
+    // }
     // res.send({message: 'Testing'});
   })
   .post("/createThing", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.userID == undefined || req.session.worldID == undefined || req.session.worldID !== req.body.thing.WorldID) {
+    if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.WorldID) {
+      console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
@@ -253,17 +265,18 @@ router
             }
           }
 
-          db.getThingByName(gotThing, req.session.worldID, req.body.thing.Name);
+          db.getThingByName(gotThing, req.body.thing.worldID, req.body.thing.Name);
         }
       }
 
-      db.getWorld(gotWorld, req.session.userID, req.session.worldID);
+      db.getWorld(gotWorld, req.session.userID, req.body.thing.worldID);
     }
     // res.send({message: 'Testing'});
   })
   .delete("/deleteThing", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.userID == undefined || req.session.worldID == undefined) {
+    if (req.session.userID == undefined) { // || req.session.worldID == undefined) {
+      console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
@@ -277,19 +290,20 @@ router
 
           db.deleteThing(
             respond,
-            req.session.worldID,
+            req.body.worldID,
             req.body.thingID
           );
         }
       }
 
-      db.getWorld(gotWorld, req.session.userID, req.session.worldID);
+      db.getWorld(gotWorld, req.session.userID, req.body.worldID);
     }
     // res.send({message: 'Testing'});
   })
   .patch("/updateThing", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.userID == undefined || req.session.worldID == undefined || req.session.worldID !== req.body.thing.WorldID) {
+    if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.WorldID) {
+      console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
@@ -303,13 +317,13 @@ router
 
           db.updateThing(
             respond,
-            req.session.worldID,
+            req.body.thing.worldID,
             req.body.thing
           );
         }
       }
 
-      db.getWorld(gotWorld, req.session.userID, req.session.worldID);
+      db.getWorld(gotWorld, req.session.userID, req.body.thing.worldID);
     }
     // res.send({message: 'Testing'});
   });

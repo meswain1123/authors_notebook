@@ -65,7 +65,7 @@ class Page extends Component {
     setTimeout(() => {
       const { id } = this.props.match.params;
       if (id !== undefined) {
-        this.api.getThing(id).then(res => {
+        this.api.getThing(this.props.selectedWorldID, id).then(res => {
           console.log(res);
           if (res.message === undefined) {
             let Types = [];
@@ -108,7 +108,7 @@ class Page extends Component {
   }
 
   delete = e => {
-    this.api.deleteThing(this.state._id).then(res=>{
+    this.api.deleteThing(this.props.selectedWorldID, this.state._id).then(res=>{
       const things = this.props.things.filter(t=>t._id!==this.state._id);
       this.props.setThings(things);
       this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})

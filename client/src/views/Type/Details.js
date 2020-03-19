@@ -83,7 +83,7 @@ class Page extends Component {
     setTimeout(() => {
       const { id } = this.props.match.params;
       if (id !== undefined) { // When I move to storing more in session, this is the kind of place where I'll check.
-        this.api.getType(id).then(res => {
+        this.api.getType(this.props.selectedWorldID, id).then(res => {
           if (res.message === undefined) {
             const supers = this.props.types.filter(type =>
               res.SuperIDs.includes(type._id)
@@ -126,7 +126,7 @@ class Page extends Component {
   }
 
   delete = e => {
-    this.api.deleteType(this.state._id).then(res=>{
+    this.api.deleteType(this.props.selectedWorldID, this.state._id).then(res=>{
       const types = this.props.types.filter(t=>t._id!==this.state._id);
       this.props.setTypes(types);
       this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})
