@@ -315,10 +315,10 @@ class Page extends Component {
             thing._id = res.thingID;
             thing.Types = this.state.Types;
             this.props.addThing(thing);
-            this.setState({
-              waiting: false,
-              redirectTo: `/world/details/${this.props.selectedWorld._id}`
-            });
+            // this.setState({
+            //   waiting: false,
+            //   redirectTo: `/world/details/${this.props.selectedWorld._id}`
+            // });
           }
           else {
             this.setState({message: res.message});
