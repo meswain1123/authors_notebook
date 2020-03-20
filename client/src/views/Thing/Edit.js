@@ -310,6 +310,7 @@ class Page extends Component {
       this.api
         .createThing(thing)
         .then(res => {
+          console.log(res);
           if (res.message === undefined){
             thing._id = res.thingID;
             thing.Types = this.state.Types;
@@ -320,7 +321,6 @@ class Page extends Component {
             });
           }
           else {
-            console.log(res);
             this.setState({message: res.message});
           }
         })
@@ -329,6 +329,7 @@ class Page extends Component {
       this.api
         .updateThing(thing)
         .then(res => {
+          console.log(res);
           if (res.message === undefined){
             thing.Types = this.state.Types;
             this.props.updateThing(thing);
@@ -338,7 +339,6 @@ class Page extends Component {
             });
           }
           else {
-            console.log(res);
             this.setState({message: res.message});
           }
         })
