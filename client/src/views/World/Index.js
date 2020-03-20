@@ -271,20 +271,24 @@ class Index extends Component {
                               </Button>
                             </Tooltip>
                             { buttons ?
-                              <span>
-                                <Tooltip title={`Create New ${type.Name}`}>
-                                  <Button 
-                                    href={`/thing/create/type_id_${type._id}`}>
-                                    <Add/>
-                                  </Button>
-                                </Tooltip>
-                                <Tooltip title={`Edit ${type.Name}`}>
-                                  <Button 
-                                    href={`/type/edit/${type._id}`}>
-                                    <Edit/>
-                                  </Button>
-                                </Tooltip>
-                              </span>
+                              <Grid container spacing={0} direction="row">
+                                <Grid item xs={6}>
+                                  <Tooltip title={`Create New ${type.Name}`}>
+                                    <Button 
+                                      href={`/thing/create/type_id_${type._id}`}>
+                                      <Add/>
+                                    </Button>
+                                  </Tooltip>
+                                </Grid>
+                                <Grid item xs={6}>
+                                  <Tooltip title={`Edit ${type.Name}`}>
+                                    <Button 
+                                      href={`/type/edit/${type._id}`}>
+                                      <Edit/>
+                                    </Button>
+                                  </Tooltip>
+                                </Grid>
+                              </Grid>
                             : "" }
                           </ListItem>
                         );
