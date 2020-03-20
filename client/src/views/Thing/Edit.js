@@ -310,7 +310,9 @@ class Page extends Component {
       this.api
         .createThing(thing)
         .then(res => {
+          console.log('hello?');
           console.log(res);
+          
           if (res.message === undefined){
             thing._id = res.thingID;
             thing.Types = this.state.Types;
