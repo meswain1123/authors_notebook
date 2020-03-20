@@ -310,25 +310,37 @@ class Page extends Component {
       this.api
         .createThing(thing)
         .then(res => {
-          thing._id = res.thingID;
-          thing.Types = this.state.Types;
-          this.props.addThing(thing);
-          this.setState({
-            waiting: false,
-            redirectTo: `/world/details/${this.props.selectedWorld._id}`
-          });
+          if (res.message === undefined){
+            thing._id = res.thingID;
+            thing.Types = this.state.Types;
+            this.props.addThing(thing);
+            this.setState({
+              waiting: false,
+              redirectTo: `/world/details/${this.props.selectedWorld._id}`
+            });
+          }
+          else {
+            console.log(res);
+            this.setState({message: res.message});
+          }
         })
         .catch(err => console.log(err));
     } else {
       this.api
         .updateThing(thing)
         .then(res => {
-          thing.Types = this.state.Types;
-          this.props.updateThing(thing);
-          this.setState({
-            waiting: false,
-            redirectTo: `/world/details/${this.props.selectedWorld._id}`
-          });
+          if (res.message === undefined){
+            thing.Types = this.state.Types;
+            this.props.updateThing(thing);
+            this.setState({
+              waiting: false,
+              redirectTo: `/world/details/${this.props.selectedWorld._id}`
+            });
+          }
+          else {
+            console.log(res);
+            this.setState({message: res.message});
+          }
         })
         .catch(err => console.log(err));
     }
