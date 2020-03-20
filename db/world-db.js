@@ -107,11 +107,11 @@ function deleteWorld(respond, userID, worldID) {
       }
       if (docs != null && docs.length > 0) {
         db.collection("thing").deleteMany({
-          WorldID: worldID
+          worldID: worldID
         });
 
         db.collection("type").deleteMany({
-          WorldID: worldID
+          worldID: worldID
         });
 
         db.collection("world").deleteOne({
@@ -154,7 +154,7 @@ function updateWorld(respond, userID, world) {
 function getTypesForWorld(respond, worldID) {
   const db = client.db(dbName);
   db.collection("type")
-    .find({ WorldID: worldID }, { _id: 1, Name: 1, SuperIDs: 1, ReferenceIDs: 1 })
+    .find({ worldID: worldID }, { _id: 1, Name: 1, SuperIDs: 1, ReferenceIDs: 1 })
     .toArray(function(err, docs) {
       if (err) respond({ message: `Error: ${err}.` });
       else {
@@ -167,7 +167,7 @@ function getType(respond, worldID, typeID) {
   try {
     const db = client.db(dbName);
     db.collection("type")
-      .findOne({ WorldID: worldID, _id: ObjectID(typeID) })
+      .findOne({ worldID: worldID, _id: ObjectID(typeID) })
       .then(doc => {
         respond(doc);
       });
@@ -180,7 +180,7 @@ function getType(respond, worldID, typeID) {
 function getTypeByName(respond, worldID, Name) {
   const db = client.db(dbName);
   db.collection("type")
-    .find({ WorldID: worldID, Name: Name })
+    .find({ worldID: worldID, Name: Name })
     .toArray(function(err, docs) {
       if (err) {
         respond({ message: "Get Type By Name Error", err: err });
@@ -218,13 +218,13 @@ function deleteType(respond, worldID, typeID) {
 
   // Remove it from SuperIDs in Types
   db.collection("type").updateMany({ 
-    WorldID: worldID,
+    worldID: worldID,
     SuperIDs: { $all: [typeID] }
   }, { $pull: { SuperIDs: typeID }});
 
   // Remove it from AttributesArr.FromSupers in Types
   db.collection("type").updateMany({ 
-    WorldID: worldID,
+    worldID: worldID,
   }, { $pull: { "AttributesArr.$[].FromSupers": typeID }});
 
 
@@ -256,7 +256,7 @@ function updateType(respond, worldID, type) {
   type._id = ObjectID(type._id);
   db.collection("type").updateOne(
     { 
-      _id: type._id, WorldID: worldID
+      _id: type._id, worldID: worldID
     },
     { $set: type }
   );
@@ -267,7 +267,7 @@ function getThingsForWorld(respond, userID, worldID) {
   try {
     const db = client.db(dbName);
     db.collection("thing")
-      .find({ WorldID: worldID }, { _id: 1, Name: 1, TypeIDs: 1, ReferenceIDs: 1 })
+      .find({ worldID: worldID }, { _id: 1, Name: 1, TypeIDs: 1, ReferenceIDs: 1 })
       .toArray(function(err, docs) {
         if (err) respond({ message: `Error: ${err}.` });
         else respond(docs);
@@ -282,7 +282,7 @@ function getThing(respond, worldID, thingID) {
   try {
     const db = client.db(dbName);
     db.collection("thing")
-      .findOne({ _id: ObjectID(thingID), WorldID: worldID }).then(doc => {
+      .findOne({ _id: ObjectID(thingID), worldID: worldID }).then(doc => {
         console.log(doc);
         respond(doc);
       });
@@ -296,7 +296,7 @@ function getThingByName(respond, worldID, name) {
   try {
     const db = client.db(dbName);
     db.collection("thing")
-      .findOne({ Name: name, WorldID: worldID }).then(doc => {
+      .findOne({ Name: name, worldID: worldID }).then(doc => {
         respond(doc);
       });
   } catch (err) {
@@ -317,7 +317,7 @@ function createThing(respond, thing) {
 function deleteThing(respond, worldID, thingID) {
   const db = client.db(dbName);
   db.collection("thing").deleteOne({
-    _id: ObjectID(thingID), WorldID: worldID
+    _id: ObjectID(thingID), worldID: worldID
   });
   respond({ message: `Thing ${thingID} deleted!` });
 }
@@ -328,7 +328,7 @@ function updateThing(respond, worldID, thing) {
   thing._id = ObjectID(thing._id);
   db.collection("thing").updateOne(
     { 
-      WorldID: worldID, 
+      worldID: worldID, 
       _id: thing._id
     },
     { $set: thing }

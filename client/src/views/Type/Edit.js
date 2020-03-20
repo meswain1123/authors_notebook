@@ -206,7 +206,7 @@ class Page extends Component {
       Description: this.state.Description,
       SuperIDs: superIDs,
       AttributesArr: this.props.selectedType.AttributesArr,
-      WorldID: this.props.selectedWorld._id,
+      worldID: this.props.selectedWorld._id,
       Major: this.state.Major,
       ReferenceIDs: []
     };

@@ -165,7 +165,7 @@ class APIClass {
       );
       return this.processResponse(response);
     } else {
-      return [{ _id: -1, WorldID: -1, Name: "Character" }];
+      return [{ _id: -1, worldID: -1, Name: "Character" }];
     }
   };
 
@@ -178,7 +178,7 @@ class APIClass {
     } else {
       return {
         _id: -1,
-        WorldID: -1,
+        worldID: -1,
         Name: "Character",
         Description: "",
         Attributes: {}
@@ -221,7 +221,7 @@ class APIClass {
       );
       return this.processResponse(response);
     } else {
-      return [{ _id: -1, WorldID: -1, Name: "Alice" }];
+      return [{ _id: -1, worldID: -1, Name: "Alice" }];
     }
   };
 
@@ -232,7 +232,7 @@ class APIClass {
     } else {
       return {
         _id: -1,
-        WorldID: -1,
+        worldID: -1,
         Types: [-1],
         Name: "Alice",
         Description: ""

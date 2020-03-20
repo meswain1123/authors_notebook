@@ -240,7 +240,7 @@ router
   })
   .post("/createThing", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.WorldID) {
+    if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.worldID) {
       console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } else {
@@ -302,7 +302,7 @@ router
   })
   .patch("/updateThing", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.WorldID) {
+    if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.worldID) {
       console.log(req.session);
       res.send({ message: "Session lost.  Please log in again." });
     } else {

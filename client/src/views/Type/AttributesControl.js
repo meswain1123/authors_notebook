@@ -216,7 +216,7 @@ class Control extends Component {
       Description: "",
       SuperIDs: [],
       AttributesArr: [],
-      WorldID: this.props.selectedWorldID,
+      worldID: this.props.selectedWorldID,
       Major: false
     };
 
