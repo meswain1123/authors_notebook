@@ -15,6 +15,7 @@ import OutlinedInput from "@material-ui/core/OutlinedInput";
 import InputLabel from "@material-ui/core/InputLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Grid from "@material-ui/core/Grid";
+import { Helmet } from 'react-helmet';
 import API from "../../api";
 
 /* 
@@ -205,6 +206,9 @@ class Page extends Component {
     } else {
       return (
         <Grid item xs={12} container spacing={1} direction="column">
+          <Helmet>
+            <title>{ this.state._id === null ? `Author's Notebook: Create New World` : `Author's Notebook: Edit ${this.props.selectedWorld.Name}` }</title>
+          </Helmet>
           <Grid item>
             <h2>
               {this.state._id === null ? "Create New World" : "Edit World"}

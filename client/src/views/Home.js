@@ -15,7 +15,7 @@ class Page extends Component {
     return (
       <div>
         <h3>Author's Notebook</h3>
-        <div>
+        <p>
           This is something that I've been wanting to build for a while. It's
           purpose is to provide a place for keeping track of various aspects of
           books that an author is writing. It is able to keep track of details
@@ -29,19 +29,19 @@ class Page extends Component {
           talking about the time I spent/spend working on it, but the costs of
           hosting the website, the db, and the url. Until I'm sure it's capable
           of doing those things, I can't let everyone have access to it.
-        </div>
-        <div>
+        </p>
+        <p>
           This is version 1 of instructions of how to use it. If I make it
           available for anyone, I'll update it with some video instructions.
-        </div>
-        <div>
+        </p>
+        <p>
           One thing you need to know is that this is a hobby project of mine.
           I'm working on it by myself for now. I've got a real job, and I've got
           a family, so this isn't my top priority, but that being said I do care
           about this probject, and I do plan to get to all the things that are
           on my to do list.
-        </div>
-        <div>
+        </p>
+        <p>
           If you want to do more than just look at the things others have put on
           (and which they're allowing you to see), then you'll have to register.
           Making it use Facebook and/or Google authentication is on my to do
@@ -50,12 +50,12 @@ class Page extends Component {
           emails, so if you forget your password or something, you'll have to
           reach out to me, and I can straighten it out. Again, that kind of
           thing is also on my to do list.
-        </div>
-        <div>
+        </p>
+        <p>
           Once you're logged in then you're able to start keeping track of
           things.
-        </div>
-        <div>
+        </p>
+        <p>
           The first thing you create is currently called a World. This is a
           holdover from when I was calling this my World Building App because I
           was aiming it for Fantasy/Sci-Fi authors (like me), but I realized
@@ -77,8 +77,8 @@ class Page extends Component {
           create/edit thing, and delete thing.). Only the Owner will have the
           ability to Edit or Delete the World itself, but they will be able to
           make someone else the Owner.)
-        </div>
-        <div>
+        </p>
+        <p>
           Within a World you are able to define Types. Basically a Type is just
           that. It's a Type of Thing that you want to keep track of. In each
           Type you are able to define attributes which that Type of Thing share,
@@ -129,16 +129,16 @@ class Page extends Component {
           adds an 's' to the end of the Type name, and I want to continue to do
           that if the Plural Name is left empty, but if it's not empty then
           display the Plural Name instead.)
-        </div>
-        <div>
+        </p>
+        <p>
           Types have Attributes (as mentioned above). Things (which I'll get
           into more below) also have Attributes. The same Attributes really. In
           the Harry Potter World the Attributes on the 'Character' Type would
           then be given to every character you create afterward, but now instead
           of naming the Attribute and saying what type of Attribute it is, you
           get to specify a value for the Attribute.
-        </div>
-        <div>
+        </p>
+        <p>
           An Attribute is anything you may wish to keep track of for anything.
           These do not include Name or Description, because all Types and Things
           always have Name and Description by default. Attributes are for
@@ -165,9 +165,9 @@ class Page extends Component {
           suggestions. The Chips are the choices that will be in the drop down
           list which the user has when creating or editing a Thing with that
           Attribute.
-        </div>
-        <div>The last two Attribute types are a little more complicated.</div>
-        <div>
+        </p>
+        <p>The last two Attribute types are a little more complicated.</p>
+        <p>
           When adding Attributes to a Type, the 'Type' Attribute type allows you
           to then choose from the various Types you've defined for the World,
           and then when you're creating or editing a Thing (such as the
@@ -178,8 +178,8 @@ class Page extends Component {
           drop down list which shows all the 'Characters' you've added to the
           World as possible 'Best Friends'. You would of course then choose 'Ron
           Weasley' (Sorry, Hermione, but you're a close second.).
-        </div>
-        <div>
+        </p>
+        <p>
           The Attribute Type 'List' is still more complicated than 'Type'. It
           allows you to decide which type of 'List' it's going to be. For now it
           only supports 'Text', 'Options', and 'Type'. (I'm not planning to add
@@ -199,8 +199,8 @@ class Page extends Component {
           'List' Attributes, the items in the list are displayed separated by
           commas when looking at the details page rather than creating or
           editing.
-        </div>
-        <div>
+        </p>
+        <p>
           One last note about Attributes of type 'Type' or 'List' of 'Type'.
           I've made it so that if you want to choose a Defined Type which you
           haven't defined yet you can choose '+ Create New Type' and it opens a
@@ -219,15 +219,15 @@ class Page extends Component {
           type 'Ron Weasley'. He would get added as a blank character with just
           his Name, but he would then be selected as Harry's 'Best Friend', and
           you could finish defining Harry, and get to Ron later.
-        </div>
-        <div>
+        </p>
+        <p>
           (Planned Future Features: Other Attribute types, including: Image,
           Event, and External Link. If you have any suggestions of others, feel
           free to recommend them. Also allow Types to have Default values for
           Attributes, but that will create the possibility of Default
           Collisions, similar to Name Collisions.)
-        </div>
-        <div>
+        </p>
+        <p>
           And that brings us to Things. If you've gotten to this point, then you
           probably already understand what Things are, but I'll outline it
           anyway. The generic term Thing is used to mean any actual thing you're
@@ -252,32 +252,32 @@ class Page extends Component {
           Attributes for Things. When I do, I'll probably try to find a way to
           make it so with adding/editing orphaned Attributes you'll be able to
           add the Attribute to a selected Type already on the Thing.)
-        </div>
-        <div>I probably should have put Attributes below Things, but oh well.</div>
-        <div>Other Planned Future Features:</div>
+        </p>
+        <p>I probably should have put Attributes below Things, but oh well.</p>
+        <p>Other Planned Future Features:</p>
         <div>
-          <div>
+          <p>
             Forums: I'm going to have a General Site Forum, and each World will
             automatically get its own Forum.
-          </div>
-          <div>
+          </p>
+          <p>
             Direct Messages: I'll add a simple messaging system to allow people
             to communicate directly with one another.
-          </div>
-          <div>
+          </p>
+          <p>
             Auto-links: For both Forums and DMs I'll allow users to put links to
             pages through a simple system similar to hashtags in Social Media.
             I'm thinking I also want to add this capability to Descriptions on
             Types and Things.
-          </div>
-          <div>
+          </p>
+          <p>
             Following Public Worlds: Currently all Public Worlds are listed in
             the menu, but I should make it so only those that the user follows
             are shown there, and have a button to pull up the full list, and add
             a button for people who neither own or collaborate on a Public World
             to 'Follow' the World.
-          </div>
-          <div>
+          </p>
+          <p>
             Home Page content: I'm planning to have actual Home Page content.
             This will have a link to a video tutorial for new users (which I
             have yet to make, and will need occasional updating after it's
@@ -285,7 +285,7 @@ class Page extends Component {
             to make it so it can automatically have links to recently added or
             edited Types or Things and recent Forum posts which may be of
             interest to the user.
-          </div>
+          </p>
         </div>
       </div>
     );

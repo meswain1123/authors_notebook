@@ -18,6 +18,7 @@ import API from "../../api";
 import Grid from "@material-ui/core/Grid";
 import Modal from '@material-ui/core/Modal';
 import { Fab, Tooltip } from "@material-ui/core";
+import { Helmet } from 'react-helmet';
 
 const mapStateToProps = state => {
   const thing = state.app.selectedThing;
@@ -126,6 +127,9 @@ class Page extends Component {
 
       return (
         <Grid item xs={12} container spacing={0} direction="column">
+          <Helmet>
+            <title>{ this.props.selectedWorld === null ? `Author's Notebook` : `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
+          </Helmet>
           <Grid item container spacing={0} direction="row">
             <Grid item xs={9}>
               <h2>{this.state.Name}</h2>

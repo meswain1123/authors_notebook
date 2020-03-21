@@ -1,41 +1,56 @@
 import React, { Component } from "react";
 import "../../App.css";
-import logo from "../../logo.svg";
-import Button from "@material-ui/core/Button";
-import Add from "@material-ui/icons/Add";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-import Icon from "@material-ui/core/Icon";
-import Divider from "@material-ui/core/Divider";
+// import logo from "../../logo.svg";
+import logo from "../../assets/img/ANB.png";
+import {
+  Button,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Icon,
+  Divider,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  Fab
+} from "@material-ui/core";
+import { Add, Star, Search } from "@material-ui/icons";
+import StarBorderIcon from '@material-ui/icons/StarBorder';
 import { NavLink } from "react-router-dom";
 import { connect } from "react-redux";
 import menuRoutes from "./routes";
-import { 
-  selectPage, setWorlds, setPublicWorlds 
+import {
+  selectPage,
+  setWorlds,
+  setPublicWorlds,
+  setFollowingWorlds
 } from "../../redux/actions/index";
 import API from "../../api";
 
-
 const mapStateToProps = state => {
-  return { 
+  return {
     selectedPage: state.app.selectedPage,
     worlds: state.app.worlds,
     publicWorlds: state.app.publicWorlds,
-    user: state.app.user
+    user: state.app.user,
+    followingWorlds: state.app.followingWorlds
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
     selectPage: page => dispatch(selectPage(page)),
     setWorlds: worlds => dispatch(setWorlds(worlds)),
-    setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds))
+    setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
+    setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs))
   };
 }
 class Bar extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      browse: false,
+      Filter: ""
     };
     this.api = API.getInstance();
   }
@@ -45,7 +60,7 @@ class Bar extends Component {
       console.log(res);
       this.props.setPublicWorlds(res.worlds);
     });
-    // These kinds of things can also be done in render, 
+    // These kinds of things can also be done in render,
     // but I prefer to put it here because it's only run once.
     // The downside is that it's run before props gets populated
     // so, it needs to be put into setTimeout to give the props
@@ -53,8 +68,7 @@ class Bar extends Component {
     setTimeout(() => {
       if (this.props.user !== null) {
         this.api.getWorldsForUser().then(res => {
-          if (res.worlds !== undefined)
-            this.props.setWorlds(res.worlds);
+          if (res.worlds !== undefined) this.props.setWorlds(res.worlds);
         });
       }
     }, 500);
@@ -66,15 +80,19 @@ class Bar extends Component {
         {menuRoutes.map((prop, key) => {
           return (
             <ListItem key={key}>
-              <Button 
-                fullWidth variant="contained" color="primary" 
-                href={prop.path}>
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                href={prop.path}
+              >
                 {typeof prop.icon === "string" ? (
                   <Icon className="marginLeft">{prop.icon}</Icon>
                 ) : (
                   <prop.icon className="marginLeft" />
                 )}
-                &nbsp;<ListItemText primary={prop.name} className="marginLeft" />
+                &nbsp;
+                <ListItemText primary={prop.name} className="marginLeft" />
               </Button>
             </ListItem>
           );
@@ -85,10 +103,7 @@ class Bar extends Component {
 
   brand() {
     return (
-      <NavLink
-        to={`/`} className="blue blackFont"
-        activeClassName="active"
-      >
+      <NavLink to={`/`} className="blue blackFont" activeClassName="active">
         <ListItem button className="curvedButton">
           <img src={logo} alt="logo" className="App-logo" />
           <ListItemText primary={this.props.logoText} />
@@ -97,54 +112,204 @@ class Bar extends Component {
     );
   }
 
+  toggleFollow = (worldID, follow) => {
+    let followingWorlds = [...this.props.followingWorlds];
+    console.log(this.props.followingWorlds);
+    if (follow) {
+      followingWorlds.push(worldID);
+    } else {
+      console.log(worldID);
+      const index = followingWorlds.indexOf(worldID);
+      console.log(index);
+      followingWorlds.splice(index, 1);
+    }
+    console.log(followingWorlds);
+    if (this.props.user !== null) {
+      const user = { ...this.props.user };
+      user.followingWorlds = followingWorlds;
+      this.props.setFollowingWorlds(followingWorlds);
+      this.api.updateUser(user);
+    } else {
+      this.props.setFollowingWorlds(followingWorlds);
+    }
+  };
+
+  handleUserInput = e => {
+    const name = e.target.name;
+    const value =
+      e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    this.setState({ [name]: value });
+  };
+
   publicWorlds() {
-    const worldLinks = (this.props.publicWorlds === undefined || this.props.publicWorlds === null || this.props.publicWorlds.message !== undefined ? "" : this.props.publicWorlds.map((prop, key) => {
-      return (
-        <ListItem key={key}>
-          <Button 
-            fullWidth variant="contained" color="primary" 
-            href={`/world/details/${prop._id}`}>
-            <ListItemText primary={prop.Name} />
-          </Button>
-        </ListItem>
-      );
-    }));
+    const followingWorlds = [];
+    const otherWorlds = [];
+    if (this.props.publicWorlds !== undefined &&
+      this.props.publicWorlds !== null &&
+      this.props.publicWorlds.message === undefined) {
+      this.props.publicWorlds.forEach(w => {
+        if (this.state.browse) {
+          if (this.state.Filter === "" || w.Name.toLowerCase().includes(this.state.Filter.toLowerCase())) {
+            if (this.props.followingWorlds.includes(w._id)) {
+              followingWorlds.push(w);
+            }
+            else {
+              otherWorlds.push(w);
+            }
+          }
+        } else if (this.props.followingWorlds.includes(w._id)) {
+          followingWorlds.push(w);
+        }
+      });
+    }
+    console.log(this.props.publicWorlds);
+    console.log(this.props.followingWorlds);
+    console.log(followingWorlds);
+    console.log(otherWorlds);
     return (
       <div>
         <ListItem>
           <ListItemText display="none" primary={"Public Worlds"} />
+          <Fab
+            size="small"
+            color="primary"
+            onClick={e => {
+              this.setState({ browse: !this.state.browse });
+            }}
+          >
+            <Search />
+          </Fab>
         </ListItem>
-        {worldLinks}
+        { this.state.browse ?
+          <Grid container spacing={1} direction="column">
+            <Grid item>
+              <FormControl variant="outlined" fullWidth>
+                <InputLabel htmlFor="filter">Filter</InputLabel>
+                <OutlinedInput
+                  id="filter"
+                  name="Filter"
+                  type="text"
+                  autoComplete="Off"
+                  value={this.state.Filter}
+                  onChange={this.handleUserInput}
+                  labelWidth={43}
+                  fullWidth
+                />
+              </FormControl>
+            </Grid>
+            <Grid item>
+              <List>
+                {
+                  followingWorlds.map((w, key) => {
+                    return (
+                      <ListItem key={key}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="primary"
+                          href={`/world/details/${w._id}`}
+                        >
+                          <ListItemText primary={w.Name} />
+                        </Button>
+                        <Fab
+                          size="small"
+                          color="primary"
+                          onClick={e => {
+                            this.toggleFollow(w._id, false);
+                          }}
+                        >
+                          <Star />
+                        </Fab>
+                      </ListItem>
+                    );
+                  })
+                }
+                {
+                  otherWorlds.map((w, key) => {
+                    return (
+                      <ListItem key={key}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="primary"
+                          href={`/world/details/${w._id}`}
+                        >
+                          <ListItemText primary={w.Name} />
+                        </Button>
+                        <Fab
+                          size="small"
+                          color="primary"
+                          onClick={e => {
+                            this.toggleFollow(w._id, true);
+                          }}
+                        >
+                          <StarBorderIcon />
+                        </Fab>
+                      </ListItem>
+                    );
+                  })
+                }
+              </List>
+            </Grid>
+          </Grid> :
+          <div>
+            {
+              followingWorlds.map((w, key) => {
+                return (
+                  <ListItem key={key}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      href={`/world/details/${w._id}`}
+                    >
+                      <ListItemText primary={w.Name} />
+                    </Button>
+                  </ListItem>
+                );
+              })
+            }
+          </div>
+        }
       </div>
-      );
+    );
   }
 
   myWorlds() {
     if (this.props.user === null || this.props.user === undefined) {
       return "";
-    }
-    else {
-      const worldLinks = (this.props.worlds === undefined ? "" : this.props.worlds.map((prop, key) => {
-        return (
-          <ListItem key={key}>
-            <Button 
-              fullWidth variant="contained" color="primary" 
-              href={`/world/details/${prop._id}`}>
-              <ListItemText primary={prop.Name} />
-            </Button>
-          </ListItem>
-        );
-      }));
+    } else {
+      const worldLinks =
+        this.props.worlds === undefined
+          ? ""
+          : this.props.worlds.map((prop, key) => {
+              return (
+                <ListItem key={key}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    href={`/world/details/${prop._id}`}
+                  >
+                    <ListItemText primary={prop.Name} />
+                  </Button>
+                </ListItem>
+              );
+            });
       return (
         <div>
           <ListItem>
             <ListItemText primary={"My Worlds"} />
           </ListItem>
           <ListItem>
-            <Button 
-              fullWidth variant="contained" color="primary" 
-              href={`/world/create`}>
-              <Add/><ListItemText primary={"Create New"} />
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              href={`/world/create`}
+            >
+              <Add />
+              <ListItemText primary={"Create New"} />
             </Button>
           </ListItem>
           {worldLinks}
@@ -154,7 +319,7 @@ class Bar extends Component {
   }
 
   render() {
-    // I normally like to put things like this in componentDidMount, 
+    // I normally like to put things like this in componentDidMount,
     // but there it won't have access to anything in this.props.
     // console.log(this.props.user);
     // if (this.props.user !== null) {
@@ -164,7 +329,7 @@ class Bar extends Component {
     //   });
     // }
     return (
-      <List className="Sidebar">
+      <List>
         {this.brand()}
         <Divider light />
         {this.links()}

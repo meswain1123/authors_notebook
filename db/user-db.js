@@ -68,7 +68,8 @@ function register(respond, user) {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          password: user.password
+          password: user.password,
+          followingWorlds: user.followingWorlds
         });
         respond({ message: `Registration successful for ${user.email}!` });
       }
@@ -84,7 +85,8 @@ function updateUser(respond, id, user) {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        password: user.password
+        // password: user.password,
+        followingWorlds: user.followingWorlds
       }
     }
   );

@@ -11,15 +11,9 @@ import {
 import Edit from "@material-ui/icons/Edit";
 import Delete from "@material-ui/icons/Delete";
 import Add from "@material-ui/icons/Add";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-import Button from "@material-ui/core/Button";
+import { Fab, Modal, Grid, Button, Tooltip, List, ListItem, ListItemText } from "@material-ui/core";
+import { Helmet } from 'react-helmet';
 import API from "../../api";
-import Grid from "@material-ui/core/Grid";
-import Modal from '@material-ui/core/Modal';
-import Tooltip from '@material-ui/core/Tooltip';
-import { Fab } from "@material-ui/core";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -142,6 +136,9 @@ class Page extends Component {
       const references = this.props.types.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));
       return (
         <Grid item xs={12} container spacing={0} direction="column">
+          <Helmet>
+            <title>{ this.props.selectedWorld === null ? `Author's Notebook` : `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
+          </Helmet>
           <Grid item container spacing={0} direction="row">
             <Grid item xs={6}>
               <h2>{this.state.Name}</h2>

@@ -24,11 +24,13 @@ router.get('/getUsersByText/:text', function (req, res) {
         _id: user._id,
         email: user.email,
         firstName: user.firstName,
-        lastName: user.lastName
+        lastName: user.lastName,
+        followingWorlds: user.followingWorlds
       };
       res.send({ message: `Welcome to World Building, ${user.firstName}!  Let's make a World!`, user: pwdStripped });
     } else {
-      console.log(`Login error: ${user}`);
+      console.log(`Login error`);
+      console.log(user);
       res.send({ message: 'There was a problem with your credentials.', user: null });
     }
   };
@@ -43,6 +45,17 @@ router.get('/getUsersByText/:text', function (req, res) {
     res.send(messageObj);
   };
   db.register(respond, req.body);
+  // res.send({message: 'Testing'});
+}).patch('/update', function (req, res) {
+  if (req.session.userID !== req.body._id) {
+    res.send({message: "Session lost.  Please log in again."});
+  } 
+  else {
+    function respond(messageObj) {
+      res.send(messageObj);
+    };
+    db.updateUser(respond, req.session.userID, req.body);
+  }
   // res.send({message: 'Testing'});
 });
 

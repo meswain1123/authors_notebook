@@ -18,7 +18,8 @@ import {
   UPDATE_THING,
   UPDATE_SELECTED_THING,
   LOAD_FROM_STORAGE,
-  TOGGLE_MENU
+  TOGGLE_MENU,
+  SET_FOLLOWING_WORLDS
 } from "../constants/actionTypes";
 
 const initialState = {
@@ -28,6 +29,7 @@ const initialState = {
   loginError: "",
   worlds: [],
   publicWorlds: [],
+  followingWorlds: [],
   selectedWorld: null,
   selectedWorldID: null,
   types: [],
@@ -47,6 +49,7 @@ function rootReducer(state = initialState, action) {
     const selectedWorldID = sessionStorage.getItem("selectedWorldID");
     const types = JSON.parse(sessionStorage.getItem("types"));
     const things = JSON.parse(sessionStorage.getItem("things"));
+    const followingWorlds = JSON.parse(sessionStorage.getItem("followingWorlds"));
     
     return Object.assign({}, state, {
       user: user,
@@ -55,7 +58,8 @@ function rootReducer(state = initialState, action) {
       selectedWorld,
       selectedWorldID,
       types: types === null ? [] : types,
-      things: things === null ? [] : things
+      things: things === null ? [] : things,
+      followingWorlds: followingWorlds === null ? [] : followingWorlds
     });
   } else if (action.type === SELECT_PAGE) {
     return Object.assign({}, state, {
@@ -67,8 +71,10 @@ function rootReducer(state = initialState, action) {
     });
   } else if (action.type === LOGIN) {
     sessionStorage.setItem("user", JSON.stringify(action.payload));
+    sessionStorage.setItem("followingWorlds", JSON.stringify(action.payload.followingWorlds));
     return Object.assign({}, state, {
-      user: action.payload
+      user: action.payload, 
+      followingWorlds: action.payload.followingWorlds
     });
   } else if (action.type === LOG_OUT) {
     sessionStorage.removeItem("user");
@@ -272,6 +278,12 @@ function rootReducer(state = initialState, action) {
   } else if (action.type === TOGGLE_MENU) {
     return Object.assign({}, state, {
       menuOpen: !state.menuOpen
+    });
+  } else if (action.type === SET_FOLLOWING_WORLDS) {
+    sessionStorage.setItem("followingWorlds", JSON.stringify(action.payload));
+    console.log(action.payload);
+    return Object.assign({}, state, {
+      followingWorlds: action.payload
     });
   }
   return state;

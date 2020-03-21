@@ -97,6 +97,20 @@ class APIClass {
       return "success";
     }
   };
+  
+  updateUser = async user => {
+    if (this.real) {
+      const response = await this.patchData("/api/user/update", user);
+      return this.processResponse(response);
+    } else {
+      return {
+        _id: "-1",
+        email: "fake@fakemail.com",
+        firstName: "Liar Liar",
+        lastName: "Pants on Fire"
+      };
+    }
+  };
 
   // World
   getWorldsForUser = async () => {

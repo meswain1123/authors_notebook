@@ -18,7 +18,8 @@ import {
   UPDATE_THING,
   UPDATE_SELECTED_THING,
   LOAD_FROM_STORAGE,
-  TOGGLE_MENU
+  TOGGLE_MENU,
+  SET_FOLLOWING_WORLDS
 } from "../constants/actionTypes";
 
 export function selectPage(payload) {
@@ -80,4 +81,7 @@ export function loadFromStorage(payload) {
 }
 export function toggleMenu(payload) {
   return { type: TOGGLE_MENU, payload };
+}
+export function setFollowingWorlds(payload) {
+  return { type: SET_FOLLOWING_WORLDS, payload };
 }

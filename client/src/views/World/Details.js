@@ -13,6 +13,7 @@ import Button from "@material-ui/core/Button";
 import Modal from '@material-ui/core/Modal';
 import Tooltip from '@material-ui/core/Tooltip';
 import { Fab } from "@material-ui/core";
+import { Helmet } from 'react-helmet';
 
 const mapStateToProps = state => {
   return {
@@ -124,6 +125,9 @@ class Page extends Component {
             ""
           ) : (
             <Grid item container spacing={0} direction="row">
+              <Helmet>
+                <title>{ `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
+              </Helmet>
               <Grid item xs={9}>
                 <h2>{this.props.selectedWorld.Name}</h2>
               </Grid>

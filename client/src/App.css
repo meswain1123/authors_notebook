@@ -222,7 +222,7 @@ sidebarWrapper: {
   z-index: 1;
   top: 0;
   left: 0;
-  /* overflow-x: hidden; */
+  overflow-x: hidden;
 }
 
 .main {

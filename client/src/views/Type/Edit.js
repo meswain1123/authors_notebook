@@ -17,6 +17,7 @@ import FormHelperText from "@material-ui/core/FormHelperText";
 import AttributesControl from "./AttributesControl";
 import { Multiselect } from 'multiselect-react-dropdown';
 import Grid from "@material-ui/core/Grid";
+import { Helmet } from 'react-helmet';
 import API from "../../api";
 
 /* 
@@ -344,6 +345,9 @@ class Page extends Component {
       
       return (
         <Grid item xs={12} container spacing={1} direction="column">
+          <Helmet>
+            <title>{ this.props.selectedWorld === null ? `Author's Notebook` : `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
+          </Helmet>
           <Grid item>
             <h2>{this.state._id === null ? "Create New Type" : "Edit Type"}</h2>
           </Grid>

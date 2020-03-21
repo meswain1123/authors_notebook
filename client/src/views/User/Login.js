@@ -12,9 +12,10 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import { userLogin, selectPage, setWorlds } from "../../redux/actions/index";
+import { userLogin, selectPage, setWorlds, setFollowingWorlds } from "../../redux/actions/index";
 import Link from "@material-ui/core/Link";
 import Cookies from "universal-cookie";
+import { Helmet } from 'react-helmet';
 import API from '../../api';
 
 
@@ -22,14 +23,16 @@ const mapStateToProps = state => {
   return { 
     selectedPage: state.app.selectedPage, 
     user: state.app.user, 
-    loginError: state.app.loginError 
+    loginError: state.app.loginError,
+    followingWorlds: state.app.followingWorlds
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
     selectPage: page => dispatch(selectPage(page)),
     userLogin: user => dispatch(userLogin(user)),
-    setWorlds: worlds => dispatch(setWorlds(worlds))
+    setWorlds: worlds => dispatch(setWorlds(worlds)),
+    setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs))
   };
 }
 class Page extends Component {
@@ -188,7 +191,8 @@ class Page extends Component {
       email: this.state.email,
       password: this.state.password,
       firstName: this.state.firstName,
-      lastName: this.state.lastName
+      lastName: this.state.lastName,
+      followingWorlds: this.props.followingWorlds
     };
     if (this.state.formMode === "login") {
       this.api.login(user).then(res => {
@@ -206,7 +210,9 @@ class Page extends Component {
           this.api.getWorldsForUser(res.user._id).then(res => {
             this.props.setWorlds(res.worlds);
           });
+          console.log(res.user);
           this.props.userLogin(res.user);
+          // this.props.setFollowingWorlds(res.user.followingWorlds);
           this.setState({ redirectTo: "/" });
         }
       })
@@ -265,6 +271,9 @@ class Page extends Component {
       if (this.state.formMode === "login") {
         return (
           <div>
+            <Helmet>
+              <title>Author's Notebook: Login</title>
+            </Helmet>
             <h2>Login</h2>
             <div className="row">
               <div className="col-sm-12">
