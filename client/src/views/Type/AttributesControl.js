@@ -15,9 +15,11 @@ import FormHelperText from "@material-ui/core/FormHelperText";
 import {
   updateSelectedType,
   updateAttributesArr,
-  addType
+  addType,
+  addThing
 } from "../../redux/actions/index";
 import AttributeControl from "./AttributeControl";
+import AttributeDefaultControl from "./AttributeDefaultControl";
 import API from "../../api";
 
 const Label = styled("label")`
@@ -40,6 +42,7 @@ const mapStateToProps = state => {
     selectedType: state.app.selectedType,
     attributesArr: state.app.attributesArr,
     types: state.app.types,
+    things: state.app.things,
     selectedWorldID: state.app.selectedWorldID
   };
 };
@@ -48,20 +51,24 @@ function mapDispatchToProps(dispatch) {
     updateSelectedType: type => dispatch(updateSelectedType(type)),
     updateAttributesArr: arr => dispatch(updateAttributesArr(arr)),
     addType: type => dispatch(addType(type)),
+    addThing: thing => dispatch(addThing(thing))
   };
 }
 class Control extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      modalOpen: false,
+      typeModalOpen: false,
+      thingModalOpen: false,
       Name: "",
       fieldValidation: {
         Name: { valid: true, message: "" }
       },
       formValid: false,
       message: "",
-      waiting: false
+      waiting: false,
+      defaultsMode: false,
+      newThingType: null
     };
     this.api = API.getInstance();
   }
@@ -94,7 +101,9 @@ class Control extends Component {
       Type2: value.Type2,
       ListType: value.ListType,
       FromSupers: value.FromSupers,
-      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
+      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"],
+      DefaultValue: value.DefaultValue,
+      DefaultListValues: value.DefaultListValues
     };
     this.props.updateSelectedType(type);
   };
@@ -133,7 +142,12 @@ class Control extends Component {
 
   addNewType = (respond) => {
     // Opens a Modal where they enter a name.
-    this.setState({modalOpen: true, modalSubmit: respond});
+    this.setState({typeModalOpen: true, modalSubmit: respond});
+  }
+
+  addNewThing = (respond, type) => {
+    // Opens a Modal where they enter a name.
+    this.setState({thingModalOpen: true, modalSubmit: respond, newThingType: type});
   }
 
   handleUserInput = e => {
@@ -169,6 +183,9 @@ class Control extends Component {
           message = "Only Letters, Numbers, and Spaces allowed in Type Names";
         else if (value.length < 2) {
           valid = false;
+          if (this.state.thingModalOpen) {
+            message = this.state.newThingType.Name + " Name is too short"
+          }
           message = "Type Name is too short";
         } else {
           valid =
@@ -232,7 +249,59 @@ class Control extends Component {
           this.state.modalSubmit(type);
           this.setState({
             waiting: false, 
-            modalOpen: false
+            typeModalOpen: false
+          });
+        }
+        else if (res.message !== undefined) {
+          this.setState({
+            waiting: false, 
+            message: res.message 
+          });
+        }
+      })
+      .catch(err => console.log(err));
+  };
+
+  saveNewThing = () => {
+    function respond() {
+      if (this.state.formValid) {
+        this.setState({ waiting: true }, this.submitThingThroughAPI);
+      }
+    }
+
+    this.validateForm(respond);
+  };
+
+  submitThingThroughAPI = () => {
+    const types = this.props.types.filter(t=> t._id === this.state.newThingType._id || this.state.newThingType.SuperIDs.includes(t._id));
+    const typeIDs = types.map(s => {
+      return s._id;
+    });
+    const thing = {
+      _id: null,
+      Name: this.state.Name,
+      Description: "",
+      TypeIDs: typeIDs,
+      AttributesArr: [],
+      worldID: this.props.selectedWorldID
+    };
+    console.log(thing);
+
+    // Calls API
+    this.api
+      .createThing(thing)
+      .then(res => {
+        console.log(res);
+        if (res.thingID !== undefined) {
+          thing._id = res.thingID;
+          thing.Types = types;
+          // Adds to props 
+          this.props.addThing(thing);
+          // Calls respond back to Attribute to set the thing
+          this.state.modalSubmit(thing);
+          this.setState({
+            waiting: false, 
+            thingModalOpen: false
           });
         }
         else if (res.message !== undefined) {
@@ -254,17 +323,39 @@ class Control extends Component {
         <Grid item>
           <List>
             <ListItem>
-              <Button variant="contained" color="primary" onClick={this.newAttribute}>
-                <Add />
-                <ListItemText primary={"Create New"} />
-              </Button>
+              <Grid container spacing={0} direction="row">
+                <Grid item xs={6}>
+                  <Button disabled={this.state.defaultsMode} variant="contained" color="primary" onClick={this.newAttribute}>
+                    <Add />
+                    <ListItemText primary={"Create New"} />
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button variant="contained" color="primary" onClick={e => { this.setState({defaultsMode: !this.state.defaultsMode}) }}>
+                    <ListItemText primary={ this.state.defaultsMode ? "Set Attribute Types" : "Set Defaults"} />
+                  </Button>
+                </Grid>
+              </Grid>
             </ListItem>
             {this.props.selectedType === null ||
             this.props.selectedType === undefined
               ? ""
               : this.props.selectedType.AttributesArr.map((attribute, i) => {
-                  return (
-                    <ListItem key={i}>
+                // TODO: Once all attributes have these fields then I can remove these two lines.
+                attribute.DefaultValue = attribute.DefaultValue === undefined ? "" : attribute.DefaultValue;
+                attribute.DefaultListValues = attribute.DefaultListValues === undefined ? [] : attribute.DefaultListValues;
+                return (
+                  <ListItem key={i}>
+                    { this.state.defaultsMode ? 
+                      <AttributeDefaultControl
+                        typeID={this.props.selectedType._id}
+                        attribute={attribute}
+                        onChange={this.changeAttribute}
+                        onBlur={this.blurAttribute}
+                        types={this.props.types}
+                        things={this.props.things}
+                        onNewThing={this.addNewThing}
+                      /> : 
                       <AttributeControl
                         typeID={this.props.selectedType._id}
                         attribute={attribute}
@@ -272,18 +363,20 @@ class Control extends Component {
                         onDelete={this.deleteAttribute}
                         onBlur={this.blurAttribute}
                         types={this.props.types}
+                        things={this.props.things}
                         onNewType={this.addNewType}
-                      />
-                    </ListItem>
-                  );
-                })}
+                      /> 
+                    }
+                  </ListItem>
+                );
+              })}
           </List>
         </Grid>
         <Modal
           aria-labelledby="new-type-modal"
           aria-describedby="new-type-modal-description"
-          open={this.state.modalOpen}
-          onClose={e => {this.setState({modalOpen: false})}}
+          open={this.state.typeModalOpen}
+          onClose={e => {this.setState({typeModalOpen: false})}}
         >
           <div style={this.getModalStyle()} className="paper">
             <Grid container spacing={1} direction="column">
@@ -329,7 +422,66 @@ class Control extends Component {
                   <Button
                     fullWidth
                     variant="contained"
-                    onClick={e => {this.setState({modalOpen: false})}}
+                    onClick={e => {this.setState({typeModalOpen: false})}}
+                  >
+                    Cancel
+                  </Button>
+                </Grid>
+              </Grid>
+            </Grid>
+          </div>
+        </Modal>
+        <Modal
+          aria-labelledby="new-thing-modal"
+          aria-describedby="new-thing-modal-description"
+          open={this.state.thingModalOpen}
+          onClose={e => {this.setState({thingModalOpen: false})}}
+        >
+          <div style={this.getModalStyle()} className="paper">
+            <Grid container spacing={1} direction="column">
+              <Grid item>
+                Just give the new {this.state.newThingType === null ? "" : this.state.newThingType.Name} a name.
+              </Grid>
+              <Grid item>
+                (You can do the rest later.)
+              </Grid>
+              <Grid item>
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel htmlFor="name">Name</InputLabel>
+                  <OutlinedInput
+                    id="name"
+                    name="Name"
+                    type="text"
+                    autoComplete="Off"
+                    error={!this.state.fieldValidation.Name.valid}
+                    value={this.state.Name}
+                    onChange={this.handleUserInput}
+                    onBlur={this.inputBlur}
+                    labelWidth={43}
+                    fullWidth
+                  />
+                  <FormHelperText>
+                    {this.state.fieldValidation.Name.message}
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item container spacing={1} direction="row">
+                <Grid item xs={6}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    disabled={this.state.waiting}
+                    onClick={this.saveNewThing}
+                  >
+                    {this.state.waiting ? "Please Wait" : "Submit"}
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={e => {this.setState({thingModalOpen: false})}}
                   >
                     Cancel
                   </Button>

@@ -39,7 +39,8 @@ const mapStateToProps = state => {
     types: state.app.types,
     subTypes: subTypes,
     instances: things,
-    user: state.app.user
+    user: state.app.user,
+    things: state.app.things
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -133,6 +134,7 @@ class Page extends Component {
     } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
+      // console.log(this.props.things.filter(t=>t.TypeIDs.includes("5e782f41024e5d1aa87a11ba")));
       const references = this.props.types.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));
       return (
         <Grid item xs={12} container spacing={0} direction="column">
@@ -194,6 +196,7 @@ class Page extends Component {
                     ? ""
                     : this.props.selectedType.AttributesArr.map(
                         (attribute, i) => {
+                          console.log(attribute);
                           return (
                             <ListItem key={i}>
                               <ListItemText>
@@ -209,15 +212,23 @@ class Page extends Component {
                                         </span>
                                       );
                                     })}
+                                    { attribute.DefaultValue !== "" ?
+                                    ` (Default: ${attribute.DefaultValue})`
+                                    : ""}
                                   </span>
                                 ) : attribute.Type === "Type" ? (
-                                  <Button
-                                    variant="contained"
-                                    color="primary"
-                                    href={`/type/details/${attribute.Type2}`}
-                                  >
-                                    <ListItemText primary={this.props.types.filter(t=>t._id === attribute.Type2)[0].Name}/>
-                                  </Button>
+                                  <span>
+                                    <Button
+                                      variant="contained"
+                                      color="primary"
+                                      href={`/type/details/${attribute.Type2}`}
+                                    >
+                                      <ListItemText primary={this.props.types.filter(t=>t._id === attribute.Type2)[0].Name}/>
+                                    </Button>
+                                    { attribute.DefaultValue !== "" ?
+                                    ` (Default: ${this.props.things.filter(t=>t._id === attribute.DefaultValue)[0].Name})`
+                                    : ""}
+                                  </span>
                                 ) : attribute.Type === "List" ? (
                                   <span>
                                     List:&nbsp;
@@ -232,21 +243,87 @@ class Page extends Component {
                                             </span>
                                           );
                                         })}
+                                        { attribute.DefaultListValues.length > 0 ?
+                                        <span>
+                                          &nbsp;(Defaults:
+                                          {attribute.DefaultListValues.map((defaultValue, j) => {
+                                            return (
+                                              <span key={j}>
+                                                {j === 0 ? " " : ", "}
+                                                {defaultValue}
+                                              </span>
+                                            );
+                                          })}
+                                          )
+                                        </span>
+                                        : ""}
                                       </span>
                                     ) : attribute.ListType === "Type" ? (
-                                      <Button
-                                        variant="contained"
-                                        color="primary"
-                                        href={`/type/details/${attribute.Type2}`}
-                                      >
-                                        <ListItemText primary={this.props.types.filter(t=>t._id === attribute.Type2)[0].Name}/>
-                                      </Button>
+                                      <span>
+                                        <Button
+                                          variant="contained"
+                                          color="primary"
+                                          href={`/type/details/${attribute.Type2}`}
+                                        >
+                                          <ListItemText primary={this.props.types.filter(t=>t._id === attribute.Type2)[0].Name}/>
+                                        </Button>
+                                        { attribute.DefaultListValues.length > 0 ?
+                                          <span>
+                                            &nbsp;(Defaults:
+                                            {attribute.DefaultListValues.map((defaultValue, j) => {
+                                              return (
+                                                <span key={j}>
+                                                  {j === 0 ? " " : ", "}
+                                                  <Button
+                                                    variant="contained"
+                                                    color="primary"
+                                                    href={`/thing/details/${defaultValue}`}
+                                                  >
+                                                    <ListItemText primary={this.props.things.filter(t=>t._id === defaultValue)[0].Name}/>
+                                                  </Button>
+                                                </span>
+                                              );
+                                            })}
+                                            )
+                                          </span>
+                                          : ""
+                                        }
+                                      </span>
                                     ) : (
-                                      attribute.ListType
+                                      <span>
+                                        {attribute.ListType}
+                                        { attribute.DefaultListValues.length > 0 ?
+                                          <span>
+                                            &nbsp;(Defaults:
+                                            {attribute.DefaultListValues.map((defaultValue, j) => {
+                                              return (
+                                                <span key={j}>
+                                                  {j === 0 ? " " : ", "}
+                                                  {defaultValue}
+                                                </span>
+                                              );
+                                            })}
+                                            )
+                                          </span>
+                                          : ""
+                                        }
+                                      </span>
                                     )}
                                   </span>
+                                ) : attribute.Type === "True/False" ? (
+                                  <span>
+                                    {attribute.Type}
+                                    { attribute.DefaultValue !== "" ?
+                                    ` (Default: ${attribute.DefaultValue})`
+                                    : " (Default: False)"}
+                                  </span>
                                 ) : (
-                                  attribute.Type
+                                  <span>
+                                    {attribute.Type}
+                                    { attribute.DefaultValue !== "" ?
+                                    ` (Default: ${attribute.DefaultValue})`
+                                    : ""}
+                                  </span>
                                 )}
                               </ListItemText>
                             </ListItem>

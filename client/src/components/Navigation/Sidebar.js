@@ -13,7 +13,8 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-  Fab
+  Fab,
+  Tooltip
 } from "@material-ui/core";
 import { Add, Star, Search } from "@material-ui/icons";
 import StarBorderIcon from '@material-ui/icons/StarBorder';
@@ -170,15 +171,17 @@ class Bar extends Component {
       <div>
         <ListItem>
           <ListItemText display="none" primary={"Public Worlds"} />
-          <Fab
-            size="small"
-            color="primary"
-            onClick={e => {
-              this.setState({ browse: !this.state.browse });
-            }}
-          >
-            <Search />
-          </Fab>
+          <Tooltip title={`Browse Public Worlds`}>
+            <Fab
+              size="small"
+              color="primary"
+              onClick={e => {
+                this.setState({ browse: !this.state.browse });
+              }}
+            >
+              <Search />
+            </Fab>
+          </Tooltip>
         </ListItem>
         { this.state.browse ?
           <Grid container spacing={1} direction="column">

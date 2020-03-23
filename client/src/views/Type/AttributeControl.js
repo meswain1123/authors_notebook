@@ -80,16 +80,20 @@ export default function AttributeControl(props) {
               changeName(e.target.value);
             }}
             onBlur={e => {
-              const attr = {
-                index: props.attribute.index,
-                Name: name,
-                Type: props.attribute.Type,
-                Options: props.attribute.Options,
-                ListType: props.attribute.ListType,
-                FromSupers: props.attribute.FromSupers,
-                Type2: props.attribute.Type2,
-                AttributeTypes: props.attribute.AttributeTypes
-              };
+              const attr = props.attribute;
+              attr.Name = name;
+              // const attr = {
+              //   index: props.attribute.index,
+              //   Name: name,
+              //   Type: props.attribute.Type,
+              //   Options: props.attribute.Options,
+              //   ListType: props.attribute.ListType,
+              //   FromSupers: props.attribute.FromSupers,
+              //   Type2: props.attribute.Type2,
+              //   AttributeTypes: props.attribute.AttributeTypes,
+              //   DefaultValue: defaultValue,
+              //   DefaultListValues: defaultListValues
+              // };
               props.onChange(attr);
             }}
             labelWidth={43}
@@ -119,95 +123,95 @@ export default function AttributeControl(props) {
         </FormControl>
       </Grid>
       <Grid item sm={3} xs={12}>
-        {type === "Options" ? (
-          <ChipInput
-            variant="outlined"
-            disabled={props.attribute.FromSupers.length > 0}
-            defaultValue={props.attribute.Options}
-            onChange={chips => handleOptionsChange(chips, props)}
-          />
-        ) : type === "Type" ? (
-          <FormControl variant="outlined" fullWidth>
-            <InputLabel htmlFor="type2" id="type2-label">
-              Defined Type
-            </InputLabel>
-            <Select
-              labelId="type2-label"
-              id="type2"
-              disabled={props.attribute.FromSupers.length > 0} 
-              value={props.attribute.Type2}
-              onChange={e => {handleType2Change(e, props)}}
-              fullWidth
-              labelWidth={100}
-            >
-              <MenuItem value="new">+ Create New Type</MenuItem>
-              {props.types.map((type, i) => {
-                return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
-              })}
-            </Select>
-          </FormControl>
-        ) : type === "List" ? (
-          <Grid container spacing={1} direction="column">
-            <Grid item>
-              <FormControl variant="outlined" fullWidth>
-                <InputLabel htmlFor="list-type" id="list-type-label">
-                  List Type
-                </InputLabel>
-                <Select
-                  labelId="list-type-label"
-                  id="list-type"
-                  disabled={props.attribute.FromSupers.length > 0} 
-                  value={props.attribute.ListType}
-                  onChange={e => {handleListTypeChange(e, props)}}
-                  fullWidth
-                  labelWidth={70}
-                >
-                  {listTypes.map((type, i) => {
-                    return (<MenuItem key={i} value={type}>{type}</MenuItem>);
-                  })}
-                </Select>
-              </FormControl>
+          {type === "Options" ? (
+            <ChipInput
+              variant="outlined"
+              disabled={props.attribute.FromSupers.length > 0}
+              defaultValue={props.attribute.Options}
+              onChange={chips => handleOptionsChange(chips, props)}
+            />
+          ) : type === "Type" ? (
+            <FormControl variant="outlined" fullWidth>
+              <InputLabel htmlFor="type2" id="type2-label">
+                Defined Type
+              </InputLabel>
+              <Select
+                labelId="type2-label"
+                id="type2"
+                disabled={props.attribute.FromSupers.length > 0} 
+                value={props.attribute.Type2}
+                onChange={e => {handleType2Change(e, props)}}
+                fullWidth
+                labelWidth={100}
+              >
+                <MenuItem value="new">+ Create New Type</MenuItem>
+                {props.types.map((type, i) => {
+                  return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
+                })}
+              </Select>
+            </FormControl>
+          ) : type === "List" ? (
+            <Grid container spacing={1} direction="column">
+              <Grid item>
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel htmlFor="list-type" id="list-type-label">
+                    List Type
+                  </InputLabel>
+                  <Select
+                    labelId="list-type-label"
+                    id="list-type"
+                    disabled={props.attribute.FromSupers.length > 0} 
+                    value={props.attribute.ListType}
+                    onChange={e => {handleListTypeChange(e, props)}}
+                    fullWidth
+                    labelWidth={70}
+                  >
+                    {listTypes.map((type, i) => {
+                      return (<MenuItem key={i} value={type}>{type}</MenuItem>);
+                    })}
+                  </Select>
+                </FormControl>
+              </Grid>
+              { props.attribute.ListType === "Type" ? 
+                (
+                  <Grid item>
+                    <FormControl variant="outlined" fullWidth>
+                      <InputLabel htmlFor="type2" id="type2-label">
+                        Defined Type
+                      </InputLabel>
+                      <Select
+                        labelId="type2-label"
+                        id="type2"
+                        disabled={props.attribute.FromSupers.length > 0} 
+                        value={props.attribute.Type2}
+                        onChange={e => {handleType2Change(e, props)}}
+                        fullWidth
+                        labelWidth={100}
+                      >
+                        <MenuItem value="new">+ Create New Type</MenuItem>
+                        {props.types.map((type, i) => {
+                          return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                ) : props.attribute.ListType === "Options" ?
+                (
+                  <Grid item>
+                    <ChipInput
+                      variant="outlined"
+                      disabled={props.attribute.FromSupers.length > 0}
+                      defaultValue={props.attribute.Options}
+                      onChange={chips => handleOptionsChange(chips, props)}
+                    />
+                  </Grid>
+                ) : ""
+              }
             </Grid>
-            { props.attribute.ListType === "Type" ? 
-              (
-                <Grid item>
-                  <FormControl variant="outlined" fullWidth>
-                    <InputLabel htmlFor="type2" id="type2-label">
-                      Defined Type
-                    </InputLabel>
-                    <Select
-                      labelId="type2-label"
-                      id="type2"
-                      disabled={props.attribute.FromSupers.length > 0} 
-                      value={props.attribute.Type2}
-                      onChange={e => {handleType2Change(e, props)}}
-                      fullWidth
-                      labelWidth={100}
-                    >
-                      <MenuItem value="new">+ Create New Type</MenuItem>
-                      {props.types.map((type, i) => {
-                        return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
-                      })}
-                    </Select>
-                  </FormControl>
-                </Grid>
-              ) : props.attribute.ListType === "Options" ?
-              (
-                <Grid item>
-                  <ChipInput
-                    variant="outlined"
-                    disabled={props.attribute.FromSupers.length > 0}
-                    defaultValue={props.attribute.Options}
-                    onChange={chips => handleOptionsChange(chips, props)}
-                  />
-                </Grid>
-              ) : ""
-            }
-          </Grid>
-        ) : (
-          ""
-        )}
-      </Grid>
+          ) : (
+            ""
+          )}
+        </Grid>
       <Grid item sm={3} xs={12}>
         <Button
           variant="contained" color="primary"

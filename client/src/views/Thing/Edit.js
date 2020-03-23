@@ -104,8 +104,14 @@ class Page extends Component {
                   // Thing Attributes have Values, so we need to add that field.
                   // In the future I'll have List Types, in which case this will be more complicated.
                   // Also I'll be adding default values.
-                  attribute.Value = "";
-                  attribute.ListValues = [];
+                  if (attribute.DefaultValue === undefined) {
+                    attribute.Value = "";
+                    attribute.ListValues = [];
+                  }
+                  else {
+                    attribute.Value = attribute.DefaultValue;
+                    attribute.ListValues = attribute.DefaultListValues;
+                  }
                   attributes.push(attribute);
                 } else {
                   // It's an existing attribute,
@@ -174,8 +180,14 @@ class Page extends Component {
         // Thing Attributes have Values, so we need to add that field.
         // In the future I'll have List Types, in which case this will be more complicated.
         // Also I'll be adding default values.
-        attribute.Value = "";
-        attribute.ListValues = [];
+        if (attribute.DefaultValue === undefined) {
+          attribute.Value = "";
+          attribute.ListValues = [];
+        }
+        else {
+          attribute.Value = attribute.DefaultValue;
+          attribute.ListValues = attribute.DefaultListValues;
+        }
         attributes.push(attribute);
       } else {
         // It's an existing attribute,
@@ -377,8 +389,14 @@ class Page extends Component {
         // Thing Attributes have Values, so we need to add that field.
         // In the future I'll have List Types, in which case this will be more complicated.
         // Also I'll be adding default values.
-        attribute.Value = "";
-        attribute.ListValues = [];
+        if (attribute.DefaultValue === undefined) {
+          attribute.Value = "";
+          attribute.ListValues = [];
+        }
+        else {
+          attribute.Value = attribute.DefaultValue;
+          attribute.ListValues = attribute.DefaultListValues;
+        }
         attributes.push(attribute);
       } else {
         // It's an existing attribute,

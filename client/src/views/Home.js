@@ -221,11 +221,16 @@ class Page extends Component {
           you could finish defining Harry, and get to Ron later.
         </p>
         <p>
+          And one more thing about Attributes in general.  I added the ability to
+          set Default values for attributes on the Type.  Default Values will 
+          automatically be set on any Things of that Type.  I made it as user 
+          friendly as I could think to make it.
+        </p>
+        <p>
           (Planned Future Features: Other Attribute types, including: Image,
           Event, and External Link. If you have any suggestions of others, feel
-          free to recommend them. Also allow Types to have Default values for
-          Attributes, but that will create the possibility of Default
-          Collisions, similar to Name Collisions.)
+          free to recommend them.  Also need to put in validation to detect 
+          Name and Default collisions.)
         </p>
         <p>
           And that brings us to Things. If you've gotten to this point, then you
