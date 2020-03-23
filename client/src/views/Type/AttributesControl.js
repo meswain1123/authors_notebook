@@ -252,10 +252,10 @@ class Control extends Component {
             typeModalOpen: false
           });
         }
-        else if (res.message !== undefined) {
+        else if (res.error !== undefined) {
           this.setState({
             waiting: false, 
-            message: res.message 
+            message: res.error 
           });
         }
       })
@@ -304,10 +304,10 @@ class Control extends Component {
             thingModalOpen: false
           });
         }
-        else if (res.message !== undefined) {
+        else if (res.error !== undefined) {
           this.setState({
             waiting: false, 
-            message: res.message 
+            message: res.error 
           });
         }
       })

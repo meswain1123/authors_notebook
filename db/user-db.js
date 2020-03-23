@@ -42,7 +42,7 @@ function getUserByEmail(respond, email) {
     db.collection("user")
       .find({ email: email })
       .toArray(function(err, docs) {
-        if (err) respond({ message: `Error: ${err}.  Try registering.` });
+        if (err) respond({ error: `Error: ${err}.  Try registering.` });
         else if (docs == null || docs.length == 0) respond(null);
         else respond(docs[0]);
       });
@@ -62,7 +62,7 @@ function register(respond, user) {
         throw err;
       }
       if (docs != null && docs.length > 0) {
-        respond({ message: `There is already an account for ${user.email}.` });
+        respond({ error: `There is already an account for ${user.email}.` });
       } else {
         const results = db.collection("user").insertOne({
           firstName: user.firstName,

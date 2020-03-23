@@ -82,7 +82,7 @@ function rootReducer(state = initialState, action) {
       user: null
     });
   } else if (action.type === SET_WORLDS) {
-    if (action.payload.message === undefined){
+    if (action.payload.error === undefined){
       sessionStorage.setItem("worlds", JSON.stringify(action.payload));
       if (state.selectedWorldID !== null && state.selectedWorld === null) {
         const worldArr = action.payload.filter(
@@ -110,7 +110,7 @@ function rootReducer(state = initialState, action) {
       return Object.assign({}, state, {});
     }
   } else if (action.type === SET_PUBLIC_WORLDS) {
-    if (action.payload.message === undefined){
+    if (action.payload.error === undefined){
       sessionStorage.setItem("publicWorlds", JSON.stringify(action.payload));
       if (state.selectedWorldID !== null && state.selectedWorld === null) {
         const worldArr = action.payload.filter(

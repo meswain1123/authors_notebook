@@ -68,7 +68,7 @@ class Page extends Component {
       if (id !== undefined) {
         this.api.getThing(this.props.selectedWorldID, id).then(res => {
           console.log(res);
-          if (res.message === undefined) {
+          if (res.error === undefined) {
             let Types = [];
             res.TypeIDs.forEach(tID=> {
               Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
@@ -82,7 +82,7 @@ class Page extends Component {
             this.props.updateSelectedThing(res);
           }
           else {
-            console.log(res.message);
+            console.log(res.error);
           }
         });
       } else {

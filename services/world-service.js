@@ -19,7 +19,7 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
       console.log(req.session);
-      res.send({ message: "Session lost.  Please log in again." });
+      res.send({ error: "Session lost.  Please log in again." });
     } else {
       function respond(worlds) {
         res.send({worlds});
@@ -40,7 +40,7 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
       console.log(req.session);
-      res.send({ message: "Session lost.  Please log in again." });
+      res.send({ error: "Session lost.  Please log in again." });
     } else {
       function respond(worldID) {
         res.send({ worldID });
@@ -54,7 +54,7 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
       console.log(req.session);
-      res.send({ message: "Session lost.  Please log in again." });
+      res.send({ error: "Session lost.  Please log in again." });
     } 
     else {
       function respond(message) {
@@ -69,7 +69,7 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
       console.log(req.session);
-      res.send({ message: "Session lost.  Please log in again." });
+      res.send({ error: "Session lost.  Please log in again." });
     } else {
       function respond(message) {
         res.send(message);
@@ -89,7 +89,7 @@ router
           req.session.worldID = req.body.worldID;
           res.send({ message: `Welcome to ${world.Name}!` });
         } else {
-          res.send({ message: "There was a problem getting the world." });
+          res.send({ error: "There was a problem getting the world." });
         }
       }
       db.getWorld(respond, req.session.userID, req.body.worldID);
@@ -100,7 +100,7 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}, ${req.session.worldID}`);
     // if (req.params.worldID == undefined) {
     //   console.log(req.session);
-    //   res.send({ message: "Session lost.  Please log in again." });
+    //   res.send({ error: "Session lost.  Please log in again." });
     // } else {
       function respond(types) {
         res.send({ types });
@@ -114,12 +114,12 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}`);
     // if (req.session.worldID === undefined) {
     //   console.log(req.session);
-    //   res.send({ message: "Session lost.  Please log in again." });
+    //   res.send({ error: "Session lost.  Please log in again." });
     // }
     // else {
     function respond(type) {
       if (type === null)
-        res.send({ message: "Get Type Failed" });
+        res.send({ error: "Get Type Failed" });
       else
         res.send(type);
     }
@@ -134,17 +134,17 @@ router
     // console.log(req.body.type);
     if (req.session.userID == undefined) {
       console.log(req.session);
-      res.send({ message: "Session lost.  Please log in again." });
+      res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
         // console.log(world);
         if (world === null || world.Owner !== req.session.userID) {
-          res.send({ message: "Problem with creating the Type" });
+          res.send({ error: "Problem with creating the Type" });
         }
         else {
           function gotType(type) {
-            if (type.message == undefined || type.message != "Type not found") {
-              res.send({ message: "This world already has a Type by that name." });
+            if (type.error == undefined || type.error != "Type not found") {
+              res.send({ error: "This world already has a Type by that name." });
             } else {
               function respond(typeID) {
                 res.send({ typeID });
@@ -166,12 +166,12 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
       console.log(req.session);
-      res.send({ message: "Session lost.  Please log in again." });
+      res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
         // console.log(world);
         if (world === null || world.Owner !== req.session.userID) {
-          res.send({ message: "Problem with deleting the Type" });
+          res.send({ error: "Problem with deleting the Type" });
         }
         else {
           function respond(message) {
@@ -190,11 +190,11 @@ router
     // console.log(req.body.type);
     if (req.session.userID == undefined) {
       console.log(req.session);
-      res.send({ message: "Session lost.  Please log in again." });
+      res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
         if (world === null || world.Owner !== req.session.userID) {
-          res.send({ message: "Problem with updating the Type" });
+          res.send({ error: "Problem with updating the Type" });
         }
         else {
           function respond(message) {
@@ -213,7 +213,7 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}`);
     // if (req.session.worldID == undefined) {
     //   console.log(req.session);
-    //   res.send({ message: "Session lost.  Please log in again." });
+    //   res.send({ error: "Session lost.  Please log in again." });
     // } else {
       function respond(things) {
         res.send({ things });
@@ -227,7 +227,7 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}`);
     // if (req.session.worldID == undefined) {
     //   console.log(req.session);
-    //   res.send({ message: "Session lost.  Please log in again." });
+    //   res.send({ error: "Session lost.  Please log in again." });
     // } else {
       function respond(thing) {
         // console.log(thing);
@@ -242,16 +242,16 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.worldID) {
       console.log(req.session);
-      res.send({ message: "Session lost.  Please log in again." });
+      res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
         if (world === null || world.Owner !== req.session.userID) {
-          res.send({ message: "Problem with creating the Thing" });
+          res.send({ error: "Problem with creating the Thing" });
         }
         else {
           function gotThing(thing) {
             if (thing !== null) {
-              res.send({ message: "There is already a Thing by that Name in this world." });
+              res.send({ error: "There is already a Thing by that Name in this world." });
             }
             else {
               function respond(thingID) {
@@ -277,11 +277,11 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) { // || req.session.worldID == undefined) {
       console.log(req.session);
-      res.send({ message: "Session lost.  Please log in again." });
+      res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
         if (world === null || world.Owner !== req.session.userID) {
-          res.send({ message: "Problem with deleting the Thing" });
+          res.send({ error: "Problem with deleting the Thing" });
         }
         else {
           function respond(message) {
@@ -304,11 +304,11 @@ router
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.worldID) {
       console.log(req.session);
-      res.send({ message: "Session lost.  Please log in again." });
+      res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
         if (world === null || world.Owner !== req.session.userID) {
-          res.send({ message: "Problem with creating the Thing" });
+          res.send({ error: "Problem with creating the Thing" });
         }
         else {
           function respond(message) {

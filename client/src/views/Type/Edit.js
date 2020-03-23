@@ -70,7 +70,7 @@ class Page extends Component {
       const { id } = this.props.match.params;
       if (id !== undefined) {
         this.api.getType(this.props.selectedWorldID, id).then(res => {
-          if (res.message === undefined) {
+          if (res.error === undefined) {
             const supers = this.props.types.filter(type =>
               res.SuperIDs.includes(type._id)
             );
@@ -84,7 +84,7 @@ class Page extends Component {
             this.props.updateSelectedType(res);
           }
           else {
-            this.setState({ message: res.message });
+            this.setState({ message: res.error });
           }
         });
       } else {
@@ -229,10 +229,10 @@ class Page extends Component {
               redirectTo: `/world/details/${this.props.selectedWorld._id}`
             });
           }
-          else if (res.message !== undefined) {
+          else if (res.error !== undefined) {
             this.setState({
               waiting: false, 
-              message: res.message 
+              message: res.error 
             });
           }
         })
@@ -241,7 +241,7 @@ class Page extends Component {
       this.api
         .updateType(type)
         .then(res => {
-          if (res.message === `Type ${type.Name} updated!`) {
+          if (res.error === `Type ${type.Name} updated!`) {
             this.props.updateType(type);
             this.setState({
               waiting: false,
@@ -251,7 +251,7 @@ class Page extends Component {
           else {
             this.setState({
               waiting: false, 
-              message: res.message 
+              message: res.error 
             });
           }
         })

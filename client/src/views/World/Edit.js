@@ -166,8 +166,8 @@ class Page extends Component {
       this.api
         .createWorld(world)
         .then(res => {
-          if (res.message  !== undefined) {
-            this.setState({ message: res.message });
+          if (res.error  !== undefined) {
+            this.setState({ message: res.error });
           }
           else {
             world._id = res.worldID;
@@ -183,8 +183,8 @@ class Page extends Component {
       this.api
         .updateWorld(world)
         .then(res => {
-          if (res.message !== `World ${world.Name} updated!`) {
-            this.setState({ message: res.message });
+          if (res.error !== undefined) {
+            this.setState({ message: res.error });
           }
           else {
             this.props.updateWorld(world);

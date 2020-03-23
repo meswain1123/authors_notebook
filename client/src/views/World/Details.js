@@ -60,7 +60,7 @@ class Page extends Component {
   getTypes() {
     this.api.getTypesForWorld(this.props.selectedWorldID).then(res => {
       // console.log(res);
-      if (res !== undefined && res.message === undefined) {
+      if (res !== undefined && res.error === undefined) {
         // Add Supers to each type
         const types = res.types;
         types.forEach(t=> {
@@ -77,7 +77,7 @@ class Page extends Component {
   getThings() {
     this.api.getThingsForWorld(this.props.selectedWorldID).then(res => {
       console.log(res);
-      if (res !== undefined && res.message === undefined) {
+      if (res !== undefined && res.error === undefined) {
         const things = res.things;
         things.forEach(t=> {
           t.Types = [];

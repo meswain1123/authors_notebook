@@ -79,7 +79,7 @@ class Page extends Component {
       const { id } = this.props.match.params;
       if (id !== undefined) { // When I move to storing more in session, this is the kind of place where I'll check.
         this.api.getType(this.props.selectedWorldID, id).then(res => {
-          if (res.message === undefined) {
+          if (res.error === undefined) {
             const supers = this.props.types.filter(type =>
               res.SuperIDs.includes(type._id)
             );
@@ -93,7 +93,7 @@ class Page extends Component {
             this.props.updateSelectedType(res);
           }
           else {
-            console.log(res.message);
+            console.log(res.error);
           }
         });
       } else {

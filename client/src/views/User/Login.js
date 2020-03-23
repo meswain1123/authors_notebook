@@ -198,7 +198,7 @@ class Page extends Component {
       this.api.login(user).then(res => {
         if (res.user === null) {
           let errors = this.state.fieldValidation;
-          errors.loginError = { message: res.message, valid: false, show: true };
+          errors.loginError = { message: res.error, valid: false, show: true };
           this.setState({ fieldValidation: errors, waiting: false });
         }
         else {

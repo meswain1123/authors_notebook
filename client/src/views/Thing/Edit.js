@@ -323,7 +323,7 @@ class Page extends Component {
       this.api
         .createThing(thing)
         .then(res => {
-          if (res.message === undefined){
+          if (res.error === undefined){
             thing._id = res.thingID;
             thing.Types = this.state.Types;
             this.props.addThing(thing);
@@ -333,7 +333,7 @@ class Page extends Component {
             });
           }
           else {
-            this.setState({message: res.message});
+            this.setState({message: res.error});
           }
         })
         .catch(err => console.log(err));
@@ -342,7 +342,7 @@ class Page extends Component {
         .updateThing(thing)
         .then(res => {
           console.log(res);
-          if (res.message === undefined){
+          if (res.error === undefined){
             thing.Types = this.state.Types;
             this.props.updateThing(thing);
             this.setState({
@@ -351,7 +351,7 @@ class Page extends Component {
             });
           }
           else {
-            this.setState({message: res.message});
+            this.setState({message: res.error});
           }
         })
         .catch(err => console.log(err));
@@ -401,6 +401,7 @@ class Page extends Component {
       } else {
         // It's an existing attribute,
         // so we just need to add the appropriate ids to FromTypes.
+        // Unless the attribute has a default, and the Thing doesn't have a value already.
         const typeIDs = [...matches[0].FromTypes];
         for (let i = 0; i < attribute.FromTypes.length; i++) {
           const typeID = attribute.FromTypes[i];
@@ -408,12 +409,42 @@ class Page extends Component {
             typeIDs.push(typeID);
           }
         }
+        console.log(matches[0].Value);
+        console.log(attribute.DefaultValue);
+        console.log(matches[0].Type !== "List" && (matches[0].Value === undefined || matches[0].Value === "") && attribute.DefaultValue !== undefined);
+        if (matches[0].Type !== "List" && (matches[0].Value === undefined || matches[0].Value === "") && attribute.DefaultValue !== undefined && attribute.DefaultValue !== "") {
+          console.log('hi');
+          matches[0].Value = attribute.DefaultValue;
+          console.log(matches[0].Value);
+        }
+        else if (matches[0].Type === "List" && attribute.DefaultListValues !== undefined) {
+          attribute.DefaultListValues.forEach(v=> {
+            if (!matches[0].ListValues.includes(v))
+              matches[0].ListValues.push(v);
+          });
+          // matches[0].ListValues = attribute.DefaultListValues;
+        }
         matches[0].FromTypes = typeIDs;
       }
     }
     this.setState({ Types: selectedList });
     thing.AttributesArr = attributes;
+    console.log(attributes);
+    // this.props.updateSelectedThing(thing);
+    // const attributesArr = [];
+    // thing.AttributesArr.forEach(t => {
+    //   if (t.index !== value.index) {
+    //     if (t.index > value.index)
+    //       t.index--;
+    //     attributesArr.push(t);
+    //   }
+    // });
+    thing.AttributesArr = [];
     this.props.updateSelectedThing(thing);
+    setTimeout(() => {
+      thing.AttributesArr = attributes;
+      this.props.updateSelectedThing(thing);
+    }, 500);
   }
   
   removeType = (selectedList, removedItem) => {

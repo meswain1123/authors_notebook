@@ -147,7 +147,7 @@ class Bar extends Component {
     const otherWorlds = [];
     if (this.props.publicWorlds !== undefined &&
       this.props.publicWorlds !== null &&
-      this.props.publicWorlds.message === undefined) {
+      this.props.publicWorlds.error === undefined) {
       this.props.publicWorlds.forEach(w => {
         if (this.state.browse) {
           if (this.state.Filter === "" || w.Name.toLowerCase().includes(this.state.Filter.toLowerCase())) {

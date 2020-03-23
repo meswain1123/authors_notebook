@@ -31,7 +31,7 @@ function getWorldsForUser(respond, userID) {
     db.collection("world")
       .find({ Owner: userID }) // I'll add collaborators later
       .toArray(function(err, docs) {
-        if (err) respond({ message: `Error: ${err}.` });
+        if (err) respond({ error: `Error: ${err}.` });
         else if (docs == null || docs.length == 0) respond([]);
         else respond(docs);
       });
@@ -47,7 +47,7 @@ function getPublicWorlds(respond) {
     db.collection("world")
       .find({ Public: true })
       .toArray(function(err, docs) {
-        if (err) respond({ message: `Error: ${err}.` });
+        if (err) respond({ error: `Error: ${err}.` });
         else if (docs == null || docs.length == 0) respond([]);
         else respond(docs);
       });
@@ -63,7 +63,7 @@ function getWorld(respond, userID, worldID) {
     db.collection("world")
       .find({ $or: [ { Public: true }, { Owner: userID }], _id: ObjectID(worldID) }) // I'll add collaborators later
       .toArray(function(err, docs) {
-        if (err) respond({ message: `Error: ${err}.` });
+        if (err) respond({ error: `Error: ${err}.` });
         else if (docs == null || docs.length == 0) respond(null);
         else respond(docs[0]);
       });
@@ -83,7 +83,7 @@ function createWorld(respond, userID, world) {
         throw err;
       }
       if (docs != null && docs.length > 0) {
-        respond({ message: `You already have a world named ${world.Name}.` });
+        respond({ error: `You already have a world named ${world.Name}.` });
       } else {
         db.collection("world").insertOne({
           Owner: userID,
@@ -119,7 +119,7 @@ function deleteWorld(respond, userID, worldID) {
         });
         respond({ message: `World ${worldID} deleted!` });
       } else {
-        respond({ message: `You don't own that world!` });
+        respond({ error: `You don't own that world!` });
       }
     });
 }
@@ -146,7 +146,7 @@ function updateWorld(respond, userID, world) {
         );
         respond({ message: `World ${world.Name} updated!` });
       } else {
-        respond({ message: `You don't own that world!` });
+        respond({ error: `You don't own that world!` });
       }
     });
 }
@@ -156,7 +156,7 @@ function getTypesForWorld(respond, worldID) {
   db.collection("type")
     .find({ worldID: worldID }, { _id: 1, Name: 1, SuperIDs: 1, ReferenceIDs: 1 })
     .toArray(function(err, docs) {
-      if (err) respond({ message: `Error: ${err}.` });
+      if (err) respond({ error: `Error: ${err}.` });
       else {
         respond(docs);
       }
@@ -183,12 +183,12 @@ function getTypeByName(respond, worldID, Name) {
     .find({ worldID: worldID, Name: Name })
     .toArray(function(err, docs) {
       if (err) {
-        respond({ message: "Get Type By Name Error", err: err });
+        respond({ error: "Get Type By Name Error", err: err });
       }
       else if (docs != null && docs.length > 0) {
         respond(docs[0]);
       } else {
-        respond({ message: "Type not found" });
+        respond({ error: "Type not found" });
       }
     });
 }
@@ -269,7 +269,7 @@ function getThingsForWorld(respond, userID, worldID) {
     db.collection("thing")
       .find({ worldID: worldID }, { _id: 1, Name: 1, TypeIDs: 1, ReferenceIDs: 1 })
       .toArray(function(err, docs) {
-        if (err) respond({ message: `Error: ${err}.` });
+        if (err) respond({ error: `Error: ${err}.` });
         else respond(docs);
       });
   } catch (err) {

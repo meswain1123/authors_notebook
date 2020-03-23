@@ -42,7 +42,7 @@ class UserIndex extends Component {
     const response = await postData('/user/login', this.state.user);
     const body = await response.json();
 
-    if (response.status !== 200) throw Error(body.message);
+    if (response.status !== 200) throw Error(body.error);
 
     return body;
   };
