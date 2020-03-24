@@ -58,7 +58,6 @@ class Bar extends Component {
 
   componentDidMount() {
     this.api.getPublicWorlds().then(res => {
-      console.log(res);
       this.props.setPublicWorlds(res.worlds);
     });
     // These kinds of things can also be done in render,
@@ -115,16 +114,12 @@ class Bar extends Component {
 
   toggleFollow = (worldID, follow) => {
     let followingWorlds = [...this.props.followingWorlds];
-    console.log(this.props.followingWorlds);
     if (follow) {
       followingWorlds.push(worldID);
     } else {
-      console.log(worldID);
       const index = followingWorlds.indexOf(worldID);
-      console.log(index);
       followingWorlds.splice(index, 1);
     }
-    console.log(followingWorlds);
     if (this.props.user !== null) {
       const user = { ...this.props.user };
       user.followingWorlds = followingWorlds;
@@ -163,10 +158,6 @@ class Bar extends Component {
         }
       });
     }
-    console.log(this.props.publicWorlds);
-    console.log(this.props.followingWorlds);
-    console.log(followingWorlds);
-    console.log(otherWorlds);
     return (
       <div>
         <ListItem>
@@ -322,15 +313,6 @@ class Bar extends Component {
   }
 
   render() {
-    // I normally like to put things like this in componentDidMount,
-    // but there it won't have access to anything in this.props.
-    // console.log(this.props.user);
-    // if (this.props.user !== null) {
-    //   this.api.getWorldsForUser().then(res => {
-    //     if (res.worlds !== undefined)
-    //       this.props.setWorlds(res.worlds);
-    //   });
-    // }
     return (
       <List>
         {this.brand()}

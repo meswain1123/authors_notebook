@@ -59,7 +59,9 @@ class Page extends Component {
       formValid: false,
       message: "",
       redirectTo: null,
-      waiting: false
+      waiting: false,
+      addMore: false,
+      resetting: false
     };
     this.api = API.getInstance();
   }
@@ -83,7 +85,6 @@ class Page extends Component {
         else {
           // We're editing an existing Thing
           this.api.getThing(this.props.selectedWorldID, id).then(res => {
-            console.log(res);
             const things = this.props.things.filter(
               thing => res._id !== thing._id
             );
@@ -207,6 +208,28 @@ class Page extends Component {
     this.props.updateSelectedThing(thing);
   };
 
+  resetForm = () => {
+    setTimeout(() => {
+      this.setState({resetting: false}, this.finishResettingForm);
+    }, 500);
+  };
+
+  finishResettingForm = () => {
+    const { id } = this.props.match.params;
+    if (id !== undefined && id.includes("type_id_")) {
+      // We're creating it from a type rather than from blank
+      const typeID = id.substring(8);
+      let type = this.props.types.filter(t=> t._id === typeID);
+      if (type.length > 0) {
+        type = type[0];
+        this.createThingFromType(type);
+      }
+      else {
+        this.setState({ message: "Invalid Type" });
+      }
+    }
+  }
+
   handleUserInput = e => {
     const name = e.target.name;
     const value =
@@ -283,10 +306,10 @@ class Page extends Component {
     );
   };
 
-  onSubmit = () => {
+  onSubmit = (addMore) => {
     function respond() {
       if (this.state.formValid) {
-        this.setState({ waiting: true }, this.submitThroughAPI);
+        this.setState({ waiting: true, addMore: addMore }, this.submitThroughAPI);
       }
     }
 
@@ -327,10 +350,36 @@ class Page extends Component {
             thing._id = res.thingID;
             thing.Types = this.state.Types;
             this.props.addThing(thing);
-            this.setState({
-              waiting: false,
-              redirectTo: `/world/details/${this.props.selectedWorld._id}`
-            });
+            if (this.state.addMore) {
+              this.props.updateSelectedThing({
+                _id: null,
+                Name: "",
+                Description: "",
+                Types: [],
+                AttributesArr: []
+              });
+              this.setState({
+                _id: null,
+                Name: "",
+                Description: "",
+                Types: [],
+                Attributes: [],
+                fieldValidation: {
+                  Name: { valid: true, message: "" },
+                  AttributesArr: { valid: true, message: "" }
+                },
+                formValid: false,
+                message: "",
+                waiting: false,
+                resetting: true
+              }, this.resetForm);
+            }
+            else {
+              this.setState({
+                waiting: false,
+                redirectTo: `/world/details/${this.props.selectedWorld._id}`
+              });
+            }
           }
           else {
             this.setState({message: res.error});
@@ -341,14 +390,39 @@ class Page extends Component {
       this.api
         .updateThing(thing)
         .then(res => {
-          console.log(res);
           if (res.error === undefined){
             thing.Types = this.state.Types;
             this.props.updateThing(thing);
-            this.setState({
-              waiting: false,
-              redirectTo: `/world/details/${this.props.selectedWorld._id}`
-            });
+            if (this.state.addMore) {
+              this.props.updateSelectedThing({
+                _id: null,
+                Name: "",
+                Description: "",
+                Types: [],
+                AttributesArr: []
+              });
+              this.setState({
+                _id: null,
+                Name: "",
+                Description: "",
+                Types: [],
+                Attributes: [],
+                fieldValidation: {
+                  Name: { valid: true, message: "" },
+                  AttributesArr: { valid: true, message: "" }
+                },
+                formValid: false,
+                message: "",
+                waiting: false,
+                resetting: true
+              }, this.resetForm);
+            }
+            else {
+              this.setState({
+                waiting: false,
+                redirectTo: `/world/details/${this.props.selectedWorld._id}`
+              });
+            }
           }
           else {
             this.setState({message: res.error});
@@ -409,13 +483,8 @@ class Page extends Component {
             typeIDs.push(typeID);
           }
         }
-        console.log(matches[0].Value);
-        console.log(attribute.DefaultValue);
-        console.log(matches[0].Type !== "List" && (matches[0].Value === undefined || matches[0].Value === "") && attribute.DefaultValue !== undefined);
         if (matches[0].Type !== "List" && (matches[0].Value === undefined || matches[0].Value === "") && attribute.DefaultValue !== undefined && attribute.DefaultValue !== "") {
-          console.log('hi');
           matches[0].Value = attribute.DefaultValue;
-          console.log(matches[0].Value);
         }
         else if (matches[0].Type === "List" && attribute.DefaultListValues !== undefined) {
           attribute.DefaultListValues.forEach(v=> {
@@ -429,16 +498,6 @@ class Page extends Component {
     }
     this.setState({ Types: selectedList });
     thing.AttributesArr = attributes;
-    console.log(attributes);
-    // this.props.updateSelectedThing(thing);
-    // const attributesArr = [];
-    // thing.AttributesArr.forEach(t => {
-    //   if (t.index !== value.index) {
-    //     if (t.index > value.index)
-    //       t.index--;
-    //     attributesArr.push(t);
-    //   }
-    // });
     thing.AttributesArr = [];
     this.props.updateSelectedThing(thing);
     setTimeout(() => {
@@ -496,6 +555,9 @@ class Page extends Component {
   }
 
   render() {
+    // console.log(this.props.selectedThing);
+    // console.log(this.state.Types);
+    // console.log(this.props.types);
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
@@ -545,17 +607,21 @@ class Page extends Component {
             </FormControl>
           </Grid>
           <Grid item>
-            <Multiselect
-              placeholder="Types"
-              options={this.props.types}
-              selectedValues={this.state.Types}
-              onSelect={this.addType}
-              onRemove={this.removeType}
-              displayValue="Name"
-            />
+            { this.state.resetting ? "" :
+              <Multiselect
+                placeholder="Types"
+                options={this.props.types}
+                selectedValues={this.state.Types}
+                onSelect={this.addType}
+                onRemove={this.removeType}
+                displayValue="Name"
+              />
+            }
           </Grid>
           <Grid item>
-            <AttributesControl />
+            { this.state.resetting ? "" : 
+              <AttributesControl />
+            }
             <FormHelperText>
               {this.state.fieldValidation.AttributesArr.message}
             </FormHelperText>
@@ -564,9 +630,18 @@ class Page extends Component {
             <div className="float-right">
               <Button
                 variant="contained" color="primary"
+                disabled={this.state.waiting}
+                onClick={e => {this.onSubmit(true);}}
+                type="submit"
+              >
+                {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
+              </Button>
+              <Button
+                variant="contained" color="primary"
+                style={{marginLeft: "4px"}}
                 className="w200"
                 disabled={this.state.waiting}
-                onClick={this.onSubmit}
+                onClick={e => {this.onSubmit(false);}}
                 type="submit"
               >
                 {this.state.waiting ? "Please Wait" : "Submit"}

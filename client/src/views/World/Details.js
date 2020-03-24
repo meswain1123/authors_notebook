@@ -51,7 +51,6 @@ class Page extends Component {
     this.props.selectWorld(id);
     setTimeout(() => {
       this.api.selectWorld(id).then(res => {
-        console.log(res);
         this.getTypes();
       });
     }, 500);
@@ -59,7 +58,6 @@ class Page extends Component {
 
   getTypes() {
     this.api.getTypesForWorld(this.props.selectedWorldID).then(res => {
-      // console.log(res);
       if (res !== undefined && res.error === undefined) {
         // Add Supers to each type
         const types = res.types;
@@ -76,7 +74,6 @@ class Page extends Component {
   }
   getThings() {
     this.api.getThingsForWorld(this.props.selectedWorldID).then(res => {
-      console.log(res);
       if (res !== undefined && res.error === undefined) {
         const things = res.things;
         things.forEach(t=> {

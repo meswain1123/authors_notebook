@@ -60,7 +60,10 @@ class Page extends Component {
       },
       formValid: false,
       message: "",
-      redirectTo: null
+      redirectTo: null,
+      waiting: false,
+      addMore: false,
+      resetting: false
     };
     this.api = API.getInstance();
   }
@@ -99,6 +102,12 @@ class Page extends Component {
       }
     }, 500);
   }
+
+  resetForm = () => {
+    setTimeout(() => {
+      this.setState({resetting: false});
+    }, 500);
+  };
 
   handleUserInput = e => {
     const name = e.target.name;
@@ -187,10 +196,10 @@ class Page extends Component {
     );
   };
 
-  onSubmit = () => {
+  onSubmit = (addMore) => {
     function respond() {
       if (this.state.formValid) {
-        this.setState({ waiting: true }, this.submitThroughAPI);
+        this.setState({ waiting: true, addMore: addMore }, this.submitThroughAPI);
       }
     }
 
@@ -216,18 +225,51 @@ class Page extends Component {
         type.ReferenceIDs.push(a.Type2);
       }
     });
+    console.log(type);
 
     if (type._id === null) {
       this.api
         .createType(type)
         .then(res => {
+          console.log(res);
           if (res.typeID !== undefined) {
             type._id = res.typeID;
             this.props.addType(type);
-            this.setState({
-              waiting: false,
-              redirectTo: `/world/details/${this.props.selectedWorld._id}`
-            });
+            if (this.state.addMore) {
+              console.log('hi');
+              this.props.updateSelectedType({
+                _id: null,
+                Name: "",
+                Description: "",
+                Supers: [],
+                AttributesArr: [],
+                Major: false
+              });
+              this.setState({
+                _id: null,
+                Name: "",
+                Description: "",
+                Supers: [],
+                Attributes: [],
+                Major: false,
+                fieldValidation: {
+                  Name: { valid: true, message: "" },
+                  AttributesArr: { valid: true, message: "" }
+                },
+                formValid: false,
+                message: "",
+                redirectTo: null,
+                waiting: false,
+                addMore: false,
+                resetting: true
+              }, this.resetForm);
+            }
+            else {
+              this.setState({
+                waiting: false,
+                redirectTo: `/world/details/${this.props.selectedWorld._id}`
+              });
+            }
           }
           else if (res.error !== undefined) {
             this.setState({
@@ -241,12 +283,44 @@ class Page extends Component {
       this.api
         .updateType(type)
         .then(res => {
-          if (res.error === `Type ${type.Name} updated!`) {
+          console.log(res);
+          if (res.error === undefined) {
             this.props.updateType(type);
-            this.setState({
-              waiting: false,
-              redirectTo: `/world/details/${this.props.selectedWorld._id}`
-            });
+            if (this.state.addMore) {
+              console.log('hi');
+              this.props.updateSelectedType({
+                _id: null,
+                Name: "",
+                Description: "",
+                Supers: [],
+                AttributesArr: [],
+                Major: false
+              });
+              this.setState({
+                _id: null,
+                Name: "",
+                Description: "",
+                Supers: [],
+                Attributes: [],
+                Major: false,
+                fieldValidation: {
+                  Name: { valid: true, message: "" },
+                  AttributesArr: { valid: true, message: "" }
+                },
+                formValid: false,
+                message: "",
+                redirectTo: null,
+                waiting: false,
+                addMore: false,
+                resetting: true
+              }, this.resetForm);
+            }
+            else {
+              this.setState({
+                waiting: false,
+                redirectTo: `/world/details/${this.props.selectedWorld._id}`
+              });
+            }
           }
           else {
             this.setState({
@@ -400,14 +474,16 @@ class Page extends Component {
             />
           </Grid>
           <Grid item>
-            <Multiselect
-              placeholder="Super Types"
-              options={types}
-              selectedValues={this.state.Supers}
-              onSelect={this.addSuper}
-              onRemove={this.removeSuper}
-              displayValue="Name"
-            />
+            { this.state.resetting ? "" :
+              <Multiselect
+                placeholder="Super Types"
+                options={types}
+                selectedValues={this.state.Supers}
+                onSelect={this.addSuper}
+                onRemove={this.removeSuper}
+                displayValue="Name"
+              />
+            }
           </Grid>
           <Grid item>
             <AttributesControl />
@@ -435,9 +511,18 @@ class Page extends Component {
             <div className="float-right">
               <Button
                 variant="contained" color="primary"
+                disabled={this.state.waiting}
+                onClick={e => {this.onSubmit(true);}}
+                type="submit"
+              >
+                {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
+              </Button>
+              <Button
+                variant="contained" color="primary"
+                style={{marginLeft: "4px"}}
                 className="w-200"
                 disabled={this.state.waiting}
-                onClick={this.onSubmit}
+                onClick={e => {this.onSubmit(false);}}
                 type="submit"
               >
                 {this.state.waiting ? "Please Wait" : "Submit"}
