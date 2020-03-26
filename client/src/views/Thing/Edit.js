@@ -126,7 +126,6 @@ class Page extends Component {
 
   resetForm = () => {
     setTimeout(() => {
-      console.log('hi');
       let { id } = this.props.match.params;
       if (id !== undefined && !id.includes("type_id_")) {
         this.setState({
@@ -269,7 +268,6 @@ class Page extends Component {
         }
       });
     });
-    console.log(thing);
 
     if (thing._id === null) {
       this.api
@@ -586,8 +584,6 @@ class Page extends Component {
     } else if (this.props.selectedWorld !== null && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
-      console.log(this.state);
-      console.log(this.props);
       return (
         <Grid item xs={12} container spacing={1} direction="column">
           { this.props.selectedWorld === null ? "" :

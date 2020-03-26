@@ -116,8 +116,6 @@ class Page extends Component {
 
   render() {
     const { id } = this.props.match.params;
-    // console.log(id);
-    // console.log(this.props);
     if (this.props.selectedWorldID === null || this.props.selectedWorldID !== id) {
       this.load(id);
     }

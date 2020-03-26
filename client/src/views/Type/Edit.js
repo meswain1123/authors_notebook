@@ -419,8 +419,6 @@ class Page extends Component {
   }
 
   render() {
-    // console.log(this.state);
-    // console.log(this.props);
     let { id } = this.props.match.params;
     if (id === undefined)
       id = null;
@@ -432,8 +430,6 @@ class Page extends Component {
     } else if (this.props.selectedWorld !== null && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
-      console.log(this.state);
-      console.log(this.props);
       const types =
         this.props.types === undefined || this.state._id === null
           ? this.props.types

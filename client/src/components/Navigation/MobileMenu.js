@@ -74,11 +74,11 @@ class Menu extends Component {
           <ListItem key={key} className="curvedButton">
             <NavLink
               to={prop.path}
-              style={{
-                width: `${this.props.width}px`
-              }}
               onClick={_ => {
                 this.props.toggleMenu();
+              }}
+              style={{
+                width: `${this.props.width}px`
               }}
               className="MyButton"
               activeClassName="active"
@@ -173,6 +173,9 @@ class Menu extends Component {
                 <ListItem key={key} className="curvedButton">
                   <NavLink
                     to={`/world/details/${w._id}`}
+                    onClick={_ => {
+                      this.props.toggleMenu();
+                    }}
                     style={{
                       width: `${this.props.width - 80}px`
                     }}
@@ -198,6 +201,9 @@ class Menu extends Component {
                 <ListItem key={key} className="curvedButton">
                   <NavLink
                     to={`/world/details/${w._id}`}
+                    onClick={_ => {
+                      this.props.toggleMenu();
+                    }}
                     style={{
                       width: `${this.props.width - 80}px`
                     }}
@@ -228,6 +234,9 @@ class Menu extends Component {
       <ListItem key={key} className="curvedButton">
         <NavLink
           to={`/world/details/${w._id}`}
+          onClick={_ => {
+            this.props.toggleMenu();
+          }}
           style={{
             width: `${this.props.width}px`
           }}
@@ -253,6 +262,9 @@ class Menu extends Component {
               <ListItem key={key} className="curvedButton">
                 <NavLink
                   to={`/world/details/${w._id}`}
+                  onClick={_ => {
+                    this.props.toggleMenu();
+                  }}
                   style={{
                     width: `${this.props.width}px`
                   }}
@@ -294,6 +306,9 @@ class Menu extends Component {
         <ListItem className="curvedButton">
           <NavLink
             to={`/world/create`}
+            onClick={_ => {
+              this.props.toggleMenu();
+            }}
             style={{
               width: `${this.props.width}px`
             }}

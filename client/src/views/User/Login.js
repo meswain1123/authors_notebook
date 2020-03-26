@@ -210,9 +210,7 @@ class Page extends Component {
           this.api.getWorldsForUser(res.user._id).then(res => {
             this.props.setWorlds(res.worlds);
           });
-          console.log(res.user);
           this.props.userLogin(res.user);
-          // this.props.setFollowingWorlds(res.user.followingWorlds);
           this.setState({ redirectTo: "/" });
         }
       })

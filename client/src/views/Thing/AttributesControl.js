@@ -219,7 +219,6 @@ class Control extends Component {
   };
 
   render() {
-    console.log(this.props.selectedThing);
     return (
       <Grid item xs={12} container spacing={1} direction="column">
         <Grid item>Attributes</Grid>

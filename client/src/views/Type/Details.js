@@ -148,7 +148,6 @@ class Page extends Component {
     } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
-      // console.log(this.props.things.filter(t=>t.TypeIDs.includes("5e782f41024e5d1aa87a11ba")));
       const references = this.props.types.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));
       return (
         <Grid item xs={12} container spacing={0} direction="column">

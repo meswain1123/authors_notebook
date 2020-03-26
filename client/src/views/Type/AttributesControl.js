@@ -285,13 +285,11 @@ class Control extends Component {
       AttributesArr: [],
       worldID: this.props.selectedWorldID
     };
-    console.log(thing);
 
     // Calls API
     this.api
       .createThing(thing)
       .then(res => {
-        console.log(res);
         if (res.thingID !== undefined) {
           thing._id = res.thingID;
           thing.Types = types;

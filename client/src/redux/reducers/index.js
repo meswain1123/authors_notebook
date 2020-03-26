@@ -287,7 +287,6 @@ function rootReducer(state = initialState, action) {
     });
   } else if (action.type === SET_FOLLOWING_WORLDS) {
     sessionStorage.setItem("followingWorlds", JSON.stringify(action.payload));
-    console.log(action.payload);
     return Object.assign({}, state, {
       followingWorlds: action.payload
     });

@@ -59,38 +59,6 @@ class Page extends Component {
   }
 
   componentDidMount() {
-    // setTimeout(() => {
-    //   const { id } = this.props.match.params;
-    //   if (id !== undefined) {
-    //     this.api.getThing(this.props.selectedWorldID, id).then(res => {
-    //       console.log(res);
-    //       if (res.error === undefined) {
-    //         let Types = [];
-    //         res.TypeIDs.forEach(tID=> {
-    //           Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
-    //         });
-    //         this.setState({
-    //           Name: res.Name,
-    //           Description: res.Description,
-    //           _id: id,
-    //           Types: Types
-    //         });
-    //         this.props.updateSelectedThing(res);
-    //       }
-    //       else {
-    //         console.log(res.error);
-    //       }
-    //     });
-    //   } else {
-    //     this.props.updateSelectedThing({
-    //       _id: null,
-    //       Name: "",
-    //       Description: "",
-    //       Types: [],
-    //       AttributesArr: []
-    //     });
-    //   }
-    // }, 500);
   }
 
   getModalStyle = () => {
@@ -113,7 +81,6 @@ class Page extends Component {
   }
 
   load = (id) => {
-    // const { id } = this.props.match.params;
     setTimeout(() => {
       this.setState({
         _id: id,
