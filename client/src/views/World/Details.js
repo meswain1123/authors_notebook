@@ -47,13 +47,7 @@ class Page extends Component {
     this.api = API.getInstance();
   }
   componentDidMount() {
-    const { id } = this.props.match.params;
-    this.props.selectWorld(id);
-    setTimeout(() => {
-      this.api.selectWorld(id).then(res => {
-        this.getTypes();
-      });
-    }, 500);
+    // this.load();
   }
 
   getTypes() {
@@ -110,7 +104,23 @@ class Page extends Component {
     };
   }
 
+  load = (id) => {
+    // const { id } = this.props.match.params;
+    setTimeout(() => {
+      this.props.selectWorld(id);
+      this.api.selectWorld(id).then(res => {
+        this.getTypes();
+      });
+    }, 500);
+  }
+
   render() {
+    const { id } = this.props.match.params;
+    // console.log(id);
+    // console.log(this.props);
+    if (this.props.selectedWorldID === null || this.props.selectedWorldID !== id) {
+      this.load(id);
+    }
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
@@ -134,7 +144,7 @@ class Page extends Component {
                   <ListItem>
                     <Tooltip title={`Edit ${this.props.selectedWorld.Name}`}>
                       <Fab size="small" color="primary"
-                        href={`/world/edit/${this.props.selectedWorld._id}`}
+                        onClick={ _ => {this.setState({redirectTo:`/world/edit/${this.props.selectedWorldID}`})}}
                       >
                       <Edit />
                       </Fab>

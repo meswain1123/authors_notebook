@@ -1,34 +1,3 @@
-// // App.js
-// //
-// import React, { Component } from 'react';
-// import './App.css';
-// class App extends Component {
-//   constructor(props) {
-//     super(props);
-//     this.state = {
-//       flower: {}
-//     }
-//     this.getFlower();
-//   }
-//   getFlower() {
-//     fetch('/flower')
-//       .then(response => response.json())
-//       .then(data => {
-//         this.setState({
-//           flower: data
-//         });
-//       });
-//   }
-//   render() {
-//     return (
-//       <div className="App">
-//         <h1>{this.state.flower.name}</h1>
-//         <p>{this.state.flower.colour}</p>
-//       </div>
-//     );
-//   }
-// }
-// export default App;
 
 import React, { Component } from "react";
 import "./assets/css/material-dashboard-react.css";
@@ -41,12 +10,20 @@ import Sidebar from "./components/Navigation/Sidebar";
 import MainPage from "./views/MainPage";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
+import { 
+  setWidth
+} from "./redux/actions/index";
 
 const mapStateToProps = state => {
   return {
     menuOpen: state.app.menuOpen
   };
 };
+function mapDispatchToProps(dispatch) {
+  return {
+    setWidth: width => dispatch(setWidth(width))
+  };
+}
 class AppLayout extends Component {
   constructor(props) {
     super(props);
@@ -70,9 +47,11 @@ class AppLayout extends Component {
     let w = window.innerWidth;
     if (w >= 600) {
       w -= 200;
+      this.props.setWidth(w);
       this.setState({ width: w, marginLeft: 220, innerWidth: window.innerWidth });
     }
     else {
+      this.props.setWidth(w);
       this.setState({ width: w, marginLeft: 0, innerWidth: window.innerWidth });
     }
   }
@@ -108,6 +87,6 @@ class AppLayout extends Component {
   }
 }
 
-const App = connect(mapStateToProps)(AppLayout);
+const App = connect(mapStateToProps, mapDispatchToProps)(AppLayout);
 export default App;
 

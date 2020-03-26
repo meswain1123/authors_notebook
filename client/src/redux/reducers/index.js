@@ -19,7 +19,8 @@ import {
   UPDATE_SELECTED_THING,
   LOAD_FROM_STORAGE,
   TOGGLE_MENU,
-  SET_FOLLOWING_WORLDS
+  SET_FOLLOWING_WORLDS,
+  SET_WIDTH
 } from "../constants/actionTypes";
 
 const initialState = {
@@ -38,7 +39,8 @@ const initialState = {
   attributesArr: [],
   selectedThing: null,
   loadIt: true,
-  menuOpen: true
+  menuOpen: true,
+  width: 0
 };
 function rootReducer(state = initialState, action) {
   if (action.type === LOAD_FROM_STORAGE) {
@@ -278,6 +280,10 @@ function rootReducer(state = initialState, action) {
   } else if (action.type === TOGGLE_MENU) {
     return Object.assign({}, state, {
       menuOpen: !state.menuOpen
+    });
+  } else if (action.type === SET_WIDTH) {
+    return Object.assign({}, state, {
+      width: action.payload
     });
   } else if (action.type === SET_FOLLOWING_WORLDS) {
     sessionStorage.setItem("followingWorlds", JSON.stringify(action.payload));

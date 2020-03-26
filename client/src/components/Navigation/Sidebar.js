@@ -3,7 +3,7 @@ import "../../App.css";
 // import logo from "../../logo.svg";
 import logo from "../../assets/img/ANB.png";
 import {
-  Button,
+  // Button,
   Grid,
   List,
   ListItem,
@@ -76,35 +76,28 @@ class Bar extends Component {
 
   links() {
     return (
-      <div>
-        {menuRoutes.map((prop, key) => {
-          return (
-            <ListItem key={key}>
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                href={prop.path}
-              >
-                {typeof prop.icon === "string" ? (
-                  <Icon className="marginLeft">{prop.icon}</Icon>
-                ) : (
-                  <prop.icon className="marginLeft" />
-                )}
-                &nbsp;
-                <ListItemText primary={prop.name} className="marginLeft" />
-              </Button>
+      menuRoutes.map((prop, key) => 
+        <ListItem key={key} className="curvedButton">
+          <NavLink to={prop.path} className="MyButton" activeClassName="active">
+            <ListItem button>
+              {typeof prop.icon === "string" ? (
+                <Icon className="marginLeft">{prop.icon}</Icon>
+              ) : (
+                <prop.icon className="marginLeft" />
+              )}
+              &nbsp;
+              <ListItemText primary={prop.name} className="marginLeft" />
             </ListItem>
-          );
-        })}
-      </div>
+          </NavLink>
+        </ListItem>
+      )
     );
   }
 
   brand() {
     return (
-      <NavLink to={`/`} className="blue blackFont" activeClassName="active">
-        <ListItem button className="curvedButton">
+      <NavLink to={`/`} className="MyButton" activeClassName="active">
+        <ListItem button>
           <img src={logo} alt="logo" className="App-logo" />
           <ListItemText primary={this.props.logoText} />
         </ListItem>
@@ -158,8 +151,110 @@ class Bar extends Component {
         }
       });
     }
+    if (this.state.browse) {
+      return (
+        <Grid container spacing={1} direction="column">
+          <Grid item>
+            <FormControl variant="outlined" fullWidth>
+              <InputLabel htmlFor="filter">Filter</InputLabel>
+              <OutlinedInput
+                id="filter"
+                name="Filter"
+                type="text"
+                autoComplete="Off"
+                value={this.state.Filter}
+                onChange={this.handleUserInput}
+                labelWidth={43}
+                fullWidth
+              />
+            </FormControl>
+          </Grid>
+          <Grid item>
+            <List>
+              {
+                followingWorlds.map((w, key) => 
+                  <ListItem key={key} className="curvedButton">
+                    <NavLink to={`/world/details/${w._id}`} className="MySmallerButton" activeClassName="active">
+                      <ListItem button>
+                        <ListItemText primary={w.Name} className="marginLeft" />
+                      </ListItem>
+                    </NavLink>
+                    <Fab
+                      size="small"
+                      color="primary"
+                      onClick={e => {
+                        this.toggleFollow(w._id, false);
+                      }}
+                    >
+                      <Star />
+                    </Fab>
+                  </ListItem>
+                )
+              }
+              {
+                otherWorlds.map((w, key) => 
+                  <ListItem key={key} className="curvedButton">
+                    <NavLink to={`/world/details/${w._id}`} className="MySmallerButton" activeClassName="active">
+                      <ListItem button>
+                        <ListItemText primary={w.Name} className="marginLeft" />
+                      </ListItem>
+                    </NavLink>
+                    <Fab
+                      size="small"
+                      color="primary"
+                      onClick={e => {
+                        this.toggleFollow(w._id, true);
+                      }}
+                    >
+                      <StarBorderIcon />
+                    </Fab>
+                  </ListItem>
+                )
+              }
+            </List>
+          </Grid>
+        </Grid>
+      );
+    }
     return (
-      <div>
+      followingWorlds.map((w, key) => 
+        <ListItem key={key} className="curvedButton">
+          <NavLink to={`/world/details/${w._id}`} className="MyButton" activeClassName="active">
+            <ListItem button>
+              <ListItemText primary={w.Name} className="marginLeft" />
+            </ListItem>
+          </NavLink>
+        </ListItem>
+      )
+    );
+  }
+
+  myWorlds() {
+    if (this.props.user === null || this.props.user === undefined) {
+      return "";
+    } else {
+      const worldLinks =
+        this.props.worlds === undefined
+          ? ""
+          : this.props.worlds.map((w, key) => 
+              <ListItem key={key} className="curvedButton">
+                <NavLink to={`/world/details/${w._id}`} className="MyButton" activeClassName="active">
+                  <ListItem button>
+                    <ListItemText primary={w.Name} className="marginLeft" />
+                  </ListItem>
+                </NavLink>
+              </ListItem>
+            );
+      return (worldLinks);
+    }
+  }
+
+  render() {
+    return (
+      <List>
+        {this.brand()}
+        <Divider light />
+        {this.links()}
         <ListItem>
           <ListItemText display="none" primary={"Public Worlds"} />
           <Tooltip title={`Browse Public Worlds`}>
@@ -174,151 +269,18 @@ class Bar extends Component {
             </Fab>
           </Tooltip>
         </ListItem>
-        { this.state.browse ?
-          <Grid container spacing={1} direction="column">
-            <Grid item>
-              <FormControl variant="outlined" fullWidth>
-                <InputLabel htmlFor="filter">Filter</InputLabel>
-                <OutlinedInput
-                  id="filter"
-                  name="Filter"
-                  type="text"
-                  autoComplete="Off"
-                  value={this.state.Filter}
-                  onChange={this.handleUserInput}
-                  labelWidth={43}
-                  fullWidth
-                />
-              </FormControl>
-            </Grid>
-            <Grid item>
-              <List>
-                {
-                  followingWorlds.map((w, key) => {
-                    return (
-                      <ListItem key={key}>
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          color="primary"
-                          href={`/world/details/${w._id}`}
-                        >
-                          <ListItemText primary={w.Name} />
-                        </Button>
-                        <Fab
-                          size="small"
-                          color="primary"
-                          onClick={e => {
-                            this.toggleFollow(w._id, false);
-                          }}
-                        >
-                          <Star />
-                        </Fab>
-                      </ListItem>
-                    );
-                  })
-                }
-                {
-                  otherWorlds.map((w, key) => {
-                    return (
-                      <ListItem key={key}>
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          color="primary"
-                          href={`/world/details/${w._id}`}
-                        >
-                          <ListItemText primary={w.Name} />
-                        </Button>
-                        <Fab
-                          size="small"
-                          color="primary"
-                          onClick={e => {
-                            this.toggleFollow(w._id, true);
-                          }}
-                        >
-                          <StarBorderIcon />
-                        </Fab>
-                      </ListItem>
-                    );
-                  })
-                }
-              </List>
-            </Grid>
-          </Grid> :
-          <div>
-            {
-              followingWorlds.map((w, key) => {
-                return (
-                  <ListItem key={key}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      href={`/world/details/${w._id}`}
-                    >
-                      <ListItemText primary={w.Name} />
-                    </Button>
-                  </ListItem>
-                );
-              })
-            }
-          </div>
-        }
-      </div>
-    );
-  }
-
-  myWorlds() {
-    if (this.props.user === null || this.props.user === undefined) {
-      return "";
-    } else {
-      const worldLinks =
-        this.props.worlds === undefined
-          ? ""
-          : this.props.worlds.map((prop, key) => {
-              return (
-                <ListItem key={key}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    href={`/world/details/${prop._id}`}
-                  >
-                    <ListItemText primary={prop.Name} />
-                  </Button>
-                </ListItem>
-              );
-            });
-      return (
-        <div>
-          <ListItem>
-            <ListItemText primary={"My Worlds"} />
-          </ListItem>
-          <ListItem>
-            <Button
-              fullWidth
-              variant="contained"
-              color="primary"
-              href={`/world/create`}
-            >
+        {this.publicWorlds()}
+        <ListItem>
+          <ListItemText primary={"My Worlds"} />
+        </ListItem>
+        <ListItem className="curvedButton">
+          <NavLink to={`/world/create`} className="MyButton" activeClassName="active">
+            <ListItem button>
               <Add />
               <ListItemText primary={"Create New"} />
-            </Button>
-          </ListItem>
-          {worldLinks}
-        </div>
-      );
-    }
-  }
-
-  render() {
-    return (
-      <List>
-        {this.brand()}
-        <Divider light />
-        {this.links()}
-        {this.publicWorlds()}
+            </ListItem>
+          </NavLink>
+        </ListItem>
         {this.myWorlds()}
       </List>
     );

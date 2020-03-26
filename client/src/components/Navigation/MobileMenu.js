@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import "../../App.css";
 import {
-  Button,
+  // Button,
   Grid,
   List,
   ListItem,
@@ -10,17 +10,22 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-  Fab
+  Fab,
+  Tooltip
 } from "@material-ui/core";
 import { Add, Star, Search } from "@material-ui/icons";
-import StarBorderIcon from '@material-ui/icons/StarBorder';
+import { NavLink } from "react-router-dom";
+import StarBorderIcon from "@material-ui/icons/StarBorder";
 import { connect } from "react-redux";
 import menuRoutes from "./routes";
-import { 
-  selectPage, setWorlds, setPublicWorlds, setFollowingWorlds
+import {
+  selectPage,
+  setWorlds,
+  setPublicWorlds,
+  setFollowingWorlds,
+  toggleMenu
 } from "../../redux/actions/index";
 import API from "../../api";
-
 
 const mapStateToProps = state => {
   return {
@@ -28,7 +33,8 @@ const mapStateToProps = state => {
     worlds: state.app.worlds,
     publicWorlds: state.app.publicWorlds,
     user: state.app.user,
-    followingWorlds: state.app.followingWorlds
+    followingWorlds: state.app.followingWorlds,
+    width: state.app.width
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -36,7 +42,8 @@ function mapDispatchToProps(dispatch) {
     selectPage: page => dispatch(selectPage(page)),
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
-    setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs))
+    setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs)),
+    toggleMenu: () => dispatch(toggleMenu({}))
   };
 }
 class Menu extends Component {
@@ -55,8 +62,7 @@ class Menu extends Component {
     });
     if (this.props.user !== null) {
       this.api.getWorldsForUser().then(res => {
-        if (res.worlds !== undefined)
-          this.props.setWorlds(res.worlds);
+        if (res.worlds !== undefined) this.props.setWorlds(res.worlds);
       });
     }
   }
@@ -64,38 +70,43 @@ class Menu extends Component {
   links() {
     return (
       <div>
-        {menuRoutes.map((prop, key) => {
-          return (
-            <ListItem key={key}>
-              <Button 
-                fullWidth variant="contained" color="primary" 
-                href={prop.path}>
+        {menuRoutes.map((prop, key) => (
+          <ListItem key={key} className="curvedButton">
+            <NavLink
+              to={prop.path}
+              style={{
+                width: `${this.props.width}px`
+              }}
+              onClick={_ => {
+                this.props.toggleMenu();
+              }}
+              className="MyButton"
+              activeClassName="active"
+            >
+              <ListItem button>
                 {typeof prop.icon === "string" ? (
                   <Icon className="marginLeft">{prop.icon}</Icon>
                 ) : (
                   <prop.icon className="marginLeft" />
                 )}
-                &nbsp;<ListItemText primary={prop.name} className="marginLeft" />
-              </Button>
-            </ListItem>
-          );
-        })}
+                &nbsp;
+                <ListItemText primary={prop.name} className="marginLeft" />
+              </ListItem>
+            </NavLink>
+          </ListItem>
+        ))}
       </div>
     );
   }
 
   toggleFollow = (worldID, follow) => {
     let followingWorlds = [...this.props.followingWorlds];
-    console.log(this.props.followingWorlds);
     if (follow) {
       followingWorlds.push(worldID);
     } else {
-      console.log(worldID);
       const index = followingWorlds.indexOf(worldID);
-      console.log(index);
       followingWorlds.splice(index, 1);
     }
-    console.log(followingWorlds);
     if (this.props.user !== null) {
       const user = { ...this.props.user };
       user.followingWorlds = followingWorlds;
@@ -116,16 +127,20 @@ class Menu extends Component {
   publicWorlds() {
     const followingWorlds = [];
     const otherWorlds = [];
-    if (this.props.publicWorlds !== undefined &&
+    if (
+      this.props.publicWorlds !== undefined &&
       this.props.publicWorlds !== null &&
-      this.props.publicWorlds.error === undefined) {
+      this.props.publicWorlds.error === undefined
+    ) {
       this.props.publicWorlds.forEach(w => {
         if (this.state.browse) {
-          if (this.state.Filter === "" || w.Name.toLowerCase().includes(this.state.Filter.toLowerCase())) {
+          if (
+            this.state.Filter === "" ||
+            w.Name.toLowerCase().includes(this.state.Filter.toLowerCase())
+          ) {
             if (this.props.followingWorlds.includes(w._id)) {
               followingWorlds.push(w);
-            }
-            else {
+            } else {
               otherWorlds.push(w);
             }
           }
@@ -134,150 +149,123 @@ class Menu extends Component {
         }
       });
     }
-    console.log(this.props.publicWorlds);
-    console.log(this.props.followingWorlds);
-    console.log(followingWorlds);
-    console.log(otherWorlds);
-    return (
-      <div>
-        <ListItem>
-          <ListItemText display="none" primary={"Public Worlds"} />
-          <Fab
-            size="small"
-            color="primary"
-            onClick={e => {
-              this.setState({ browse: !this.state.browse });
-            }}
-          >
-            <Search />
-          </Fab>
-        </ListItem>
-        { this.state.browse ?
-          <Grid container spacing={1} direction="column">
-            <Grid item>
-              <FormControl variant="outlined" fullWidth>
-                <InputLabel htmlFor="filter">Filter</InputLabel>
-                <OutlinedInput
-                  id="filter"
-                  name="Filter"
-                  type="text"
-                  autoComplete="Off"
-                  value={this.state.Filter}
-                  onChange={this.handleUserInput}
-                  labelWidth={43}
-                  fullWidth
-                />
-              </FormControl>
-            </Grid>
-            <Grid item>
-              <List>
-                {
-                  followingWorlds.map((w, key) => {
-                    return (
-                      <ListItem key={key}>
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          color="primary"
-                          href={`/world/details/${w._id}`}
-                        >
-                          <ListItemText primary={w.Name} />
-                        </Button>
-                        <Fab
-                          size="small"
-                          color="primary"
-                          onClick={e => {
-                            this.toggleFollow(w._id, false);
-                          }}
-                        >
-                          <Star />
-                        </Fab>
-                      </ListItem>
-                    );
-                  })
-                }
-                {
-                  otherWorlds.map((w, key) => {
-                    return (
-                      <ListItem key={key}>
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          color="primary"
-                          href={`/world/details/${w._id}`}
-                        >
-                          <ListItemText primary={w.Name} />
-                        </Button>
-                        <Fab
-                          size="small"
-                          color="primary"
-                          onClick={e => {
-                            this.toggleFollow(w._id, true);
-                          }}
-                        >
-                          <StarBorderIcon />
-                        </Fab>
-                      </ListItem>
-                    );
-                  })
-                }
-              </List>
-            </Grid>
-          </Grid> :
-          <div>
-            {
-              followingWorlds.map((w, key) => {
-                return (
-                  <ListItem key={key}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      href={`/world/details/${w._id}`}
-                    >
-                      <ListItemText primary={w.Name} />
-                    </Button>
-                  </ListItem>
-                );
-              })
-            }
-          </div>
-        }
-      </div>
-    );
+    if (this.state.browse) {
+      return (
+        <Grid container spacing={1} direction="column">
+          <Grid item>
+            <FormControl variant="outlined" fullWidth>
+              <InputLabel htmlFor="filter">Filter</InputLabel>
+              <OutlinedInput
+                id="filter"
+                name="Filter"
+                type="text"
+                autoComplete="Off"
+                value={this.state.Filter}
+                onChange={this.handleUserInput}
+                labelWidth={43}
+                fullWidth
+              />
+            </FormControl>
+          </Grid>
+          <Grid item>
+            <List>
+              {followingWorlds.map((w, key) => (
+                <ListItem key={key} className="curvedButton">
+                  <NavLink
+                    to={`/world/details/${w._id}`}
+                    style={{
+                      width: `${this.props.width - 80}px`
+                    }}
+                    className="MySmallerButton"
+                    activeClassName="active"
+                  >
+                    <ListItem button>
+                      <ListItemText primary={w.Name} className="marginLeft" />
+                    </ListItem>
+                  </NavLink>
+                  <Fab
+                    size="small"
+                    color="primary"
+                    onClick={e => {
+                      this.toggleFollow(w._id, false);
+                    }}
+                  >
+                    <Star />
+                  </Fab>
+                </ListItem>
+              ))}
+              {otherWorlds.map((w, key) => (
+                <ListItem key={key} className="curvedButton">
+                  <NavLink
+                    to={`/world/details/${w._id}`}
+                    style={{
+                      width: `${this.props.width - 80}px`
+                    }}
+                    className="MySmallerButton"
+                    activeClassName="active"
+                  >
+                    <ListItem button>
+                      <ListItemText primary={w.Name} className="marginLeft" />
+                    </ListItem>
+                  </NavLink>
+                  <Fab
+                    size="small"
+                    color="primary"
+                    onClick={e => {
+                      this.toggleFollow(w._id, true);
+                    }}
+                  >
+                    <StarBorderIcon />
+                  </Fab>
+                </ListItem>
+              ))}
+            </List>
+          </Grid>
+        </Grid>
+      );
+    }
+    return followingWorlds.map((w, key) => (
+      <ListItem key={key} className="curvedButton">
+        <NavLink
+          to={`/world/details/${w._id}`}
+          style={{
+            width: `${this.props.width}px`
+          }}
+          className="MyButton"
+          activeClassName="active"
+        >
+          <ListItem button>
+            <ListItemText primary={w.Name} className="marginLeft" />
+          </ListItem>
+        </NavLink>
+      </ListItem>
+    ));
   }
 
   myWorlds() {
     if (this.props.user === null || this.props.user === undefined) {
       return "";
-    }
-    else {
-      const worldLinks = (this.props.worlds === undefined ? "" : this.props.worlds.map((prop, key) => {
-        return (
-          <ListItem key={key}>
-            <Button 
-              fullWidth variant="contained" color="primary" 
-              href={`/world/details/${prop._id}`}>
-              <ListItemText primary={prop.Name} />
-            </Button>
-          </ListItem>
-        );
-      }));
-      return (
-        <div>
-          <ListItem>
-            <ListItemText primary={"My Worlds"} />
-          </ListItem>
-          <ListItem>
-            <Button 
-              fullWidth variant="contained" color="primary" 
-              href={`/world/create`}>
-              <Add/><ListItemText primary={"Create New"} />
-            </Button>
-          </ListItem>
-          {worldLinks}
-        </div>
-      );
+    } else {
+      const worldLinks =
+        this.props.worlds === undefined
+          ? ""
+          : this.props.worlds.map((w, key) => (
+              <ListItem key={key} className="curvedButton">
+                <NavLink
+                  to={`/world/details/${w._id}`}
+                  style={{
+                    width: `${this.props.width}px`
+                  }}
+                  className="MyButton"
+                  activeClassName="active"
+                >
+                  <ListItem button>
+                    <ListItemText primary={w.Name} className="marginLeft" />
+                  </ListItem>
+                </NavLink>
+              </ListItem>
+            ));
+      return worldLinks;
     }
   }
 
@@ -285,7 +273,39 @@ class Menu extends Component {
     return (
       <List>
         {this.links()}
+        <ListItem>
+          <ListItemText display="none" primary={"Public Worlds"} />
+          <Tooltip title={`Browse Public Worlds`}>
+            <Fab
+              size="small"
+              color="primary"
+              onClick={e => {
+                this.setState({ browse: !this.state.browse });
+              }}
+            >
+              <Search />
+            </Fab>
+          </Tooltip>
+        </ListItem>
         {this.publicWorlds()}
+        <ListItem>
+          <ListItemText primary={"My Worlds"} />
+        </ListItem>
+        <ListItem className="curvedButton">
+          <NavLink
+            to={`/world/create`}
+            style={{
+              width: `${this.props.width}px`
+            }}
+            className="MyButton"
+            activeClassName="active"
+          >
+            <ListItem button>
+              <Add />
+              <ListItemText primary={"Create New"} />
+            </ListItem>
+          </NavLink>
+        </ListItem>
         {this.myWorlds()}
       </List>
     );

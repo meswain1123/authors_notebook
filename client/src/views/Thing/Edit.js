@@ -7,12 +7,11 @@ import {
   addThing,
   updateThing
 } from "../../redux/actions/index";
-import Button from "@material-ui/core/Button";
-import FormControl from "@material-ui/core/FormControl";
-import OutlinedInput from "@material-ui/core/OutlinedInput";
-import InputLabel from "@material-ui/core/InputLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
-import Grid from "@material-ui/core/Grid";
+import { 
+  Button, FormControl, OutlinedInput, InputLabel, 
+  FormHelperText, Grid, Fab, Tooltip 
+} from "@material-ui/core";
+import { ArrowBack } from "@material-ui/icons";
 import AttributesControl from "./AttributesControl";
 import { Multiselect } from 'multiselect-react-dropdown';
 import { Helmet } from 'react-helmet';
@@ -47,7 +46,7 @@ class Page extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      _id: null,
+      _id: undefined,
       Name: "",
       Description: "",
       Types: [],
@@ -67,89 +66,6 @@ class Page extends Component {
   }
 
   componentDidMount() {
-    setTimeout(() => {
-      const { id } = this.props.match.params;
-      if (id !== undefined) {
-        if (id.includes("type_id_")) {
-          // We're creating it from a type rather than from blank
-          const typeID = id.substring(8);
-          let type = this.props.types.filter(t=> t._id === typeID);
-          if (type.length > 0) {
-            type = type[0];
-            this.createThingFromType(type);
-          }
-          else {
-            this.setState({ message: "Invalid Type" });
-          }
-        }
-        else {
-          // We're editing an existing Thing
-          this.api.getThing(this.props.selectedWorldID, id).then(res => {
-            const things = this.props.things.filter(
-              thing => res._id !== thing._id
-            );
-            let Types = [];
-            res.TypeIDs.forEach(tID=> {
-              Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
-            });
-            let attributes = [...res.AttributesArr];
-            Types.forEach(type=> {
-              for (let i = 0; i < type.AttributesArr.length; i++) {
-                const attribute = {...type.AttributesArr[i]};
-                attribute.FromTypes = [...attribute.FromSupers];
-                delete attribute.FromSupers;
-                attribute.FromTypes.push(type._id);
-                const matches = attributes.filter(a => a.Name === attribute.Name);
-                if (matches.length === 0) {
-                  // It's a new attribute.
-                  // Thing Attributes have Values, so we need to add that field.
-                  // In the future I'll have List Types, in which case this will be more complicated.
-                  // Also I'll be adding default values.
-                  if (attribute.DefaultValue === undefined) {
-                    attribute.Value = "";
-                    attribute.ListValues = [];
-                  }
-                  else {
-                    attribute.Value = attribute.DefaultValue;
-                    attribute.ListValues = attribute.DefaultListValues;
-                  }
-                  attributes.push(attribute);
-                } else {
-                  // It's an existing attribute,
-                  // so we just need to add the appropriate ids to FromTypes.
-                  const typeIDs = [...matches[0].FromTypes];
-                  for (let i = 0; i < attribute.FromTypes.length; i++) {
-                    const typeID = attribute.FromTypes[i];
-                    if (!typeIDs.includes(typeID)) {
-                      typeIDs.push(typeID);
-                    }
-                  }
-                  matches[0].FromTypes = typeIDs;
-                }
-              }
-            });
-            res.AttributesArr = attributes;
-            this.setState({
-              Name: res.Name,
-              Description: res.Description,
-              _id: id,
-              Things: things,
-              Types: Types
-            });
-            this.props.updateSelectedThing(res);
-          });
-        }
-      } else {
-        // We're creating a new thing from blank.
-        this.props.updateSelectedThing({
-          _id: null,
-          Name: "",
-          Description: "",
-          Types: [],
-          AttributesArr: []
-        });
-      }
-    }, 500);
   }
 
   createThingFromType = type => {
@@ -203,14 +119,26 @@ class Page extends Component {
         matches[0].FromTypes = typeIDs;
       }
     }
-    this.setState({ Types: types });
+    this.setState({ _id: null, Types: types });
     thing.AttributesArr = attributes;
     this.props.updateSelectedThing(thing);
   };
 
   resetForm = () => {
     setTimeout(() => {
-      this.setState({resetting: false}, this.finishResettingForm);
+      console.log('hi');
+      let { id } = this.props.match.params;
+      if (id !== undefined && !id.includes("type_id_")) {
+        this.setState({
+          resetting: false, 
+          redirectTo: `/type/create`
+        });
+      }
+      else {
+        this.setState({
+          resetting: false
+        }, this.finishResettingForm);
+      }
     }, 500);
   };
 
@@ -331,7 +259,7 @@ class Page extends Component {
     };
     this.props.selectedThing.AttributesArr.filter(a=>a.Type === "Type").forEach(a=>{
       if (!thing.ReferenceIDs.includes(a.Value)) {
-        thing.ReferenceIDs.push(a.Type2);
+        thing.ReferenceIDs.push(a.Value);
       }
     });
     this.props.selectedThing.AttributesArr.filter(a=>a.Type === "List" && a.ListType === "Type").forEach(a=>{
@@ -341,6 +269,7 @@ class Page extends Component {
         }
       });
     });
+    console.log(thing);
 
     if (thing._id === null) {
       this.api
@@ -402,7 +331,6 @@ class Page extends Component {
                 AttributesArr: []
               });
               this.setState({
-                _id: null,
                 Name: "",
                 Description: "",
                 Types: [],
@@ -414,6 +342,7 @@ class Page extends Component {
                 formValid: false,
                 message: "",
                 waiting: false,
+                addMore: false,
                 resetting: true
               }, this.resetForm);
             }
@@ -491,7 +420,6 @@ class Page extends Component {
             if (!matches[0].ListValues.includes(v))
               matches[0].ListValues.push(v);
           });
-          // matches[0].ListValues = attribute.DefaultListValues;
         }
         matches[0].FromTypes = typeIDs;
       }
@@ -554,137 +482,250 @@ class Page extends Component {
     return <h2>{this.state._id === null ? `Create New ${typeStr}` : `Edit ${typeStr}`}</h2>;
   }
 
+  load = (id) => {
+    setTimeout(() => {
+      this.setState({
+        _id: id,
+        redirectTo: null
+      }, this.finishLoading);
+    }, 500);
+  }
+
+  finishLoading = () => {
+    if (this.state._id !== null) {
+      // We're editing an existing Thing
+      this.api.getThing(this.props.selectedWorldID, this.state._id).then(res => {
+        const things = this.props.things.filter(
+          thing => res._id !== thing._id
+        );
+        let Types = [];
+        res.TypeIDs.forEach(tID=> {
+          Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
+        });
+        let attributes = [...res.AttributesArr];
+        Types.forEach(type=> {
+          for (let i = 0; i < type.AttributesArr.length; i++) {
+            const attribute = {...type.AttributesArr[i]};
+            attribute.FromTypes = [...attribute.FromSupers];
+            delete attribute.FromSupers;
+            attribute.FromTypes.push(type._id);
+            const matches = attributes.filter(a => a.Name === attribute.Name);
+            if (matches.length === 0) {
+              // It's a new attribute.
+              // Thing Attributes have Values, so we need to add that field.
+              // In the future I'll have List Types, in which case this will be more complicated.
+              // Also I'll be adding default values.
+              if (attribute.DefaultValue === undefined) {
+                attribute.Value = "";
+                attribute.ListValues = [];
+              }
+              else {
+                attribute.Value = attribute.DefaultValue;
+                attribute.ListValues = attribute.DefaultListValues;
+              }
+              attributes.push(attribute);
+            } else {
+              // It's an existing attribute,
+              // so we just need to add the appropriate ids to FromTypes.
+              const typeIDs = [...matches[0].FromTypes];
+              for (let i = 0; i < attribute.FromTypes.length; i++) {
+                const typeID = attribute.FromTypes[i];
+                if (!typeIDs.includes(typeID)) {
+                  typeIDs.push(typeID);
+                }
+              }
+              matches[0].FromTypes = typeIDs;
+            }
+          }
+        });
+        res.AttributesArr = attributes;
+        this.setState({
+          Name: res.Name,
+          Description: res.Description,
+          Things: things,
+          Types: Types
+        });
+        this.props.updateSelectedThing(res);
+      });
+    } else {
+      let { id } = this.props.match.params;
+      if (id !== undefined && id.includes("type_id_")) {
+        // We're creating it from a type rather than from blank
+        const typeID = id.substring(8);
+        let type = this.props.types.filter(t=> t._id === typeID);
+        if (type.length > 0) {
+          type = type[0];
+          this.createThingFromType(type);
+        }
+        else {
+          this.setState({ message: "Invalid Type" });
+        }
+      }
+      else {
+        // We're creating a new thing from blank.
+        this.props.updateSelectedThing({
+          _id: null,
+          Name: "",
+          Description: "",
+          Types: [],
+          AttributesArr: []
+        });
+      }
+    }
+  }
+
   render() {
-    // console.log(this.props.selectedThing);
-    // console.log(this.state.Types);
-    // console.log(this.props.types);
+    let { id } = this.props.match.params;
+    if (id === undefined || id.includes("type_id_"))
+      id = null;
+    if (this.state._id !== id) {
+      this.load(id);
+    }
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
+      console.log(this.state);
+      console.log(this.props);
       return (
         <Grid item xs={12} container spacing={1} direction="column">
-          <Helmet>
-            <title>{ this.props.selectedWorld === null ? `Author's Notebook` : `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
-          </Helmet>
-          <Grid item>
-            {this.renderHeader()}
-          </Grid>
-          <Grid item>
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel htmlFor="name">Name</InputLabel>
-              <OutlinedInput
-                id="name"
-                name="Name"
-                type="text"
-                autoComplete="Off"
-                error={!this.state.fieldValidation.Name.valid}
-                value={this.state.Name}
-                onChange={this.handleUserInput}
-                onBlur={this.inputBlur}
-                labelWidth={43}
-                fullWidth
-              />
-              <FormHelperText>
-                {this.state.fieldValidation.Name.message}
-              </FormHelperText>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel htmlFor="description">Description</InputLabel>
-              <OutlinedInput
-                id="description"
-                name="Description"
-                type="text"
-                value={this.state.Description}
-                onChange={this.handleUserInput}
-                onBlur={this.inputBlur}
-                labelWidth={82}
-                fullWidth
-              />
-            </FormControl>
-          </Grid>
-          <Grid item>
-            { this.state.resetting ? "" :
-              <Multiselect
-                placeholder="Types"
-                options={this.props.types}
-                selectedValues={this.state.Types}
-                onSelect={this.addType}
-                onRemove={this.removeType}
-                displayValue="Name"
-              />
-            }
-          </Grid>
-          <Grid item>
-            { this.state.resetting ? "" : 
-              <AttributesControl />
-            }
-            <FormHelperText>
-              {this.state.fieldValidation.AttributesArr.message}
-            </FormHelperText>
-          </Grid>
-          <Grid item>
-            <div className="float-right">
-              <Button
-                variant="contained" color="primary"
-                disabled={this.state.waiting}
-                onClick={e => {this.onSubmit(true);}}
-                type="submit"
-              >
-                {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
-              </Button>
-              <Button
-                variant="contained" color="primary"
-                style={{marginLeft: "4px"}}
-                className="w200"
-                disabled={this.state.waiting}
-                onClick={e => {this.onSubmit(false);}}
-                type="submit"
-              >
-                {this.state.waiting ? "Please Wait" : "Submit"}
-              </Button>
-              <Button
-                variant="contained"
-                style={{marginLeft: "4px"}}
-                disabled={this.state.waiting}
-                onClick={_ => {
-                  if (this.props.selectedThing._id === null) {
-                    this.setState({
-                      redirectTo: `/world/details/${this.props.selectedWorldID}`
-                    });
+          { this.props.selectedWorld === null ? "" :
+            <Grid item container spacing={1} direction="column">
+              <Helmet>
+                <title>{ `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
+              </Helmet>
+              <Grid item container spacing={1} direction="row">
+                <Grid item xs={1}>
+                  <Tooltip title={`Back to ${this.props.selectedWorld.Name}`}>
+                    <Fab size="small"
+                      color="primary"
+                      onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
+                    >
+                      <ArrowBack />
+                    </Fab>
+                  </Tooltip>
+                </Grid>
+                <Grid item xs={11}>
+                  {this.renderHeader()}
+                </Grid>
+              </Grid>
+              <Grid item>
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel htmlFor="name">Name</InputLabel>
+                  <OutlinedInput
+                    id="name"
+                    name="Name"
+                    type="text"
+                    autoComplete="Off"
+                    error={!this.state.fieldValidation.Name.valid}
+                    value={this.state.Name}
+                    onChange={this.handleUserInput}
+                    onBlur={this.inputBlur}
+                    labelWidth={43}
+                    fullWidth
+                  />
+                  <FormHelperText>
+                    {this.state.fieldValidation.Name.message}
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item>
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel htmlFor="description">Description</InputLabel>
+                  <OutlinedInput
+                    id="description"
+                    name="Description"
+                    type="text"
+                    value={this.state.Description}
+                    onChange={this.handleUserInput}
+                    onBlur={this.inputBlur}
+                    labelWidth={82}
+                    fullWidth
+                  />
+                </FormControl>
+              </Grid>
+              <Grid item>
+                { this.state.resetting ? "" :
+                  <Multiselect
+                    placeholder="Types"
+                    options={this.props.types}
+                    selectedValues={this.state.Types}
+                    onSelect={this.addType}
+                    onRemove={this.removeType}
+                    displayValue="Name"
+                  />
+                }
+              </Grid>
+              <Grid item>
+                { this.state.resetting ? "" : 
+                  <AttributesControl />
+                }
+                <FormHelperText>
+                  {this.state.fieldValidation.AttributesArr.message}
+                </FormHelperText>
+              </Grid>
+              <Grid item>
+                <div className="float-right">
+                  <Button
+                    variant="contained" color="primary"
+                    disabled={this.state.waiting}
+                    onClick={e => {this.onSubmit(true);}}
+                    type="submit"
+                  >
+                    {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
+                  </Button>
+                  <Button
+                    variant="contained" color="primary"
+                    style={{marginLeft: "4px"}}
+                    className="w200"
+                    disabled={this.state.waiting}
+                    onClick={e => {this.onSubmit(false);}}
+                    type="submit"
+                  >
+                    {this.state.waiting ? "Please Wait" : "Submit"}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    style={{marginLeft: "4px"}}
+                    disabled={this.state.waiting}
+                    onClick={_ => {
+                      if (this.props.selectedThing._id === null) {
+                        this.setState({
+                          redirectTo: `/world/details/${this.props.selectedWorldID}`
+                        });
+                      }
+                      else {
+                        this.setState({
+                          redirectTo: `/thing/details/${this.props.selectedThing._id}`
+                        });
+                      }
+                    }}
+                    type="button"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </Grid>
+              <Grid item>{this.state.message}</Grid>
+              <Grid item>
+                {Object.keys(this.state.fieldValidation).map((fieldName, i) => {
+                  if (
+                    this.state.fieldValidation[fieldName] !== undefined &&
+                    this.state.fieldValidation[fieldName].message.length > 0
+                  ) {
+                    return (
+                      <p className="redFont" key={i}>
+                        {this.state.fieldValidation[fieldName].message}
+                      </p>
+                    );
+                  } else {
+                    return "";
                   }
-                  else {
-                    this.setState({
-                      redirectTo: `/thing/details/${this.props.selectedThing._id}`
-                    });
-                  }
-                }}
-                type="button"
-              >
-                Cancel
-              </Button>
-            </div>
-          </Grid>
-          <Grid item>{this.state.message}</Grid>
-          <Grid item>
-            {Object.keys(this.state.fieldValidation).map((fieldName, i) => {
-              if (
-                this.state.fieldValidation[fieldName] !== undefined &&
-                this.state.fieldValidation[fieldName].message.length > 0
-              ) {
-                return (
-                  <p className="redFont" key={i}>
-                    {this.state.fieldValidation[fieldName].message}
-                  </p>
-                );
-              } else {
-                return "";
-              }
-            })}
-          </Grid>
+                })}
+              </Grid>
+            </Grid>
+          }
         </Grid>
       );
     }

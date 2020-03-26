@@ -1,6 +1,12 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
+import { ArrowBack, Edit, Delete } from "@material-ui/icons";
+import { 
+  Fab, Tooltip, Modal, Grid, Button, 
+  List, ListItem, ListItemText
+} from "@material-ui/core";
+import { Helmet } from 'react-helmet';
 import {
   selectPage,
   updateSelectedThing,
@@ -8,17 +14,7 @@ import {
   updateThing,
   setThings
 } from "../../redux/actions/index";
-import Edit from "@material-ui/icons/Edit";
-import Delete from "@material-ui/icons/Delete";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-import Button from "@material-ui/core/Button";
 import API from "../../api";
-import Grid from "@material-ui/core/Grid";
-import Modal from '@material-ui/core/Modal';
-import { Fab, Tooltip } from "@material-ui/core";
-import { Helmet } from 'react-helmet';
 
 const mapStateToProps = state => {
   const thing = state.app.selectedThing;
@@ -63,38 +59,38 @@ class Page extends Component {
   }
 
   componentDidMount() {
-    setTimeout(() => {
-      const { id } = this.props.match.params;
-      if (id !== undefined) {
-        this.api.getThing(this.props.selectedWorldID, id).then(res => {
-          console.log(res);
-          if (res.error === undefined) {
-            let Types = [];
-            res.TypeIDs.forEach(tID=> {
-              Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
-            });
-            this.setState({
-              Name: res.Name,
-              Description: res.Description,
-              _id: id,
-              Types: Types
-            });
-            this.props.updateSelectedThing(res);
-          }
-          else {
-            console.log(res.error);
-          }
-        });
-      } else {
-        this.props.updateSelectedThing({
-          _id: null,
-          Name: "",
-          Description: "",
-          Types: [],
-          AttributesArr: []
-        });
-      }
-    }, 500);
+    // setTimeout(() => {
+    //   const { id } = this.props.match.params;
+    //   if (id !== undefined) {
+    //     this.api.getThing(this.props.selectedWorldID, id).then(res => {
+    //       console.log(res);
+    //       if (res.error === undefined) {
+    //         let Types = [];
+    //         res.TypeIDs.forEach(tID=> {
+    //           Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
+    //         });
+    //         this.setState({
+    //           Name: res.Name,
+    //           Description: res.Description,
+    //           _id: id,
+    //           Types: Types
+    //         });
+    //         this.props.updateSelectedThing(res);
+    //       }
+    //       else {
+    //         console.log(res.error);
+    //       }
+    //     });
+    //   } else {
+    //     this.props.updateSelectedThing({
+    //       _id: null,
+    //       Name: "",
+    //       Description: "",
+    //       Types: [],
+    //       AttributesArr: []
+    //     });
+    //   }
+    // }, 500);
   }
 
   getModalStyle = () => {
@@ -116,195 +112,253 @@ class Page extends Component {
     });
   }
 
+  load = (id) => {
+    // const { id } = this.props.match.params;
+    setTimeout(() => {
+      this.setState({
+        _id: id,
+        redirectTo: null
+      }, this.finishLoading);
+    }, 500);
+  }
+
+  finishLoading = () => {
+    const id = this.state._id;
+    if (id !== undefined) {
+      this.api.getThing(this.props.selectedWorldID, id).then(res => {
+        if (res.error === undefined) {
+          let Types = [];
+          res.TypeIDs.forEach(tID=> {
+            Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
+          });
+          this.setState({
+            Name: res.Name,
+            Description: res.Description,
+            _id: id,
+            Types: Types
+          });
+          this.props.updateSelectedThing(res);
+        }
+        else {
+          console.log(res.error);
+        }
+      });
+    } else {
+      this.props.updateSelectedThing({
+        _id: null,
+        Name: "",
+        Description: "",
+        Types: [],
+        AttributesArr: []
+      });
+    }
+  }
+
   render() {
+    const { id } = this.props.match.params;
+    if (this.state._id !== id) {
+      this.load(id);
+    }
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
-      console.log(this.props.things);
       const references = this.props.things.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));
-
       return (
         <Grid item xs={12} container spacing={0} direction="column">
-          <Helmet>
-            <title>{ this.props.selectedWorld === null ? `Author's Notebook` : `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
-          </Helmet>
-          <Grid item container spacing={0} direction="row">
-            <Grid item xs={9}>
-              <h2>{this.state.Name}</h2>
-            </Grid>
-            <Grid item xs={3}>
-              { this.props.user !== null && this.props.selectedWorld !== null &&  this.props.selectedWorld.Owner === this.props.user._id ?
-              <List>
-                <ListItem>
-                  <Tooltip title={`Edit ${this.state.Name}`}>
+          { this.props.selectedWorld === null ? "" :
+            <div>
+              <Helmet>
+                <title>{ `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
+              </Helmet>
+              <Grid item container spacing={0} direction="row">
+                <Grid item xs={1}>
+                  <Tooltip title={`Back to ${this.props.selectedWorld.Name}`}>
                     <Fab size="small"
                       color="primary"
-                      href={`/thing/edit/${this.state._id}`}
+                      onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
                     >
-                      <Edit />
+                      <ArrowBack />
                     </Fab>
                   </Tooltip>
-                </ListItem>
-                <ListItem>
-                  <Tooltip title={`Delete ${this.state.Name}`}>
-                    <Fab size="small"
-                      color="primary"
-                      onClick={e => {this.setState({modalOpen: true})}}
-                    >
-                      <Delete />
-                    </Fab>
-                  </Tooltip>
-                </ListItem>
-              </List>
-              : "" }
-            </Grid>
-          </Grid>
-          <Grid item container spacing={0} direction="row">
-            <Grid item sm={9} xs={12} container spacing={0} direction="column">
-              <Grid item>{this.state.Description}</Grid>
-              <Grid item>
-                Attributes
-                <List>
-                  {this.props.selectedThing === null ||
-                  this.props.selectedThing === undefined
-                    ? ""
-                    : this.props.selectedThing.AttributesArr.map(
-                        (attribute, i) => {
+                </Grid>
+                <Grid item xs={8}>
+                  <h2>{this.state.Name}</h2>
+                </Grid>
+                <Grid item xs={3}>
+                  { this.props.user !== null && this.props.selectedWorld !== null &&  this.props.selectedWorld.Owner === this.props.user._id ?
+                  <List>
+                    <ListItem>
+                      <Tooltip title={`Edit ${this.state.Name}`}>
+                        <Fab size="small"
+                          color="primary"
+                          onClick={ _ => {this.setState({redirectTo:`/thing/edit/${this.state._id}`})}}
+                        >
+                          <Edit />
+                        </Fab>
+                      </Tooltip>
+                    </ListItem>
+                    <ListItem>
+                      <Tooltip title={`Delete ${this.state.Name}`}>
+                        <Fab size="small"
+                          color="primary"
+                          onClick={e => {this.setState({modalOpen: true})}}
+                        >
+                          <Delete />
+                        </Fab>
+                      </Tooltip>
+                    </ListItem>
+                  </List>
+                  : "" }
+                </Grid>
+              </Grid>
+              <Grid item container spacing={0} direction="row">
+                <Grid item sm={9} xs={12} container spacing={0} direction="column">
+                  <Grid item>{this.state.Description}</Grid>
+                  <Grid item>
+                    Attributes
+                    <List>
+                      {this.props.selectedThing === null ||
+                      this.props.selectedThing === undefined
+                        ? ""
+                        : this.props.selectedThing.AttributesArr.map(
+                            (attribute, i) => {
+                              return (
+                                <ListItem key={i}>
+                                  <ListItemText>
+                                    {attribute.Name}:&nbsp;
+                                    {attribute.Type === "Type" && attribute.Value !== "" ?
+                                    <Button
+                                      variant="contained"
+                                      color="primary"
+                                      onClick={ _ => {this.setState({redirectTo:`/thing/details/${attribute.Value}`})}}
+                                    >
+                                      <ListItemText primary={this.props.things.filter(t=>t._id === attribute.Value)[0].Name}/>
+                                    </Button>
+                                    : attribute.Type === "List" ?
+                                      attribute.ListValues.map(
+                                        (listValue, i) => {
+                                          return (
+                                          <span key={i}>
+                                            {
+                                              attribute.ListType === "Type" ?
+                                              <span>
+                                                <Button
+                                                  variant="contained"
+                                                  color="primary"
+                                                  onClick={ _ => {this.setState({redirectTo:`/thing/details/${listValue}`})}}
+                                                >
+                                                  <ListItemText primary={this.props.things.filter(t=>t._id === listValue)[0].Name}/>
+                                                </Button> 
+                                                &nbsp;
+                                              </span>
+                                              :
+                                              i > 0 ? `, ${listValue}` : `${listValue}`
+                                            }
+                                          </span>
+                                          );
+                                        })
+                                    : attribute.Value}
+                                  </ListItemText>
+                                </ListItem>
+                              );
+                            }
+                          )}
+                    </List>
+                  </Grid>
+                </Grid>
+                <Grid item sm={3} xs={12} container spacing={0} direction="column">
+                  {this.state.Types.length === 0 ? (
+                    ""
+                  ) : (
+                    <Grid item>
+                      <List>
+                        <ListItem>
+                          <ListItemText primary={"Types"} />
+                        </ListItem>
+                        {this.state.Types.map((type, i) => {
                           return (
                             <ListItem key={i}>
-                              <ListItemText>
-                                {attribute.Name}:&nbsp;
-                                {attribute.Type === "Type" && attribute.Value !== "" ?
-                                <Button
-                                  variant="contained"
-                                  color="primary"
-                                  href={`/thing/details/${attribute.Value}`}
-                                >
-                                  <ListItemText primary={this.props.things.filter(t=>t._id === attribute.Value)[0].Name}/>
-                                </Button>
-                                : attribute.Type === "List" ?
-                                  attribute.ListValues.map(
-                                    (listValue, i) => {
-                                      return (
-                                      <span key={i}>
-                                        {
-                                          attribute.ListType === "Type" ?
-                                          <span>
-                                            <Button
-                                              variant="contained"
-                                              color="primary"
-                                              href={`/thing/details/${listValue}`}
-                                            >
-                                              <ListItemText primary={this.props.things.filter(t=>t._id === listValue)[0].Name}/>
-                                            </Button> 
-                                            &nbsp;
-                                          </span>
-                                          :
-                                          i > 0 ? `, ${listValue}` : `${listValue}`
-                                        }
-                                      </span>
-                                      );
-                                    })
-                                : attribute.Value}
-                              </ListItemText>
+                              <Button fullWidth
+                                variant="contained"
+                                color="primary"
+                                onClick={ _ => {this.setState({redirectTo:`/type/details/${type._id}`})}}
+                              >
+                                <ListItemText primary={type.Name} />
+                              </Button>
                             </ListItem>
                           );
-                        }
-                      )}
-                </List>
-              </Grid>
-            </Grid>
-            <Grid item sm={3} xs={12} container spacing={0} direction="column">
-              {this.state.Types.length === 0 ? (
-                ""
-              ) : (
-                <Grid item>
-                  <List>
-                    <ListItem>
-                      <ListItemText primary={"Types"} />
-                    </ListItem>
-                    {this.state.Types.map((type, i) => {
-                      return (
-                        <ListItem key={i}>
-                          <Button fullWidth
-                            variant="contained"
-                            color="primary"
-                            href={`/type/details/${type._id}`}
-                          >
-                            <ListItemText primary={type.Name} />
-                          </Button>
+                        })}
+                      </List>
+                    </Grid>
+                  )}
+                  {references.length === 0 ? (
+                    ""
+                  ) : (
+                    <Grid item>
+                      <List>
+                        <ListItem>
+                          <ListItemText primary={"Referenced in:"} />
                         </ListItem>
-                      );
-                    })}
-                  </List>
-                </Grid>
-              )}
-              {references.length === 0 ? (
-                ""
-              ) : (
-                <Grid item>
-                  <List>
-                    <ListItem>
-                      <ListItemText primary={"Referenced in:"} />
-                    </ListItem>
-                    {references.map((thing, i) => {
-                      return (
-                        <ListItem key={i}>
-                          <Button fullWidth
-                            variant="contained"
-                            color="primary"
-                            href={`/thing/details/${thing._id}`}
-                          >
-                            <ListItemText primary={thing.Name} />
-                          </Button>
-                        </ListItem>
-                      );
-                    })}
-                  </List>
-                </Grid>
-              )}
-            </Grid>
-          </Grid>
-          <Modal
-            aria-labelledby="delete-thing-modal"
-            aria-describedby="delete-thing-modal-description"
-            open={this.state.modalOpen}
-            onClose={e => {this.setState({modalOpen: false})}}
-          >
-            <div style={this.getModalStyle()} className="paper">
-              <Grid container spacing={1} direction="column">
-                <Grid item>
-                  Are you sure you want to delete {this.state.Name}?
-                </Grid>
-                <Grid item>
-                  (All references to it will be left alone and may not work correctly)
-                </Grid>
-                <Grid item container spacing={1} direction="row">
-                  <Grid item xs={6}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      onClick={this.delete}
-                    >
-                      Yes
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      onClick={e => {this.setState({modalOpen: false})}}
-                    >
-                      Cancel
-                    </Button>
-                  </Grid>
+                        {references.map((thing, i) => {
+                          return (
+                            <ListItem key={i}>
+                              <Button fullWidth
+                                variant="contained"
+                                color="primary"
+                                onClick={ _ => {this.setState({redirectTo:`/thing/details/${thing._id}`})}}
+                              >
+                                <ListItemText primary={thing.Name} />
+                              </Button>
+                            </ListItem>
+                          );
+                        })}
+                      </List>
+                    </Grid>
+                  )}
                 </Grid>
               </Grid>
+              <Modal
+                aria-labelledby="delete-thing-modal"
+                aria-describedby="delete-thing-modal-description"
+                open={this.state.modalOpen}
+                onClose={e => {this.setState({modalOpen: false})}}
+              >
+                <div style={this.getModalStyle()} className="paper">
+                  <Grid container spacing={1} direction="column">
+                    <Grid item>
+                      Are you sure you want to delete {this.state.Name}?
+                    </Grid>
+                    <Grid item>
+                      (All references to it will be left alone and may not work correctly)
+                    </Grid>
+                    <Grid item container spacing={1} direction="row">
+                      <Grid item xs={6}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="primary"
+                          onClick={this.delete}
+                        >
+                          Yes
+                        </Button>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          onClick={e => {this.setState({modalOpen: false})}}
+                        >
+                          Cancel
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                </div>
+              </Modal>
             </div>
-          </Modal>
+          }
         </Grid>
       );
     }

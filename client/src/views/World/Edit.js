@@ -265,7 +265,7 @@ class Page extends Component {
                 disabled={this.state.waiting}
                 onClick={_ => {
                   this.setState({
-                    redirectTo: `/`
+                    redirectTo: this.state._id === null ? `/` : `/world/details/${this.state._id}`
                   });
                 }}
                 type="button"

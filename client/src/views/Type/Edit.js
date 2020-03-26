@@ -1,23 +1,20 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
+import { ArrowBack } from "@material-ui/icons";
+import { 
+  Grid, Button, Checkbox, FormControl, FormControlLabel,
+  OutlinedInput, InputLabel, FormHelperText, Tooltip, Fab 
+} from "@material-ui/core";
+import { Helmet } from 'react-helmet';
+import { Multiselect } from 'multiselect-react-dropdown';
+import AttributesControl from "./AttributesControl";
 import {
   selectPage,
   updateSelectedType,
   addType,
   updateType
 } from "../../redux/actions/index";
-import Button from "@material-ui/core/Button";
-import Checkbox from "@material-ui/core/Checkbox";
-import FormControl from "@material-ui/core/FormControl";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import OutlinedInput from "@material-ui/core/OutlinedInput";
-import InputLabel from "@material-ui/core/InputLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
-import AttributesControl from "./AttributesControl";
-import { Multiselect } from 'multiselect-react-dropdown';
-import Grid from "@material-ui/core/Grid";
-import { Helmet } from 'react-helmet';
 import API from "../../api";
 
 /* 
@@ -48,7 +45,7 @@ class Page extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      _id: null,
+      _id: undefined,
       Name: "",
       Description: "",
       Supers: [],
@@ -69,43 +66,21 @@ class Page extends Component {
   }
 
   componentDidMount() {
-    setTimeout(() => {
-      const { id } = this.props.match.params;
-      if (id !== undefined) {
-        this.api.getType(this.props.selectedWorldID, id).then(res => {
-          if (res.error === undefined) {
-            const supers = this.props.types.filter(type =>
-              res.SuperIDs.includes(type._id)
-            );
-            this.setState({
-              Name: res.Name,
-              Description: res.Description,
-              _id: id,
-              Supers: supers,
-              Major: res.Major
-            });
-            this.props.updateSelectedType(res);
-          }
-          else {
-            this.setState({ message: res.error });
-          }
-        });
-      } else {
-        this.props.updateSelectedType({
-          _id: null,
-          Name: "",
-          Description: "",
-          Supers: [],
-          AttributesArr: [],
-          Major: false
-        });
-      }
-    }, 500);
   }
 
   resetForm = () => {
     setTimeout(() => {
-      this.setState({resetting: false});
+      let { id } = this.props.match.params;
+      if (id !== undefined) {
+        this.setState({
+          resetting: false, 
+          redirectTo: `/type/create`});
+      }
+      else {
+        this.setState({
+          resetting: false
+        });
+      }
     }, 500);
   };
 
@@ -218,25 +193,23 @@ class Page extends Component {
       AttributesArr: this.props.selectedType.AttributesArr,
       worldID: this.props.selectedWorld._id,
       Major: this.state.Major,
-      ReferenceIDs: []
+      ReferenceIDs: [],
+      DefaultReferenceIDs: []
     };
     this.props.selectedType.AttributesArr.filter(a=>a.Type === "Type" || (a.Type === "List" && a.ListType === "Type")).forEach(a=>{
       if (!type.ReferenceIDs.includes(a.Type2)) {
         type.ReferenceIDs.push(a.Type2);
       }
     });
-    console.log(type);
 
     if (type._id === null) {
       this.api
         .createType(type)
         .then(res => {
-          console.log(res);
           if (res.typeID !== undefined) {
             type._id = res.typeID;
             this.props.addType(type);
             if (this.state.addMore) {
-              console.log('hi');
               this.props.updateSelectedType({
                 _id: null,
                 Name: "",
@@ -283,11 +256,9 @@ class Page extends Component {
       this.api
         .updateType(type)
         .then(res => {
-          console.log(res);
           if (res.error === undefined) {
             this.props.updateType(type);
             if (this.state.addMore) {
-              console.log('hi');
               this.props.updateSelectedType({
                 _id: null,
                 Name: "",
@@ -297,7 +268,6 @@ class Page extends Component {
                 Major: false
               });
               this.setState({
-                _id: null,
                 Name: "",
                 Description: "",
                 Supers: [],
@@ -309,11 +279,11 @@ class Page extends Component {
                 },
                 formValid: false,
                 message: "",
-                redirectTo: null,
                 waiting: false,
                 addMore: false,
-                resetting: true
-              }, this.resetForm);
+                resetting: true, 
+                redirectTo: `/type/create`
+              });
             }
             else {
               this.setState({
@@ -406,12 +376,64 @@ class Page extends Component {
     this.props.updateSelectedType(type);
   }
 
+  load = (id) => {
+    setTimeout(() => {
+      this.setState({
+        _id: id,
+        redirectTo: null
+      }, this.finishLoading);
+    }, 500);
+  }
+
+  finishLoading = () => {
+    const id = this.state._id;
+    if (id !== null) {
+      this.api.getType(this.props.selectedWorldID, id).then(res => {
+        if (res.error === undefined) {
+          const supers = this.props.types.filter(type =>
+            res.SuperIDs.includes(type._id)
+          );
+          this.setState({
+            Name: res.Name,
+            Description: res.Description,
+            _id: id,
+            Supers: supers,
+            Major: res.Major
+          });
+          this.props.updateSelectedType(res);
+        }
+        else {
+          this.setState({ message: res.error });
+        }
+      });
+    } else {
+      this.props.updateSelectedType({
+        _id: null,
+        Name: "",
+        Description: "",
+        Supers: [],
+        AttributesArr: [],
+        Major: false
+      });
+    }
+  }
+
   render() {
+    // console.log(this.state);
+    // console.log(this.props);
+    let { id } = this.props.match.params;
+    if (id === undefined)
+      id = null;
+    if (this.state._id !== id) {
+      this.load(id);
+    }
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
+      console.log(this.state);
+      console.log(this.props);
       const types =
         this.props.types === undefined || this.state._id === null
           ? this.props.types
@@ -419,153 +441,150 @@ class Page extends Component {
       
       return (
         <Grid item xs={12} container spacing={1} direction="column">
-          <Helmet>
-            <title>{ this.props.selectedWorld === null ? `Author's Notebook` : `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
-          </Helmet>
-          <Grid item>
-            <h2>{this.state._id === null ? "Create New Type" : "Edit Type"}</h2>
-          </Grid>
-          <Grid item>
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel htmlFor="name">Name</InputLabel>
-              <OutlinedInput
-                id="name"
-                name="Name"
-                type="text"
-                autoComplete="Off"
-                error={!this.state.fieldValidation.Name.valid}
-                value={this.state.Name}
-                onChange={this.handleUserInput}
-                onBlur={this.inputBlur}
-                labelWidth={43}
-                fullWidth
-              />
-              <FormHelperText>
-                {this.state.fieldValidation.Name.message}
-              </FormHelperText>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel htmlFor="description">Description</InputLabel>
-              <OutlinedInput
-                id="description"
-                name="Description"
-                type="text"
-                value={this.state.Description}
-                onChange={this.handleUserInput}
-                onBlur={this.inputBlur}
-                labelWidth={82}
-                fullWidth
-              />
-            </FormControl>
-          </Grid>
-          <Grid item>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={this.state.Major}
-                  onChange={this.handleUserInput}
-                  name="Major"
-                  color="primary"
+          { this.props.selectedWorld === null ? "" :
+            <div>
+              <Helmet>
+                <title>{ `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
+              </Helmet>
+              <Grid item container spacing={1} direction="row">
+                <Grid item xs={1}>
+                  <Tooltip title={`Back to ${this.props.selectedWorld.Name}`}>
+                    <Fab size="small"
+                      color="primary"
+                      onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
+                    >
+                      <ArrowBack />
+                    </Fab>
+                  </Tooltip>
+                </Grid>
+                <Grid item xs={11}>
+                  <h2>{this.state._id === null ? "Create New Type" : "Edit Type"}</h2>
+                </Grid>
+              </Grid>
+              <Grid item>
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel htmlFor="name">Name</InputLabel>
+                  <OutlinedInput
+                    id="name"
+                    name="Name"
+                    type="text"
+                    autoComplete="Off"
+                    error={!this.state.fieldValidation.Name.valid}
+                    value={this.state.Name}
+                    onChange={this.handleUserInput}
+                    onBlur={this.inputBlur}
+                    labelWidth={43}
+                    fullWidth
+                  />
+                  <FormHelperText>
+                    {this.state.fieldValidation.Name.message}
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item>
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel htmlFor="description">Description</InputLabel>
+                  <OutlinedInput
+                    id="description"
+                    name="Description"
+                    type="text"
+                    value={this.state.Description}
+                    onChange={this.handleUserInput}
+                    onBlur={this.inputBlur}
+                    labelWidth={82}
+                    fullWidth
+                  />
+                </FormControl>
+              </Grid>
+              <Grid item>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={this.state.Major}
+                      onChange={this.handleUserInput}
+                      name="Major"
+                      color="primary"
+                    />
+                  }
+                  label="Major Type"
                 />
-              }
-              label="Major Type"
-            />
-          </Grid>
-          <Grid item>
-            { this.state.resetting ? "" :
-              <Multiselect
-                placeholder="Super Types"
-                options={types}
-                selectedValues={this.state.Supers}
-                onSelect={this.addSuper}
-                onRemove={this.removeSuper}
-                displayValue="Name"
-              />
-            }
-          </Grid>
-          <Grid item>
-            <AttributesControl />
-          </Grid>
-          <Grid item>
-            {/* <FormHelperText>
-              {this.state.fieldValidation.AttributesArr.message}
-            </FormHelperText> */}
-            {Object.keys(this.state.fieldValidation).map((fieldName, i) => {
-              if (
-                this.state.fieldValidation[fieldName] !== undefined &&
-                this.state.fieldValidation[fieldName].message.length > 0
-              ) {
-                return (
-                  <p className="redFont" key={i}>
-                    {this.state.fieldValidation[fieldName].message}
-                  </p>
-                );
-              } else {
-                return "";
-              }
-            })}
-          </Grid>
-          <Grid item>
-            <div className="float-right">
-              <Button
-                variant="contained" color="primary"
-                disabled={this.state.waiting}
-                onClick={e => {this.onSubmit(true);}}
-                type="submit"
-              >
-                {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
-              </Button>
-              <Button
-                variant="contained" color="primary"
-                style={{marginLeft: "4px"}}
-                className="w-200"
-                disabled={this.state.waiting}
-                onClick={e => {this.onSubmit(false);}}
-                type="submit"
-              >
-                {this.state.waiting ? "Please Wait" : "Submit"}
-              </Button>
-              <Button
-                variant="contained"
-                style={{marginLeft: "4px"}}
-                disabled={this.state.waiting}
-                onClick={_ => {
-                  if (this.props.selectedType._id === null) {
-                    this.setState({
-                      redirectTo: `/world/details/${this.props.selectedWorldID}`
-                    });
+              </Grid>
+              <Grid item>
+                { this.state.resetting ? "" :
+                  <Multiselect
+                    placeholder="Super Types"
+                    options={types}
+                    selectedValues={this.state.Supers}
+                    onSelect={this.addSuper}
+                    onRemove={this.removeSuper}
+                    displayValue="Name"
+                  />
+                }
+              </Grid>
+              <Grid item>
+                <AttributesControl />
+              </Grid>
+              <Grid item>
+                {Object.keys(this.state.fieldValidation).map((fieldName, i) => {
+                  if (
+                    this.state.fieldValidation[fieldName] !== undefined &&
+                    this.state.fieldValidation[fieldName].message.length > 0
+                  ) {
+                    return (
+                      <p className="redFont" key={i}>
+                        {this.state.fieldValidation[fieldName].message}
+                      </p>
+                    );
+                  } else {
+                    return "";
                   }
-                  else {
-                    this.setState({
-                      redirectTo: `/type/details/${this.props.selectedType._id}`
-                    });
-                  }
-                }}
-                type="button"
-              >
-                Cancel
-              </Button>
+                })}
+              </Grid>
+              <Grid item>
+                <div className="float-right">
+                  <Button
+                    variant="contained" color="primary"
+                    disabled={this.state.waiting}
+                    onClick={e => {this.onSubmit(true);}}
+                    type="submit"
+                  >
+                    {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
+                  </Button>
+                  <Button
+                    variant="contained" color="primary"
+                    style={{marginLeft: "4px"}}
+                    className="w-200"
+                    disabled={this.state.waiting}
+                    onClick={e => {this.onSubmit(false);}}
+                    type="submit"
+                  >
+                    {this.state.waiting ? "Please Wait" : "Submit"}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    style={{marginLeft: "4px"}}
+                    disabled={this.state.waiting}
+                    onClick={_ => {
+                      if (this.props.selectedType._id === null) {
+                        this.setState({
+                          redirectTo: `/world/details/${this.props.selectedWorldID}`
+                        });
+                      }
+                      else {
+                        this.setState({
+                          redirectTo: `/type/details/${this.props.selectedType._id}`
+                        });
+                      }
+                    }}
+                    type="button"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </Grid>
+              <Grid item>{this.state.message}</Grid>
             </div>
-          </Grid>
-          <Grid item>{this.state.message}</Grid>
-          {/* <Grid item>
-            {Object.keys(this.state.fieldValidation).map((fieldName, i) => {
-              if (
-                this.state.fieldValidation[fieldName] !== undefined &&
-                this.state.fieldValidation[fieldName].message.length > 0
-              ) {
-                return (
-                  <p className="redFont" key={i}>
-                    {this.state.fieldValidation[fieldName].message}
-                  </p>
-                );
-              } else {
-                return "";
-              }
-            })}
-          </Grid> */}
+          }
         </Grid>
       );
     }
