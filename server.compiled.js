@@ -12,9 +12,9 @@ var _bodyParser = _interopRequireDefault(require("body-parser"));
 
 var _uuid = require("uuid");
 
-var _userService = _interopRequireDefault(require("./services/user-service.js"));
+var _user = _interopRequireDefault(require("./apis/user.js"));
 
-var _worldService = _interopRequireDefault(require("./services/world-service.js"));
+var _world = _interopRequireDefault(require("./apis/world.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -84,8 +84,8 @@ if (app.get('env') === 'production') {
 
 
 app.use(_express["default"]["static"](_path["default"].join(__dirname, 'client/build')));
-app.use('/api/user', _userService["default"]);
-app.use('/api/world', _worldService["default"]);
+app.use('/api/user', _user["default"]);
+app.use('/api/world', _world["default"]);
 var port = process.env.SERVER_PORT || 4001;
 var version = "0.0.1"; // API calls
 
@@ -105,9 +105,9 @@ function exitHandler(options, exitCode) {
   if (options.exit) {
     console.log('closing');
 
-    _userService["default"].close();
+    _user["default"].close();
 
-    _worldService["default"].close();
+    _world["default"].close();
 
     process.exit();
   }
