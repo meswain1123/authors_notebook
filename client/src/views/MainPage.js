@@ -15,6 +15,8 @@ import TypeEditPage from "./Type/Edit";
 // import TypeDeletePage from "./Type/Delete";
 import ThingDetailsPage from "./Thing/Details";
 import ThingEditPage from "./Thing/Edit";
+import ResetPasswordPage from "./User/ResetPassword";
+import ConfirmEmailPage from "./User/ConfirmEmail";
 // import ThingDeletePage from "./Thing/Delete";
 import Grid from "@material-ui/core/Grid";
 
@@ -38,6 +40,8 @@ class Page extends Component {
           <Route exact path="/" component={HomePage} />
           <Route exact path="/home" component={HomePage} />
           <Route exact path="/User/Login" component={LoginPage} />
+          <Route exact path="/User/resetPassword/:id" component={ResetPasswordPage} />
+          <Route exact path="/User/confirmEmail/:id" component={ConfirmEmailPage} />
           <Route exact path="/profile" component={UserEditPage} />
           
           {/* <Route exact path="/test/:testtext" component={Test} /> */}

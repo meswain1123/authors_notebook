@@ -68,8 +68,7 @@ class APIClass {
       return {
         _id: "-1",
         email: "fake@fakemail.com",
-        firstName: "Liar Liar",
-        lastName: "Pants on Fire"
+        username: "Liar Liar"
       };
     }
   };
@@ -89,9 +88,53 @@ class APIClass {
     }
   };
 
+  confirmEmail = async (code) => {
+    if (this.real) {
+      const response = await this.patchData("/api/user/confirmEmail", {code});
+      return this.processResponse(response);
+    } else {
+      return {
+        _id: "-1",
+        email: "fake@fakemail.com",
+        username: "Liar Liar"
+      };
+    }
+  };
+
   sendReset = async user => {
     if (this.real) {
       const response = await this.postData("/api/user/sendReset", user);
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
+
+  checkResetPasswordCode = async code => {
+    if (this.real) {
+      const response = await this.postData("/api/user/checkResetPasswordCode", {code});
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
+  
+  resetPassword = async (code, newPassword) => {
+    if (this.real) {
+      const response = await this.patchData("/api/user/resetPassword", {code, newPassword});
+      return this.processResponse(response);
+    } else {
+      return {
+        _id: "-1",
+        email: "fake@fakemail.com",
+        username: "Liar Liar"
+      };
+    }
+  };
+
+  emailTest = async user => {
+    if (this.real) {
+      const response = await this.postData("/api/user/emailTest", user);
       return this.processResponse(response);
     } else {
       return "success";
@@ -106,8 +149,7 @@ class APIClass {
       return {
         _id: "-1",
         email: "fake@fakemail.com",
-        firstName: "Liar Liar",
-        lastName: "Pants on Fire"
+        username: "Liar Liar"
       };
     }
   };

@@ -3,7 +3,7 @@
 // import express from "express";
 // import db from "../db/world-db";
 var express = require("express");
-var db = require("../db/world-db");
+var db = require("../db/world");
 
 var router = express.Router();
 
@@ -15,10 +15,10 @@ router
     res.send({ message: "Becky is hot!" });
   })
   .get("/getWorldsForUser", function(req, res) {
-    console.log(req.session);
+    // console.log(req.session);
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
-      console.log(req.session);
+      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function respond(worlds) {
@@ -39,7 +39,7 @@ router
   .post("/createWorld", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
-      console.log(req.session);
+      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function respond(worldID) {
@@ -53,7 +53,7 @@ router
   .delete("/deleteWorld", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
-      console.log(req.session);
+      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } 
     else {
@@ -68,7 +68,7 @@ router
   .patch("/updateWorld", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
-      console.log(req.session);
+      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function respond(message) {
@@ -133,7 +133,7 @@ router
     // console.log(req.session);
     // console.log(req.body.type);
     if (req.session.userID == undefined) {
-      console.log(req.session);
+      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
@@ -165,7 +165,7 @@ router
   .delete("/deleteType", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
-      console.log(req.session);
+      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
@@ -189,7 +189,7 @@ router
   .patch("/updateType", function(req, res) {
     // console.log(req.body.type);
     if (req.session.userID == undefined) {
-      console.log(req.session);
+      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
@@ -241,7 +241,7 @@ router
   .post("/createThing", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.worldID) {
-      console.log(req.session);
+      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
@@ -276,7 +276,7 @@ router
   .delete("/deleteThing", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) { // || req.session.worldID == undefined) {
-      console.log(req.session);
+      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
@@ -303,7 +303,7 @@ router
   .patch("/updateThing", function(req, res) {
     // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.worldID) {
-      console.log(req.session);
+      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {

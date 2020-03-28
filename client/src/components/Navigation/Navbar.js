@@ -88,9 +88,9 @@ class Bar extends Component {
                   <ListItemText
                     primary={
                       this.props.user === null ||
-                      this.props.user.firstName === undefined
+                      this.props.user.username === undefined
                         ? " Login/Register"
-                        : ` ${this.props.user.firstName} ${this.props.user.lastName}`
+                        : ` ${this.props.user.username}`
                     }
                   />
                 </ListItem>

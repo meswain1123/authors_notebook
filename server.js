@@ -65,11 +65,11 @@ if (app.get('env') === 'production') {
 // let myEnv = process.env;
 // process.env = {};
 
-import userService from './services/user-service.js';
-import worldService from './services/world-service.js';
+import userAPI from './apis/user.js';
+import worldAPI from './apis/world.js';
 app.use(express.static(path.join(__dirname, 'client/build')));
-app.use('/api/user', userService);
-app.use('/api/world', worldService);
+app.use('/api/user', userAPI);
+app.use('/api/world', worldAPI);
 const port = process.env.SERVER_PORT || 4001;
 
 const version = "0.0.1";
@@ -90,8 +90,8 @@ process.stdin.resume();//so the program will not close instantly
 function exitHandler(options, exitCode) {
   if (options.exit) {
     console.log('closing');
-    userService.close();
-    worldService.close();
+    userAPI.close();
+    worldAPI.close();
     process.exit();
   }
 }

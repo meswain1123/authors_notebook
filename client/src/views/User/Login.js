@@ -52,14 +52,12 @@ class Page extends Component {
         password: { valid: true, message: "" }, 
         confirmEmail: { valid: true, message: "" }, 
         confirmPassword: { valid: true, message: "" },
-        firstName: { valid: true, message: "" },
-        lastName: { valid: true, message: "" }
+        username: { valid: true, message: "" }
       },
       formValid: false,
       remember: false,
       message: "",
-      firstName: "",
-      lastName: "",
+      username: "",
       redirectTo: null
     };
     this.api = API.getInstance();
@@ -119,13 +117,9 @@ class Page extends Component {
         valid = value === this.state.password;
         message = valid ? "" : "Confirm Password doesn't match Password";
         break;
-      case "firstName":
+      case "username":
         valid = value.length >= 2;
-        message = valid ? "" : "First Name is too short";
-        break;
-      case "lastName":
-        valid = value.length >= 2;
-        message = valid ? "" : "Last Name is too short";
+        message = valid ? "" : "Username is too short";
         break;
       default:
         break;
@@ -139,8 +133,7 @@ class Page extends Component {
     let confirmEmailValid = { valid: true, message: "" };
     let passwordValid = { valid: true, message: "" };
     let confirmPasswordValid = { valid: true, message: "" };
-    let firstNameValid = { valid: true, message: "" };
-    let lastNameValid = { valid: true, message: "" };
+    let usernameValid = { valid: true, message: "" };
     switch (this.state.formMode) {
       case "Login":
         passwordValid = this.validateField("password");
@@ -149,8 +142,7 @@ class Page extends Component {
         confirmEmailValid = this.validateField("confirmEmail");
         passwordValid = this.validateField("password");
         confirmPasswordValid = this.validateField("confirmPassword");
-        firstNameValid = this.validateField("firstName");
-        lastNameValid = this.validateField("lastName");
+        usernameValid = this.validateField("username");
       break;
       default:
       break;
@@ -160,15 +152,13 @@ class Page extends Component {
       passwordValid.valid && 
       confirmEmailValid.valid && 
       confirmPasswordValid.valid && 
-      firstNameValid.valid &&
-      lastNameValid.valid;
+      usernameValid.valid;
     const fieldValidation = this.state.fieldValidation;
     fieldValidation.email = emailValid;
     fieldValidation.password = passwordValid;
     fieldValidation.confirmEmail = confirmEmailValid;
     fieldValidation.confirmPassword = confirmPasswordValid;
-    fieldValidation.firstName = firstNameValid;
-    fieldValidation.lastName = lastNameValid;
+    fieldValidation.username = usernameValid;
     this.setState({ 
       formValid: formValid,
       fieldValidation: fieldValidation
@@ -190,8 +180,7 @@ class Page extends Component {
     const user = {
       email: this.state.email,
       password: this.state.password,
-      firstName: this.state.firstName,
-      lastName: this.state.lastName,
+      username: this.state.username,
       followingWorlds: this.props.followingWorlds
     };
     if (this.state.formMode === "login") {
@@ -217,27 +206,31 @@ class Page extends Component {
       .catch(err => console.log(err));
     } else if (this.state.formMode === "register") {
       this.api.register(user).then(res => {
-        this.setState({ message: res.message, formMode: "login", fieldValidation: { 
-          email: { valid: false, message: "" }, 
-          password: { valid: false, message: "" }, 
-          confirmEmail: { valid: false, message: "" }, 
-          confirmPassword: { valid: false, message: "" },
-          firstName: { valid: false, message: "" },
-          lastName: { valid: false, message: "" },
+        this.setState({ 
+          message: res.message, 
+          formMode: "login", 
+          fieldValidation: { 
+            email: { valid: true, message: "" }, 
+            password: { valid: true, message: "" }, 
+            confirmEmail: { valid: true, message: "" }, 
+            confirmPassword: { valid: true, message: "" },
+            username: { valid: true, message: "" }
+          },
           waiting: false
-        }});
+        });
       })
       .catch(err => console.log(err));
     } else if (this.state.formMode === "password") {
       this.api.sendReset(user).then(res => {
-        this.setState({ message: res.message, formMode: "login", fieldValidation: { 
-          email: { valid: false, message: "" }, 
-          password: { valid: false, message: "" }, 
-          confirmEmail: { valid: false, message: "" }, 
-          confirmPassword: { valid: false, message: "" },
-          firstName: { valid: false, message: "" },
-          lastName: { valid: false, message: "" }
-        },
+        this.setState({ message: res.message, 
+          formMode: "login", 
+          fieldValidation: { 
+            email: { valid: true, message: "" }, 
+            password: { valid: true, message: "" }, 
+            confirmEmail: { valid: true, message: "" }, 
+            confirmPassword: { valid: true, message: "" },
+            username: { valid: true, message: "" }
+          },
           waiting: false 
         });
       })
@@ -261,8 +254,8 @@ class Page extends Component {
     if (this.state.redirectTo !== null && 
       this.props.user !== null && 
       this.props.user !== undefined && 
-      this.props.user.firstName !== undefined && 
-      this.props.user.firstName !== "") {
+      this.props.user.username !== undefined && 
+      this.props.user.username !== "") {
       return (<Redirect to={this.state.redirectTo} />);
     }
     else {
@@ -396,39 +389,19 @@ class Page extends Component {
                       <div className="col-sm-12 margined">
                         <FormControl variant="outlined"
                             fullWidth>
-                          <InputLabel htmlFor="firstName">First Name</InputLabel>
+                          <InputLabel htmlFor="username">Username</InputLabel>
                           <OutlinedInput
-                            id="firstName"
-                            name="firstName"
+                            id="username"
+                            name="username"
                             type="text"
-                            value={this.state.firstName}
-                            error={ !this.state.fieldValidation.firstName.valid }
+                            value={this.state.username}
+                            error={ !this.state.fieldValidation.username.valid }
                             onChange={this.handleUserInput}
                             onBlur={this.inputBlur}
                             labelWidth={80}
                             fullWidth
                           />
-                          <FormHelperText>{ this.state.fieldValidation.firstName.message }</FormHelperText>
-                        </FormControl>
-                      </div>
-                    </div>
-                    <div className="row">
-                      <div className="col-sm-12 margined">
-                        <FormControl variant="outlined"
-                          fullWidth>
-                          <InputLabel htmlFor="lastName">Last Name</InputLabel>
-                          <OutlinedInput
-                            id="lastName"
-                            name="lastName"
-                            type="text"
-                            value={this.state.lastName}
-                            error={ !this.state.fieldValidation.lastName.valid }
-                            onChange={this.handleUserInput}
-                            onBlur={this.inputBlur}
-                            labelWidth={80}
-                            fullWidth
-                          />
-                          <FormHelperText>{ this.state.fieldValidation.lastName.message }</FormHelperText>
+                          <FormHelperText>{ this.state.fieldValidation.username.message }</FormHelperText>
                         </FormControl>
                       </div>
                     </div>
@@ -557,7 +530,9 @@ class Page extends Component {
                   </Link>{" "}
                 </div>
                 <div className="float-right">
-                  <Button className="w200" disabled={this.state.waiting}
+                  <Button className="w-200" 
+                    variant="contained" color="primary"
+                    disabled={this.state.waiting}
                     onClick={this.onSubmit}
                     type="submit">{this.state.waiting ? "Please Wait" : "Submit"}
                   </Button>
@@ -623,7 +598,9 @@ class Page extends Component {
                   </Link>
                 </div>
                 <div className="float-right">
-                  <Button className="w200" disabled={this.state.waiting}
+                  <Button className="w-200" 
+                    variant="contained" color="primary"
+                    disabled={this.state.waiting}
                     onClick={this.onSubmit}
                     type="submit">{this.state.waiting ? "Please Wait" : "Submit"}
                   </Button>
