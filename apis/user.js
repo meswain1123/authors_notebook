@@ -17,6 +17,18 @@ router.get('/getUsersByText/:text', function (req, res) {
   };
   db.getUsersByText(respond, req.params.text);
   // res.send({message: 'Testing'});
+}).get('/getAllUsers', function (req, res) {
+  function respond(users) {
+    const safeUsers = users.map(u => { return {_id: u._id, email: u.email, username: u.username};});
+    res.send(safeUsers);
+  };
+  db.getAllUsers(respond);
+}).get('/getUserByName/:name', function (req, res) {
+  function respond(users) {
+    const safeUsers = users.map(u => { return {_id: u._id, email: u.email, username: u.username};});
+    res.send({ users: safeUsers });
+  };
+  db.getUserByName(respond, req.params.name);
 }).post('/login', function (req, res) {
   function respond(user) {
     if (user != null && user.message == null && user.password == req.body.password) {
@@ -48,19 +60,31 @@ router.get('/getUsersByText/:text', function (req, res) {
       res.send({ error: "A user with this email already exists.  You may need to reset your password."})
     }
     else {
-      function respond(response) {
-        function finalRespond(_) {
-          res.send({message: response.message});
+      function getUserNameRespond(user2) {
+        if (user2.error != null) {
+          res.send({ error: user2.error });
         }
-    
-        const message = `Welcome to Author's Notebook.  
-          Use <a href='http://localhost:3000/User/confirmEmail/${response.confirmEmailCode}'>this link</a> to confirm your email.  It will be good for one hour.  
-          If you did not register with Author's Notebook, please disregard this email.`;
-        emailer.sendEmail(finalRespond, req.body.email, "Author's Notebook, Registration", message);
+        else if (user2.message == null) {
+          res.send({ error: "A user with this email already exists.  You may need to reset your password."})
+        }
+        else {
+          function respond(response) {
+            function finalRespond(_) {
+              res.send({message: response.message});
+            }
+        
+            const message = `Welcome to Author's Notebook.  
+              Use <a href='http://localhost:3000/User/confirmEmail/${response.confirmEmailCode}'>this link</a> to confirm your email.  It will be good for one hour.  
+              If you did not register with Author's Notebook, please disregard this email.`;
+            emailer.sendEmail(finalRespond, req.body.email, "Author's Notebook, Registration", message);
+          };
+          const myDate = new Date();
+          myDate.setHours(myDate.getHours() + 1);
+          db.register(respond, req.body, uuid.v1(), myDate);
+        }
       };
-      const myDate = new Date();
-      myDate.setHours(myDate.getHours() + 1);
-      db.register(respond, req.body, uuid.v1(), myDate);
+    
+      db.getUserByName(getUserNameRespond, req.body.username);
     }
   };
 

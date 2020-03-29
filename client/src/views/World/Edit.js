@@ -247,6 +247,16 @@ class Page extends Component {
               label="Public"
             />
           </Grid>
+          {/* <Grid item>
+            <Multiselect
+              placeholder="Collaborators"
+              options={this.state.allUsers}
+              selectedValues={this.state.Collaborators}
+              onSelect={this.addCollaborator}
+              onRemove={this.removeCollaborator}
+              displayValue="username"
+            />
+          </Grid> */}
           <Grid item>
             <div className="float-right">
               <Button

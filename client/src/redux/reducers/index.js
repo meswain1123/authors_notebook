@@ -72,6 +72,7 @@ function rootReducer(state = initialState, action) {
       articles: state.articles.concat(action.payload)
     });
   } else if (action.type === LOGIN) {
+    console.log(action.payload);
     sessionStorage.setItem("user", JSON.stringify(action.payload));
     sessionStorage.setItem("followingWorlds", JSON.stringify(action.payload.followingWorlds));
     return Object.assign({}, state, {

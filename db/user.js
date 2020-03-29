@@ -35,12 +35,40 @@ function getUsersByText(respond, text) {
     });
 }
 
+function getAllUsers(respond, text) {
+  const db = client.db(dbName);
+
+  db.collection("user")
+    .find({})
+    .toArray(function(err, docs) {
+      if (err) throw err;
+      respond(docs);
+    });
+}
+
 function getUserByEmail(respond, email) {
   try {
     const db = client.db(dbName);
 
     db.collection("user")
       .find({ email: email })
+      .toArray(function(err, docs) {
+        if (err) respond({ error: `Error: ${err}` });
+        else if (docs == null || docs.length == 0) respond({ message: 'User not found' });
+        else respond(docs[0]);
+      });
+  } catch (err) {
+    console.log(err);
+    respond(null);
+  }
+}
+
+function getUserByName(respond, name) {
+  try {
+    const db = client.db(dbName);
+
+    db.collection("user")
+      .find({ username: name })
       .toArray(function(err, docs) {
         if (err) respond({ error: `Error: ${err}` });
         else if (docs == null || docs.length == 0) respond({ message: 'User not found' });
@@ -169,7 +197,9 @@ module.exports = {
   open,
   close,
   getUserByEmail,
+  getUserByName,
   getUsersByText,
+  getAllUsers,
   register,
   getUserByConfirmEmailCode,
   confirmEmail,

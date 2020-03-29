@@ -58,7 +58,8 @@ class Page extends Component {
       remember: false,
       message: "",
       username: "",
-      redirectTo: null
+      redirectTo: null,
+      allUsers: null
     };
     this.api = API.getInstance();
   }
@@ -120,6 +121,11 @@ class Page extends Component {
       case "username":
         valid = value.length >= 2;
         message = valid ? "" : "Username is too short";
+        console.log(this.state.allUsers);
+        if (valid && this.state.allUsers.filter(u=>u.username === value).length !== 0) {
+          valid = false;
+          message = "This Username is taken";
+        }
         break;
       default:
         break;
@@ -196,11 +202,11 @@ class Page extends Component {
             cookies.set('email', this.state.email);
             cookies.set('password', this.state.password);
           }
+          this.props.userLogin(res.user);
           this.api.getWorldsForUser(res.user._id).then(res => {
             this.props.setWorlds(res.worlds);
+            this.setState({ redirectTo: "/" });
           });
-          this.props.userLogin(res.user);
-          this.setState({ redirectTo: "/" });
         }
       })
       .catch(err => console.log(err));
@@ -251,7 +257,14 @@ class Page extends Component {
   };
 
   render() {
-    if (this.state.redirectTo !== null && 
+    console.log(this.state.allUsers);
+    if (this.state.allUsers === null) {
+      this.api.getAllUsers().then(res => {
+        this.setState({allUsers: res});
+      });
+      return (<div></div>);
+    }
+    else if (this.state.redirectTo !== null && 
       this.props.user !== null && 
       this.props.user !== undefined && 
       this.props.user.username !== undefined && 

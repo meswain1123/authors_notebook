@@ -60,6 +60,19 @@ class APIClass {
   };
 
   // User
+  getAllUsers = async () => {
+    if (this.real) {
+      const response = await this.fetchData("/api/user/getAllUsers");
+      return this.processResponse(response);
+    } else {
+      return [{
+        _id: "-1",
+        email: "fake@fakemail.com",
+        username: "Liar Liar"
+      }];
+    }
+  };
+
   login = async user => {
     if (this.real) {
       const response = await this.postData("/api/user/login", user);
