@@ -251,8 +251,9 @@ function rootReducer(state = initialState, action) {
     type.Name = action.payload.Name;
     type.Description = action.payload.Description;
     type.Supers = action.payload.Supers;
-    type.Attributes = action.payload.Attributes;
+    type.AttributesArr = action.payload.AttributesArr;
     sessionStorage.setItem("types", JSON.stringify(types));
+    console.log(types);
     return Object.assign({}, state, {
       types: types
     });

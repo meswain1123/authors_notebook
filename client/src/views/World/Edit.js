@@ -16,6 +16,7 @@ import InputLabel from "@material-ui/core/InputLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Grid from "@material-ui/core/Grid";
 import { Helmet } from 'react-helmet';
+import { Multiselect } from 'multiselect-react-dropdown';
 import API from "../../api";
 
 /* 
@@ -48,6 +49,8 @@ class Page extends Component {
       _id: null,
       Name: "",
       Public: false,
+      Collaborators: [],
+      allUsers: null,
       fieldValidation: {
         Name: { valid: true, message: "" }
       },
@@ -101,6 +104,16 @@ class Page extends Component {
       this.setState({ fieldValidation: fieldValidation });
     }
   };
+
+  addCollaborator = (selectedList, selectedItem) => {
+    // const world = this.props.selectedWorld;
+    this.setState({ Collaborators: selectedList });
+  }
+  
+  removeType = (selectedList, removedItem) => {
+    // const world = this.props.selectedWorld;
+    this.setState({ Collaborators: selectedList });
+  }
 
   validateField = fieldName => {
     let value = null;
@@ -199,11 +212,19 @@ class Page extends Component {
   };
 
   render() {
-    if (this.state.redirectTo !== null) {
+    if (this.state.allUsers === null) {
+      this.api.getAllUsers().then(res => {
+        console.log(res);
+        this.setState({allUsers: res});
+      });
+      return (<div></div>);
+    }
+    else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
+      console.log(this.state.allUsers);
       return (
         <Grid item xs={12} container spacing={1} direction="column">
           <Helmet>
@@ -247,7 +268,7 @@ class Page extends Component {
               label="Public"
             />
           </Grid>
-          {/* <Grid item>
+          <Grid item>
             <Multiselect
               placeholder="Collaborators"
               options={this.state.allUsers}
@@ -256,7 +277,7 @@ class Page extends Component {
               onRemove={this.removeCollaborator}
               displayValue="username"
             />
-          </Grid> */}
+          </Grid>
           <Grid item>
             <div className="float-right">
               <Button

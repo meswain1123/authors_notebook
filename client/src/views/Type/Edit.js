@@ -202,12 +202,17 @@ class Page extends Component {
       }
     });
 
+    console.log(type);
     if (type._id === null) {
       this.api
         .createType(type)
         .then(res => {
           if (res.typeID !== undefined) {
             type._id = res.typeID;
+            type.Supers = [];
+            type.SuperIDs.forEach(sID=> {
+              type.Supers = type.Supers.concat(this.props.types.filter(t2=>t2._id === sID));
+            });
             this.props.addType(type);
             if (this.state.addMore) {
               this.props.updateSelectedType({
@@ -257,6 +262,10 @@ class Page extends Component {
         .updateType(type)
         .then(res => {
           if (res.error === undefined) {
+            type.Supers = [];
+            type.SuperIDs.forEach(sID=> {
+              type.Supers = type.Supers.concat(this.props.types.filter(t2=>t2._id === sID));
+            });
             this.props.updateType(type);
             if (this.state.addMore) {
               this.props.updateSelectedType({

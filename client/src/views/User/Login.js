@@ -121,7 +121,6 @@ class Page extends Component {
       case "username":
         valid = value.length >= 2;
         message = valid ? "" : "Username is too short";
-        console.log(this.state.allUsers);
         if (valid && this.state.allUsers.filter(u=>u.username === value).length !== 0) {
           valid = false;
           message = "This Username is taken";
@@ -212,18 +211,27 @@ class Page extends Component {
       .catch(err => console.log(err));
     } else if (this.state.formMode === "register") {
       this.api.register(user).then(res => {
-        this.setState({ 
-          message: res.message, 
-          formMode: "login", 
-          fieldValidation: { 
-            email: { valid: true, message: "" }, 
-            password: { valid: true, message: "" }, 
-            confirmEmail: { valid: true, message: "" }, 
-            confirmPassword: { valid: true, message: "" },
-            username: { valid: true, message: "" }
-          },
-          waiting: false
-        });
+        console.log(res);
+        if (res.error === undefined) {
+          this.setState({ 
+            message: res.message, 
+            formMode: "login", 
+            fieldValidation: { 
+              email: { valid: true, message: "" }, 
+              password: { valid: true, message: "" }, 
+              confirmEmail: { valid: true, message: "" }, 
+              confirmPassword: { valid: true, message: "" },
+              username: { valid: true, message: "" }
+            },
+            waiting: false
+          });
+        }
+        else {
+          this.setState({ 
+            message: res.error,
+            waiting: false
+          });
+        }
       })
       .catch(err => console.log(err));
     } else if (this.state.formMode === "password") {
@@ -257,7 +265,6 @@ class Page extends Component {
   };
 
   render() {
-    console.log(this.state.allUsers);
     if (this.state.allUsers === null) {
       this.api.getAllUsers().then(res => {
         this.setState({allUsers: res});

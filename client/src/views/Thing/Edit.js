@@ -50,7 +50,7 @@ class Page extends Component {
       Name: "",
       Description: "",
       Types: [],
-      Attributes: [],
+      AttributesArr: [],
       fieldValidation: {
         Name: { valid: true, message: "" },
         AttributesArr: { valid: true, message: "" }
@@ -71,6 +71,7 @@ class Page extends Component {
   createThingFromType = type => {
     let types = [];
     types.push(type);
+    console.log(type);
     type.Supers.forEach(s=>{
       if (types.filter(t=>t._id === s._id).length === 0) {
         let superType = this.props.types.filter(t=>t._id === s._id);
@@ -130,7 +131,7 @@ class Page extends Component {
       if (id !== undefined && !id.includes("type_id_")) {
         this.setState({
           resetting: false, 
-          redirectTo: `/type/create`
+          redirectTo: `/thing/create`
         });
       }
       else {
@@ -290,7 +291,7 @@ class Page extends Component {
                 Name: "",
                 Description: "",
                 Types: [],
-                Attributes: [],
+                AttributesArr: [],
                 fieldValidation: {
                   Name: { valid: true, message: "" },
                   AttributesArr: { valid: true, message: "" }
@@ -332,7 +333,7 @@ class Page extends Component {
                 Name: "",
                 Description: "",
                 Types: [],
-                Attributes: [],
+                AttributesArr: [],
                 fieldValidation: {
                   Name: { valid: true, message: "" },
                   AttributesArr: { valid: true, message: "" }
@@ -386,6 +387,7 @@ class Page extends Component {
       attribute.FromTypes.push(selectedItem._id);
       const matches = attributes.filter(a => a.Name === attribute.Name);
       if (matches.length === 0) {
+        console.log(attribute);
         // It's a new attribute.
         // Thing Attributes have Values, so we need to add that field.
         // In the future I'll have List Types, in which case this will be more complicated.
@@ -502,13 +504,17 @@ class Page extends Component {
         });
         let attributes = [...res.AttributesArr];
         Types.forEach(type=> {
+          console.log(type);
           for (let i = 0; i < type.AttributesArr.length; i++) {
             const attribute = {...type.AttributesArr[i]};
             attribute.FromTypes = [...attribute.FromSupers];
             delete attribute.FromSupers;
             attribute.FromTypes.push(type._id);
             const matches = attributes.filter(a => a.Name === attribute.Name);
+            console.log(attribute);
+            console.log(matches);
             if (matches.length === 0) {
+              console.log(attribute);
               // It's a new attribute.
               // Thing Attributes have Values, so we need to add that field.
               // In the future I'll have List Types, in which case this will be more complicated.

@@ -250,7 +250,7 @@ class APIClass {
         worldID: -1,
         Name: "Character",
         Description: "",
-        Attributes: {}
+        AttributesArr: {}
       };
     }
   };

@@ -45,7 +45,7 @@ class Page extends Component {
       Name: "",
       Description: "",
       Types: [],
-      Attributes: [],
+      AttributesArr: [],
       fieldValidation: {
         Name: { valid: true, message: "" },
         AttributesArr: { valid: true, message: "" }
