@@ -72,9 +72,9 @@ router.get('/getUsersByText/:text', function (req, res) {
             function finalRespond(_) {
               res.send({message: response.message});
             }
-        
+            
             const message = `Welcome to Author's Notebook.  
-              Use <a href='http://localhost:3000/User/confirmEmail/${response.confirmEmailCode}'>this link</a> to confirm your email.  It will be good for one hour.  
+              Use <a href='${process.env.ROOT_URL}/User/confirmEmail/${response.confirmEmailCode}'>this link</a> to confirm your email.  It will be good for one hour.  
               If you did not register with Author's Notebook, please disregard this email.`;
             emailer.sendEmail(finalRespond, req.body.email, "Author's Notebook, Registration", message);
           };
@@ -113,7 +113,7 @@ router.get('/getUsersByText/:text', function (req, res) {
       }
 
       const message = `You requested to reset your password.  
-        Use <a href='http://localhost:3000/User/resetPassword/${response.resetPasswordCode}'>this link</a> to reset your password.  It will be good for one hour.  
+        Use <a href='${process.env.ROOT_URL}/User/resetPassword/${response.resetPasswordCode}'>this link</a> to reset your password.  It will be good for one hour.  
         If you did not request this then just ignore this email.`;
       emailer.sendEmail(finalRespond, req.body.email, "Author's Notebook, Reset Password", message);
     }

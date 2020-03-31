@@ -88,7 +88,8 @@ function createWorld(respond, userID, world) {
         db.collection("world").insertOne({
           Owner: userID,
           Name: world.Name,
-          Public: world.Public
+          Public: world.Public,
+          AcceptingCollaborators: world.AcceptingCollaborators
         }).then(res => {
           respond(res.insertedId);
         });
@@ -140,7 +141,8 @@ function updateWorld(respond, userID, world) {
             $set: {
               Name: world.Name,
               Owner: world.Owner,
-              Public: world.Public
+              Public: world.Public,
+              AcceptingCollaborators: world.AcceptingCollaborators
             }
           }
         );
