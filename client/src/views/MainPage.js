@@ -9,6 +9,7 @@ import LoginPage from "./User/Login";
 import UserEditPage from "./User/Edit";
 import WorldDetailsPage from "./World/Details";
 import WorldEditPage from "./World/Edit";
+import CollaboratePage from "./World/Collaborate";
 // import WorldDeletePage from "./World/Delete";
 import TypeDetailsPage from "./Type/Details";
 import TypeEditPage from "./Type/Edit";
@@ -49,6 +50,7 @@ class Page extends Component {
           <Route exact path="/world/details/:id" component={WorldDetailsPage} />
           <Route exact path="/world/create" component={WorldEditPage} />
           <Route exact path="/world/edit/:id" component={WorldEditPage} />
+          <Route exact path="/world/collaborate/:worldID/:collabID" component={CollaboratePage} />
           {/* <Route exact path="/world/delete/:id" component={WorldDeletePage} /> */}
           <Route exact path="/type/create" component={TypeEditPage} />
           <Route exact path="/type/details/:id" component={TypeDetailsPage} />

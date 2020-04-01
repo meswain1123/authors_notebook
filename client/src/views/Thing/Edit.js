@@ -71,7 +71,6 @@ class Page extends Component {
   createThingFromType = type => {
     let types = [];
     types.push(type);
-    console.log(type);
     type.Supers.forEach(s=>{
       if (types.filter(t=>t._id === s._id).length === 0) {
         let superType = this.props.types.filter(t=>t._id === s._id);
@@ -387,7 +386,6 @@ class Page extends Component {
       attribute.FromTypes.push(selectedItem._id);
       const matches = attributes.filter(a => a.Name === attribute.Name);
       if (matches.length === 0) {
-        console.log(attribute);
         // It's a new attribute.
         // Thing Attributes have Values, so we need to add that field.
         // In the future I'll have List Types, in which case this will be more complicated.
@@ -504,17 +502,13 @@ class Page extends Component {
         });
         let attributes = [...res.AttributesArr];
         Types.forEach(type=> {
-          console.log(type);
           for (let i = 0; i < type.AttributesArr.length; i++) {
             const attribute = {...type.AttributesArr[i]};
             attribute.FromTypes = [...attribute.FromSupers];
             delete attribute.FromSupers;
             attribute.FromTypes.push(type._id);
             const matches = attributes.filter(a => a.Name === attribute.Name);
-            console.log(attribute);
-            console.log(matches);
             if (matches.length === 0) {
-              console.log(attribute);
               // It's a new attribute.
               // Thing Attributes have Values, so we need to add that field.
               // In the future I'll have List Types, in which case this will be more complicated.
@@ -639,6 +633,7 @@ class Page extends Component {
                     id="description"
                     name="Description"
                     type="text"
+                    multiline={true}
                     value={this.state.Description}
                     onChange={this.handleUserInput}
                     onBlur={this.inputBlur}

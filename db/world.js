@@ -89,7 +89,8 @@ function createWorld(respond, userID, world) {
           Owner: userID,
           Name: world.Name,
           Public: world.Public,
-          AcceptingCollaborators: world.AcceptingCollaborators
+          AcceptingCollaborators: world.AcceptingCollaborators,
+          Collaborators: world.Collaborators
         }).then(res => {
           respond(res.insertedId);
         });
@@ -142,7 +143,8 @@ function updateWorld(respond, userID, world) {
               Name: world.Name,
               Owner: world.Owner,
               Public: world.Public,
-              AcceptingCollaborators: world.AcceptingCollaborators
+              AcceptingCollaborators: world.AcceptingCollaborators,
+              Collaborators: world.Collaborators
             }
           }
         );

@@ -164,6 +164,8 @@ function rootReducer(state = initialState, action) {
     world.Name = action.payload.Name;
     const wasPublic = world.Public;
     world.Public = action.payload.Public;
+    world.AcceptingCollaborators = action.payload.AcceptingCollaborators;
+    world.Collaborators = action.payload.Collaborators;
     sessionStorage.setItem("worlds", JSON.stringify(worlds));
     if (world.Public) {
       if (wasPublic) {

@@ -3,7 +3,9 @@
 // import express from "express";
 // import db from "../db/world-db";
 var express = require("express");
+var uuid = require('uuid');
 var db = require("../db/world");
+var emailer = require("../services/email");
 
 var router = express.Router();
 
@@ -76,6 +78,91 @@ router
       }
 
       db.updateWorld(respond, req.session.userID, req.body.world);
+    }
+    // res.send({message: 'Testing'});
+  })
+  .patch("/generateCollabLink", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else if (req.body.worldID === null) {
+      res.send({ error: "Invalid Call" });
+    }
+    else {
+      function respond(world) {
+        const collabID = uuid.v1();
+        const collaborator = { 
+          userID: -1, 
+          email: "",
+          collabID, 
+          collabLink: `${process.env.ROOT_URL}/world/collaborate/${req.body.worldID}/${collabID}`,
+          editPermission: false, 
+          deletePermission: false,
+          type: "invite" 
+        };
+        if (world.Collaborators === undefined) {
+          world.Collaborators = [];
+        }
+        world.Collaborators.push(collaborator);
+        function finalRespond(response) {
+          res.send(collaborator);
+        }
+        db.updateWorld(finalRespond, req.session.userID, world);
+      }
+      db.getWorld(respond, req.session.userID, req.body.worldID);
+    }
+  })
+  .patch("/addNewCollaborator", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } 
+    else {
+      function respond(world) {
+        const collabID = uuid.v1();
+        const collaborator = { 
+          userID: req.body.userID, 
+          email: req.body.email,
+          collabID, 
+          collabLink: `${process.env.ROOT_URL}/world/collaborate/${req.body.worldID}/${collabID}`,
+          editPermission: false, 
+          deletePermission: false,
+          type: "invite" 
+        };
+        
+        if (world.Collaborators === undefined) {
+          world.Collaborators = [];
+        }
+        world.Collaborators.push(collaborator);
+        function updateRespond(response) {
+          function finalRespond(_) {
+            res.send(collaborator);
+          }
+          const message = `You've been invited to collaborate on the the ${world.Name} world.  If you wish to do so use <a href='${collaborator.collabLink}'>this link</a>.`;
+          emailer.sendEmail(finalRespond, req.body.email, "Author's Notebook, Collaboration Invite", message);
+        }
+        db.updateWorld(updateRespond, req.session.userID, world);
+      }
+      db.getWorld(respond, req.session.userID, req.body.worldID);
+    }
+  })
+  .delete("/deleteCollab", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else {
+      function gotWorld(world) {
+        if (world === null || world.Owner !== req.session.userID) {
+          res.send({ error: "Problem with deleting the Type" });
+        }
+        else {
+          function respond(message) {
+            res.send(message);
+          }
+
+          world.Collaborators = world.Collaborators.filter(c=>c.collabID !== req.body.collabID);
+          db.updateWorld(respond, req.session.userID, world);
+        }
+      }
+
+      db.getWorld(gotWorld, req.session.userID, req.body.worldID);
     }
     // res.send({message: 'Testing'});
   })

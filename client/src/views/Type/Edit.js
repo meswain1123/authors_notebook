@@ -202,7 +202,6 @@ class Page extends Component {
       }
     });
 
-    console.log(type);
     if (type._id === null) {
       this.api
         .createType(type)
@@ -493,6 +492,7 @@ class Page extends Component {
                     id="description"
                     name="Description"
                     type="text"
+                    multiline={true}
                     value={this.state.Description}
                     onChange={this.handleUserInput}
                     onBlur={this.inputBlur}

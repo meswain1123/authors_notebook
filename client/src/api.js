@@ -217,6 +217,42 @@ class APIClass {
     }
   };
 
+  generateCollabLink = async (worldID) => {
+    if (this.real) {
+      const response = await this.patchData("/api/world/generateCollabLink", { worldID: worldID });
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
+
+  addNewCollaborator = async (worldID, userID, email) => {
+    if (this.real) {
+      const response = await this.patchData("/api/world/addNewCollaborator", { worldID, userID, email });
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
+
+  emailCollaborator = async (worldID, email) => {
+    if (this.real) {
+      const response = await this.patchData("/api/world/emailCollaborator", { worldID, email });
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
+
+  deleteCollab = async (worldID, collabID) => {
+    if (this.real) {
+      const response = await this.deleteData("/api/world/deleteCollab", { worldID, collabID });
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
+
   selectWorld = async (worldID) => {
     if (this.real) {
       const response = await this.postData("/api/world/selectWorld", { worldID: worldID });
