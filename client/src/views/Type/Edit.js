@@ -194,7 +194,8 @@ class Page extends Component {
       worldID: this.props.selectedWorld._id,
       Major: this.state.Major,
       ReferenceIDs: [],
-      DefaultReferenceIDs: []
+      DefaultReferenceIDs: [],
+      loaded: false
     };
     this.props.selectedType.AttributesArr.filter(a=>a.Type === "Type" || (a.Type === "List" && a.ListType === "Type")).forEach(a=>{
       if (!type.ReferenceIDs.includes(a.Type2)) {
@@ -388,7 +389,8 @@ class Page extends Component {
     setTimeout(() => {
       this.setState({
         _id: id,
-        redirectTo: null
+        redirectTo: null,
+        loaded: false
       }, this.finishLoading);
     }, 500);
   }
@@ -401,17 +403,18 @@ class Page extends Component {
           const supers = this.props.types.filter(type =>
             res.SuperIDs.includes(type._id)
           );
+          this.props.updateSelectedType(res);
           this.setState({
             Name: res.Name,
             Description: res.Description,
             _id: id,
             Supers: supers,
-            Major: res.Major
+            Major: res.Major,
+            loaded: true
           });
-          this.props.updateSelectedType(res);
         }
         else {
-          this.setState({ message: res.error });
+          this.setState({ message: res.error, loaded: true });
         }
       });
     } else {
@@ -423,6 +426,7 @@ class Page extends Component {
         AttributesArr: [],
         Major: false
       });
+      this.setState({ loaded: true });
     }
   }
 
@@ -531,7 +535,9 @@ class Page extends Component {
                 }
               </Grid>
               <Grid item>
-                <AttributesControl />
+                { this.state.loaded &&
+                  <AttributesControl />
+                }
               </Grid>
               <Grid item>
                 {Object.keys(this.state.fieldValidation).map((fieldName, i) => {

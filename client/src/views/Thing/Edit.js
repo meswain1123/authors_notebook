@@ -60,7 +60,8 @@ class Page extends Component {
       redirectTo: null,
       waiting: false,
       addMore: false,
-      resetting: false
+      resetting: false,
+      loaded: false
     };
     this.api = API.getInstance();
   }
@@ -484,7 +485,8 @@ class Page extends Component {
     setTimeout(() => {
       this.setState({
         _id: id,
-        redirectTo: null
+        redirectTo: null,
+        loaded: false
       }, this.finishLoading);
     }, 500);
   }
@@ -537,13 +539,14 @@ class Page extends Component {
           }
         });
         res.AttributesArr = attributes;
+        this.props.updateSelectedThing(res);
         this.setState({
           Name: res.Name,
           Description: res.Description,
           Things: things,
-          Types: Types
+          Types: Types,
+          loaded: true
         });
-        this.props.updateSelectedThing(res);
       });
     } else {
       let { id } = this.props.match.params;
@@ -556,7 +559,7 @@ class Page extends Component {
           this.createThingFromType(type);
         }
         else {
-          this.setState({ message: "Invalid Type" });
+          this.setState({ message: "Invalid Type", loaded: true });
         }
       }
       else {
@@ -568,11 +571,13 @@ class Page extends Component {
           Types: [],
           AttributesArr: []
         });
+        this.setState({ loaded: true });
       }
     }
   }
 
   render() {
+    console.log(this.props.selectedThing);
     let { id } = this.props.match.params;
     if (id === undefined || id.includes("type_id_"))
       id = null;
@@ -659,7 +664,7 @@ class Page extends Component {
                 }
               </Grid>
               <Grid item>
-                { this.state.resetting ? "" : 
+                { !this.state.resetting && this.state.loaded &&
                   <AttributesControl />
                 }
                 <FormHelperText>

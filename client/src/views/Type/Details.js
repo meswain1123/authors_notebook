@@ -335,7 +335,7 @@ class Page extends Component {
                                         ) : (
                                           <span>
                                             {attribute.ListType}
-                                            { attribute.DefaultListValues.length > 0 ?
+                                            { attribute.DefaultListValues !== undefined && attribute.DefaultListValues.length > 0 &&
                                               <span>
                                                 &nbsp;(Defaults:
                                                 {attribute.DefaultListValues.map((defaultValue, j) => {
@@ -348,7 +348,6 @@ class Page extends Component {
                                                 })}
                                                 )
                                               </span>
-                                              : ""
                                             }
                                           </span>
                                         )}
