@@ -195,7 +195,7 @@ class Page extends Component {
       Major: this.state.Major,
       ReferenceIDs: [],
       DefaultReferenceIDs: [],
-      loaded: false
+      loaded: true
     };
     this.props.selectedType.AttributesArr.filter(a=>a.Type === "Type" || (a.Type === "List" && a.ListType === "Type")).forEach(a=>{
       if (!type.ReferenceIDs.includes(a.Type2)) {

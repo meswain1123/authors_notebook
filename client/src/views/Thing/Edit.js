@@ -61,7 +61,7 @@ class Page extends Component {
       waiting: false,
       addMore: false,
       resetting: false,
-      loaded: false
+      loaded: true
     };
     this.api = API.getInstance();
   }
@@ -120,9 +120,9 @@ class Page extends Component {
         matches[0].FromTypes = typeIDs;
       }
     }
-    this.setState({ _id: null, Types: types });
     thing.AttributesArr = attributes;
     this.props.updateSelectedThing(thing);
+    this.setState({ _id: null, Types: types, loaded: true });
   };
 
   resetForm = () => {
@@ -482,7 +482,9 @@ class Page extends Component {
   }
 
   load = (id) => {
+    console.log('load');
     setTimeout(() => {
+      console.log('sto');
       this.setState({
         _id: id,
         redirectTo: null,
@@ -492,6 +494,8 @@ class Page extends Component {
   }
 
   finishLoading = () => {
+    console.log('finish');
+    console.log(this.state);
     if (this.state._id !== null) {
       // We're editing an existing Thing
       this.api.getThing(this.props.selectedWorldID, this.state._id).then(res => {
@@ -550,6 +554,7 @@ class Page extends Component {
       });
     } else {
       let { id } = this.props.match.params;
+      console.log(id);
       if (id !== undefined && id.includes("type_id_")) {
         // We're creating it from a type rather than from blank
         const typeID = id.substring(8);
@@ -577,7 +582,7 @@ class Page extends Component {
   }
 
   render() {
-    console.log(this.props.selectedThing);
+    console.log(this.state.loaded);
     let { id } = this.props.match.params;
     if (id === undefined || id.includes("type_id_"))
       id = null;
