@@ -157,9 +157,6 @@ class Page extends Component {
               </Helmet>
               <Grid item xs={9}>
                 <h2>{this.props.selectedWorld.Name}</h2>
-                { this.props.selectedWorld.AcceptingCollaborators && 
-                  <span>Request to Collaborate Button goes here</span>
-                }
               </Grid>
               <Grid item xs={3}>
                 { this.props.user !== null && this.props.user !== null && this.props.selectedWorld.Owner === this.props.user._id ?
@@ -196,14 +193,16 @@ class Page extends Component {
                   <List>
                     { this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id).length === 0 ?
                       <ListItem>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={this.requestToCollaborate}
-                          type="button"
-                        >
-                          Request to Collaborate
-                        </Button>
+                        { this.props.selectedWorld.AcceptingCollaborators && 
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={this.requestToCollaborate}
+                            type="button"
+                          >
+                            Request to Collaborate
+                          </Button>
+                        }
                       </ListItem>
                     : this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id && c.type === "request").length > 0 ?
                       <ListItem>
