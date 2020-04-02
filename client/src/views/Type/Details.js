@@ -255,9 +255,9 @@ class Page extends Component {
                                             </span>
                                           );
                                         })}
-                                        { attribute.DefaultValue !== "" ?
-                                        ` (Default: ${attribute.DefaultValue})`
-                                        : ""}
+                                        { attribute.DefaultValue !== undefined && attribute.DefaultValue !== "" &&
+                                          ` (Default: ${attribute.DefaultValue})`
+                                        }
                                       </span>
                                     ) : attribute.Type === "Type" ? (
                                       <span>
@@ -286,20 +286,20 @@ class Page extends Component {
                                                 </span>
                                               );
                                             })}
-                                            { attribute.DefaultListValues.length > 0 ?
-                                            <span>
-                                              &nbsp;(Defaults:
-                                              {attribute.DefaultListValues.map((defaultValue, j) => {
-                                                return (
-                                                  <span key={j}>
-                                                    {j === 0 ? " " : ", "}
-                                                    {defaultValue}
-                                                  </span>
-                                                );
-                                              })}
-                                              )
-                                            </span>
-                                            : ""}
+                                            { attribute.DefaultListValues !== undefined && attribute.DefaultListValues.length > 0 &&
+                                              <span>
+                                                &nbsp;(Defaults:
+                                                {attribute.DefaultListValues.map((defaultValue, j) => {
+                                                  return (
+                                                    <span key={j}>
+                                                      {j === 0 ? " " : ", "}
+                                                      {defaultValue}
+                                                    </span>
+                                                  );
+                                                })}
+                                                )
+                                              </span>
+                                            }
                                           </span>
                                         ) : attribute.ListType === "Type" ? (
                                           <span>
@@ -355,16 +355,16 @@ class Page extends Component {
                                     ) : attribute.Type === "True/False" ? (
                                       <span>
                                         {attribute.Type}
-                                        { attribute.DefaultValue !== "" ?
-                                        ` (Default: ${attribute.DefaultValue})`
+                                        { attribute.DefaultValue !== undefined && attribute.DefaultValue !== "" ?
+                                          ` (Default: ${attribute.DefaultValue})`
                                         : " (Default: False)"}
                                       </span>
                                     ) : (
                                       <span>
                                         {attribute.Type}
-                                        { attribute.DefaultValue !== "" ?
-                                        ` (Default: ${attribute.DefaultValue})`
-                                        : ""}
+                                        { attribute.DefaultValue !== undefined && attribute.DefaultValue !== "" &&
+                                          ` (Default: ${attribute.DefaultValue})`
+                                        }
                                       </span>
                                     )}
                                   </ListItemText>
