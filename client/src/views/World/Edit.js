@@ -8,13 +8,9 @@ import {
   updateWorld
 } from "../../redux/actions/index";
 import { Button, Checkbox, FormControl, FormControlLabel,
-  OutlinedInput, InputLabel, FormHelperText, Grid, 
-  ListItem, ListItemText,
-  Tooltip, Fab, AppBar, Tabs, Tab, Box, 
-  InputAdornment, IconButton,
-  Select, MenuItem
+  OutlinedInput, InputLabel, FormHelperText, Grid, Tooltip, Fab
 } from "@material-ui/core";
-import {Add, ArrowBack, FileCopyOutlined, Delete} from "@material-ui/icons";
+import { ArrowBack } from "@material-ui/icons";
 import { Helmet } from 'react-helmet';
 import API from "../../api";
 
@@ -23,14 +19,6 @@ import API from "../../api";
   creating or editing a World.  It will allow the use of Template Worlds
   which come with preloaded Template Types.
 */
-
-function TabPanel(props) {
-  const { children, value, index } = props;
-
-  return (
-    <div>{value === index && <Box p={3}>{children}</Box>}</div>
-  );
-}
 
 const mapStateToProps = state => {
   return {
@@ -57,22 +45,12 @@ class Page extends Component {
       Name: "",
       Public: false,
       AcceptingCollaborators: false,
-      Collaborators: [],
-      // nonUser: { _id: -1, username: "(Select a User)" },
-      allUsers: null,
       fieldValidation: {
         Name: { valid: true, message: "" }
       },
       formValid: false,
       message: "",
-      redirectTo: null,
-      newCollaborators: false,
-      newCollabTab: 0,
-      collabTab: 0,
-      collabLink: null,
-      collabLinkCopied: false,
-      selectedUser: { _id: -1, username: "(Select a User)" },
-      inviteEmail: ""
+      redirectTo: null
     };
     this.api = API.getInstance();
   }
@@ -83,14 +61,12 @@ class Page extends Component {
       if (id !== undefined) {
         const { id } = this.props.match.params;
         let world = this.props.worlds.filter(w => w._id === id);
-        console.log(world);
         if (world.length > 0) {
           world = world[0];
           this.setState({
             Name: world.Name,
             Public: world.Public,
-            AcceptingCollaborators: world.AcceptingCollaborators === undefined ? false : world.AcceptingCollaborators,
-            Collaborators: world.Collaborators === undefined ? [] : world.Collaborators,
+            AcceptingCollaborators: world.AcceptingCollaborators === undefined || world.AcceptingCollaborators === null ? false : world.AcceptingCollaborators,
             _id: id
           });
           this.api.selectWorld(id);
@@ -132,12 +108,11 @@ class Page extends Component {
   }
 
   validateField = fieldName => {
-    let value = null;
+    let value = this.state[fieldName];
     let valid = true;
     let message = "";
     switch (fieldName) {
       case "Name":
-        value = this.state[fieldName];
         valid = value.match(/^[a-zA-Z0-9 ]*$/i) !== null;
         if (!valid)
           message = "Only Letters, Numbers, and Spaces allowed in World Names";
@@ -151,6 +126,10 @@ class Page extends Component {
             ).length === 0;
           if (!valid) message = "This World Name is already in use";
         }
+        break;
+      case "inviteEmail":
+        valid = value.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i) !== null;
+        message = valid ? "" : "Email is invalid";
         break;
       default:
         break;
@@ -173,91 +152,6 @@ class Page extends Component {
     );
   };
 
-  addNewCollaborator = () => {
-    this.api.addNewCollaborator(this.props.selectedWorldID, this.state.selectedUser._id, this.state.selectedUser.email).then(res => {
-      if (res.error === undefined) {
-        const collabs = [...this.state.Collaborators];
-        collabs.push(res);
-        const world = this.props.selectedWorld;
-        world.Collaborators = collabs;
-        this.props.updateWorld(world);
-        this.setState({
-          Collaborators: collabs
-        });
-      }
-      else {
-        this.setState({message: res.error});
-      }
-    });
-  }
-
-  emailCollaborator = () => {
-    this.api.emailCollaborator(this.props.selectedWorldID, this.state.inviteEmail).then(res => {
-      if (res.error === undefined) {
-        const collabs = [...this.state.Collaborators];
-        collabs.push(res);
-        const world = this.props.selectedWorld;
-        world.Collaborators = collabs;
-        this.props.updateWorld(world);
-        this.setState({
-          Collaborators: collabs
-        });
-      }
-      else {
-        this.setState({message: res.error});
-      }
-    });
-  }
-
-  // Creates a collab invite on the world, but no user or email associated
-  generateCollabLink = () => {
-    this.api.generateCollabLink(this.props.selectedWorldID).then(res => {
-      if (res.error === undefined) {
-        const collabs = [...this.state.Collaborators];
-        collabs.push(res);
-        const world = this.props.selectedWorld;
-        world.Collaborators = collabs;
-        this.props.updateWorld(world);
-        this.setState({
-          collabLink: res.collabLink, 
-          collabLinkCopied: false,
-          Collaborators: collabs
-        });
-      }
-      else {
-        this.setState({message: res.error});
-      }
-    });
-  }
-
-  deleteCollab = (collab) => {
-    this.api.deleteCollab(this.props.selectedWorldID, collab.collabID).then(res => {
-      if (res.error === undefined) {
-        const collabs = this.state.Collaborators.filter(c=>c.collabID !== collab.collabID);
-        const world = this.props.selectedWorld;
-        world.Collaborators = collabs;
-        this.props.updateWorld(world);
-        this.setState({
-          collabLink: res.collabLink, 
-          collabLinkCopied: false,
-          Collaborators: collabs
-        });
-      }
-      else {
-        this.setState({message: res.error});
-      }
-    });
-  }
-
-  // Copies the collaborator link to the user's clipboard
-  copyCollabLink = () => {
-    const el = this.generatedLink;
-    const textarea = el.children[0];
-    textarea.select();
-    document.execCommand("copy");
-    this.setState({collabLinkCopied: true});
-  }
-
   onSubmit = () => {
     function respond() {
       if (this.state.formValid) {
@@ -274,7 +168,6 @@ class Page extends Component {
       Name: this.state.Name,
       Public: this.state.Public,
       AcceptingCollaborators: this.state.AcceptingCollaborators,
-      Collaborators: this.state.Collaborators,
       Owner: this.props.user._id
     };
 
@@ -315,30 +208,32 @@ class Page extends Component {
   };
 
   render() {
-    // console.log(this.state.Collaborators);
-    if (this.state.allUsers === null) {
-      this.api.getAllUsers().then(res => {
-        this.setState({allUsers: res});
-      });
-      return (<div></div>);
-    }
-    else if (this.state.redirectTo !== null) {
+    if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else {
-      const collabs = this.state.Collaborators.filter(c=>c.type==="collab");
-      const invites = this.state.Collaborators.filter(c=>c.type==="invite");
-      const requests = this.state.Collaborators.filter(c=>c.type==="request");
       return (
         <Grid item xs={12} container spacing={1} direction="column">
           <Helmet>
             <title>{ this.state._id === null ? `Author's Notebook: Create New World` : `Author's Notebook: Edit ${this.props.selectedWorld.Name}` }</title>
           </Helmet>
-          <Grid item>
-            <h2>
-              {this.state._id === null ? "Create New World" : "Edit World"}
-            </h2>
+          <Grid item container spacing={1} direction="row">
+            <Grid item xs={1}>
+              <Tooltip title={`Back to ${this.props.selectedWorld.Name} Details`}>
+                <Fab size="small"
+                  color="primary"
+                  onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
+                >
+                  <ArrowBack />
+                </Fab>
+              </Tooltip>
+            </Grid>
+            <Grid item xs={11}>
+              <h2>
+                {this.state._id === null ? "Create New World" : "Edit World"}
+              </h2>
+            </Grid>
           </Grid>
           <Grid item>
             <FormControl variant="outlined" fullWidth>
@@ -385,237 +280,6 @@ class Page extends Component {
               label="Accepting Collaborator Requests"
             /> : "" }
           </Grid>
-          <Grid item>
-            <ListItem style={{maxWidth: "200px"}}>
-              <ListItemText primary="Collaborators (in progress, please don't use)" />
-              { this.state.newCollaborators ?
-                <Tooltip title={`Manage Existing Collaborators`}>
-                  <Fab
-                    size="small"
-                    color="primary"
-                    onClick={_ => {
-                      this.setState({ newCollaborators: false });
-                    }}
-                  >
-                    <ArrowBack />
-                  </Fab>
-                </Tooltip>  :
-                <Tooltip title={`Add New Collaborators`}>
-                  <Fab
-                    size="small"
-                    color="primary"
-                    onClick={_ => {
-                      this.setState({ newCollaborators: true });
-                    }}
-                  >
-                    <Add />
-                  </Fab>
-                </Tooltip> 
-              }
-            </ListItem>
-          </Grid>
-          { this.state.newCollaborators ?
-            <Grid item container spacing={1} direction="column">
-              <Grid item>
-                <AppBar position="static">
-                  <Tabs value={this.state.newCollabTab} onChange={(_, newValue) => { this.setState({newCollabTab: newValue})}} aria-label="Add Collaborator Method">
-                    <Tab label="Find Existing User" {...this.a11yProps(0)} />
-                    <Tab label="Invite via Email" {...this.a11yProps(1)} />
-                    <Tab label="Get an Invite Link" {...this.a11yProps(2)} />
-                  </Tabs>
-                </AppBar>
-                <TabPanel value={this.state.newCollabTab} index={0}>
-                  <FormControl variant="outlined" fullWidth>
-                    <InputLabel htmlFor="user-select" id="user-select-label">
-                      Select a User
-                    </InputLabel>
-                    <Select
-                      labelId="user-select-label"
-                      id="user-select"
-                      value={this.state.selectedUser}
-                      onChange={e => {
-                        this.setState({selectedUser: e.target.value})
-                      }}
-                      labelWidth={90}
-                    >
-                      {/* {selectUsers.map((u, i) => { */}
-                      {this.state.allUsers.map((u, i) => {
-                        return (
-                          <MenuItem key={i} value={u}>
-                            {u.username}
-                          </MenuItem>
-                        );
-                      })}
-                    </Select>
-                  </FormControl>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    disabled={this.state.selectedUser._id === -1}
-                    onClick={this.addNewCollaborator}
-                  >
-                    Send Invite
-                  </Button> 
-                </TabPanel>
-                <TabPanel value={this.state.newCollabTab} index={1}>
-                  Textbox to take email
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={this.emailCollaborator}
-                  >
-                    Send Invite
-                  </Button> 
-                </TabPanel>
-                <TabPanel value={this.state.newCollabTab} index={2}>
-                  <Grid container spacing={1} direction="column">
-                    <Grid item>
-                      Generate a single use link to send someone yourself
-                    </Grid>
-                    <Grid item>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={this.generateCollabLink}
-                      >
-                        Generate Link
-                      </Button> 
-                    </Grid>
-                      { this.state.collabLink !== null && 
-                        <Grid item>
-                          <OutlinedInput
-                            id="generatedLink"
-                            name="generatedLink"
-                            ref={(input) => this.generatedLink = input}
-                            type="text"
-                            multiline={true}
-                            value={this.state.collabLink}
-                            // disabled={true}
-                            endAdornment={
-                              <InputAdornment position="end">
-                                <IconButton
-                                  aria-label="copy to clipboard"
-                                  onClick={this.copyCollabLink}
-                                  edge="end"
-                                >
-                                  <FileCopyOutlined />
-                                </IconButton>
-                              </InputAdornment>
-                            }
-                            labelWidth={70}
-                            fullWidth
-                          />
-                          { this.state.collabLinkCopied && 
-                            <span style={{fontColor: "red"}}>
-                              Link Copied to Clipboard
-                            </span>
-                          }
-                        </Grid>
-                      }
-                  </Grid>
-                  
-                </TabPanel>
-              </Grid>
-            </Grid> :
-            <Grid item container spacing={1} direction="column">
-              <Grid item>
-                <AppBar position="static">
-                  <Tabs value={this.state.collabTab} onChange={(_, newValue) => { this.setState({collabTab: newValue})}} aria-label="Collaborators">
-                    <Tab label={`Collaborators (${collabs.length})`} {...this.a11yProps(0)} />
-                    <Tab label={`Invites (${invites.length})`} {...this.a11yProps(1)} />
-                    <Tab label={`Requests (${requests.length})`} {...this.a11yProps(2)} />
-                  </Tabs>
-                </AppBar>
-                <TabPanel value={this.state.collabTab} index={0}>
-                  <Grid container spacing={3} direction="column">
-                    { collabs.map((c, key) => {
-                      return (
-                        <Grid item container spacing={1} direcion="row" key={key}>
-                          <Grid item xs={12} sm={9}>
-                            {this.state.allUsers.filter(u=>u._id === c.userID)[0].username}
-                          </Grid>
-                          <Grid item xs={12} sm={3}>
-                            <Tooltip title={`Remove Collaborator`}>
-                              <Fab size="small"
-                                color="primary"
-                                onClick={e => {this.deleteCollab(c)}}
-                              >
-                                <Delete />
-                              </Fab>
-                            </Tooltip>
-                          </Grid>
-                        </Grid>
-                      );
-                    })}
-                  </Grid>
-                </TabPanel>
-                <TabPanel value={this.state.collabTab} index={1}>
-                  <Grid container spacing={3} direction="column">
-                    { invites.map((c, key) => {
-                      let user = this.state.allUsers.filter(u=>u._id === c.userID);
-                      if (user.length === 0)
-                        user = null;
-                      else {
-                        user = user[0];
-                      }
-                      return (
-                        <Grid item container spacing={1} direction="row" key={key}>
-                          <Grid item xs={12} sm={9} container spacing={1} direction="column">
-                            { user !== null &&
-                              <Grid item>
-                                Username: {user.username}
-                              </Grid>
-                            }
-                            { c.email !== "" &&
-                              <Grid item>
-                                Email: {c.email}
-                              </Grid>
-                            }
-                            <Grid item>
-                              Invite Link: {c.collabLink}
-                            </Grid>
-                          </Grid>
-                          <Grid item xs={12} sm={3}>
-                            <Tooltip title={`Delete Invite`}>
-                              <Fab size="small"
-                                color="primary"
-                                onClick={e => {this.deleteCollab(c)}}
-                              >
-                                <Delete />
-                              </Fab>
-                            </Tooltip>
-                          </Grid>
-                        </Grid>  
-                      );
-                    })}
-                  </Grid>
-                </TabPanel>
-                <TabPanel value={this.state.collabTab} index={2}>
-                  <Grid container spacing={3} direction="column">
-                    { requests.map((c, key) => {
-                      return (
-                        <Grid item container spacing={1} direcion="row" key={key}>
-                          <Grid item xs={12} sm={9}>
-                            {this.state.allUsers.filter(u=>u._id === c.userID)[0].username}
-                          </Grid>
-                          <Grid item xs={12} sm={3}>
-                            <Tooltip title={`Delete Request`}>
-                              <Fab size="small"
-                                color="primary"
-                                onClick={e => {this.deleteCollab(c)}}
-                              >
-                                <Delete />
-                              </Fab>
-                            </Tooltip>
-                          </Grid>
-                        </Grid>
-                      );
-                    })}
-                  </Grid>
-                </TabPanel>
-              </Grid>
-            </Grid>
-          }
           <Grid item>
             <div className="float-right">
               <Button

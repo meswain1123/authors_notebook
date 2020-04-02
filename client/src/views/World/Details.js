@@ -1,7 +1,10 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
-import { selectWorld, setTypes, setThings, setWorlds, setPublicWorlds } from "../../redux/actions/index";
+import { 
+  selectWorld, setTypes, setThings, setWorlds, 
+  setPublicWorlds, updatePublicWorldForCollab
+} from "../../redux/actions/index";
 import API from "../../api";
 import Index from "./Index";
 import Edit from "@material-ui/icons/Edit";
@@ -13,6 +16,7 @@ import Button from "@material-ui/core/Button";
 import Modal from '@material-ui/core/Modal';
 import Tooltip from '@material-ui/core/Tooltip';
 import { Fab } from "@material-ui/core";
+import { People } from "@material-ui/icons";
 import { Helmet } from 'react-helmet';
 
 const mapStateToProps = state => {
@@ -33,7 +37,8 @@ function mapDispatchToProps(dispatch) {
     setTypes: types => dispatch(setTypes(types)),
     setThings: things => dispatch(setThings(things)),
     setWorlds: worlds => dispatch(setWorlds(worlds)),
-    setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds))
+    setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
+    updatePublicWorldForCollab: world => dispatch(updatePublicWorldForCollab(world))
   };
 }
 class Page extends Component {
@@ -47,7 +52,6 @@ class Page extends Component {
     this.api = API.getInstance();
   }
   componentDidMount() {
-    // this.load();
   }
 
   getTypes() {
@@ -66,6 +70,7 @@ class Page extends Component {
       }
     });
   }
+
   getThings() {
     this.api.getThingsForWorld(this.props.selectedWorldID).then(res => {
       if (res !== undefined && res.error === undefined) {
@@ -105,13 +110,26 @@ class Page extends Component {
   }
 
   load = (id) => {
-    // const { id } = this.props.match.params;
     setTimeout(() => {
       this.props.selectWorld(id);
       this.api.selectWorld(id).then(res => {
         this.getTypes();
       });
     }, 500);
+  }
+
+  requestToCollaborate = () => {
+    this.api.requestToCollaborate(this.props.selectedWorldID).then(res => {
+      // console.log(res);
+      const world = this.props.selectedWorld;
+      world.Collaborators.push(res);
+      this.props.updatePublicWorldForCollab(world);
+    });
+  }
+
+  respondToInvite = () => {
+    const invite = this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id && c.type === "invite")[0];
+    this.setState({ redirectTo: `/world/collaborate/${this.props.selectedWorldID}/${invite.collabID}` });
   }
 
   render() {
@@ -121,7 +139,11 @@ class Page extends Component {
     }
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
-    } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
+    } else if (this.props.selectedWorld !== null && 
+      !this.props.selectedWorld.Public && 
+      (this.props.user === null || 
+        (this.props.selectedWorld.Owner !== this.props.user._id && 
+          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab").length === 0))) {
       return <Redirect to="/" />;
     } else {
       return (
@@ -135,30 +157,72 @@ class Page extends Component {
               </Helmet>
               <Grid item xs={9}>
                 <h2>{this.props.selectedWorld.Name}</h2>
+                { this.props.selectedWorld.AcceptingCollaborators && 
+                  <span>Request to Collaborate Button goes here</span>
+                }
               </Grid>
               <Grid item xs={3}>
                 { this.props.user !== null && this.props.user !== null && this.props.selectedWorld.Owner === this.props.user._id ?
-                <List>
-                  <ListItem>
-                    <Tooltip title={`Edit ${this.props.selectedWorld.Name}`}>
-                      <Fab size="small" color="primary"
-                        onClick={ _ => {this.setState({redirectTo:`/world/edit/${this.props.selectedWorldID}`})}}
-                      >
-                      <Edit />
-                      </Fab>
-                    </Tooltip>
-                  </ListItem>
-                  <ListItem>
-                    <Tooltip title={`Delete ${this.props.selectedWorld.Name}`}>
-                      <Fab size="small" color="primary"
-                        onClick={e => {this.setState({modalOpen: true})}}
-                      >
-                        <Delete />
-                      </Fab>
-                    </Tooltip>
-                  </ListItem>
-                </List>
-                : "" }
+                  <List>
+                    <ListItem>
+                      <Tooltip title={`Edit ${this.props.selectedWorld.Name}`}>
+                        <Fab size="small" color="primary"
+                          onClick={ _ => {this.setState({redirectTo:`/world/edit/${this.props.selectedWorldID}`})}}
+                        >
+                        <Edit />
+                        </Fab>
+                      </Tooltip>
+                    </ListItem>
+                    <ListItem>
+                      <Tooltip title={`Edit Collaborators`}>
+                        <Fab size="small" color="primary"
+                          onClick={ _ => {this.setState({redirectTo:`/world/collaborators/${this.props.selectedWorldID}`})}}
+                        >
+                        <People />
+                        </Fab>
+                      </Tooltip>
+                    </ListItem>
+                    <ListItem>
+                      <Tooltip title={`Delete ${this.props.selectedWorld.Name}`}>
+                        <Fab size="small" color="primary"
+                          onClick={e => {this.setState({modalOpen: true})}}
+                        >
+                          <Delete />
+                        </Fab>
+                      </Tooltip>
+                    </ListItem>
+                  </List>
+                : 
+                  <List>
+                    { this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id).length === 0 ?
+                      <ListItem>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={this.requestToCollaborate}
+                          type="button"
+                        >
+                          Request to Collaborate
+                        </Button>
+                      </ListItem>
+                    : this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id && c.type === "request").length > 0 ?
+                      <ListItem>
+                        Waiting on Collaboration Request
+                      </ListItem>
+                    : this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id && c.type === "invite").length > 0 &&
+                      <ListItem>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={this.respondToInvite}
+                          type="button"
+                        >
+                          You've been invited to Collaborate
+                        </Button>
+                      </ListItem>
+                    }
+                  </List>
+                }
               </Grid>
             </Grid>
           )}

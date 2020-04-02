@@ -229,7 +229,14 @@ class Index extends Component {
     }
     else {
       const majorless = this.props.things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
-      const buttons = this.props.selectedWorld !== null && this.props.user !== null && this.props.selectedWorld.Owner === this.props.user._id;
+      const editButtons = this.props.selectedWorld !== null && 
+        this.props.user !== null && 
+        (this.props.selectedWorld.Owner === this.props.user._id || 
+          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length > 0);
+      const createButtons = this.props.selectedWorld !== null && 
+        this.props.user !== null && 
+        (this.props.selectedWorld.Owner === this.props.user._id || 
+          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length > 0);
 
       return (
         <div>
@@ -253,7 +260,7 @@ class Index extends Component {
                       </Tooltip>
                   }
                   <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Types (${this.props.types.length})`}</span>
-                  { buttons ?
+                  { createButtons ?
                     <Tooltip title={`Create New Type`}>
                       <Button 
                         onClick={ _ => {this.setState({redirectTo:`/type/create`})}}>
@@ -276,7 +283,7 @@ class Index extends Component {
                                   <ListItemText primary={type.Name} className="marginLeft" />
                                 </Button>
                               </Tooltip>
-                              { buttons ?
+                              { createButtons ?
                                 <Grid container spacing={0} direction="row">
                                   <Grid item xs={6}>
                                     <Tooltip title={`Create New ${type.Name}`}>
@@ -332,7 +339,7 @@ class Index extends Component {
                           <ListItemText>{type.Name}s ({things.length})</ListItemText>
                         </Button>
                       </Tooltip>
-                      { buttons ?
+                      { createButtons ?
                         <span>
                           <Tooltip title={`Create New ${type.Name}`}>
                             <Button 
@@ -363,7 +370,7 @@ class Index extends Component {
                                       <ListItemText primary={thing.Name} className="marginLeft" />
                                     </Button>
                                   </Tooltip>
-                                  { buttons ?
+                                  { editButtons ?
                                   <Tooltip title={`Edit ${thing.Name}`}>
                                     <Button 
                                       onClick={ _ => {this.setState({redirectTo:`/thing/edit/${thing._id}`})}}>
@@ -401,7 +408,7 @@ class Index extends Component {
                     </Tooltip>
                   }
                   <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Other Things (${majorless.length})`}</span>
-                  { buttons ?
+                  { createButtons ?
                   <Tooltip title={`Create New Thing`}>
                     <Button 
                       onClick={ _ => {this.setState({redirectTo:`/thing/create`})}}>
@@ -424,7 +431,7 @@ class Index extends Component {
                                   <ListItemText primary={thing.Name} className="marginLeft" />
                                 </Button>
                               </Tooltip>
-                              { buttons ?
+                              { editButtons ?
                               <Tooltip title={`Edit ${thing.Name}`}>
                                 <Button 
                                   onClick={ _ => {this.setState({redirectTo:`/thing/edit/${thing._id}`})}}>

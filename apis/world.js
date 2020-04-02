@@ -1,7 +1,5 @@
 // world service module
 
-// import express from "express";
-// import db from "../db/world-db";
 var express = require("express");
 var uuid = require('uuid');
 var db = require("../db/world");
@@ -11,16 +9,12 @@ var router = express.Router();
 
 db.open();
 
-// Test route
 router
   .get("/test", function(req, res) {
     res.send({ message: "Becky is hot!" });
   })
   .get("/getWorldsForUser", function(req, res) {
-    // console.log(req.session);
-    // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
-      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function respond(worlds) {
@@ -28,20 +22,15 @@ router
       }
       db.getWorldsForUser(respond, req.session.userID);
     }
-    // res.send({message: 'Testing'});
   })
   .get("/getPublicWorlds", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}`);
     function respond(worlds) {
       res.send({worlds});
     }
     db.getPublicWorlds(respond);
-    // res.send({message: 'Testing'});
   })
   .post("/createWorld", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
-      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function respond(worldID) {
@@ -49,13 +38,9 @@ router
       }
       db.createWorld(respond, req.session.userID, req.body.world);
     }
-    
-    // res.send({message: 'Testing'});
   })
   .delete("/deleteWorld", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
-      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } 
     else {
@@ -65,12 +50,9 @@ router
 
       db.deleteWorld(respond, req.session.userID, req.body.worldID);
     }
-    // res.send({message: 'Testing'});
   })
   .patch("/updateWorld", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
-      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function respond(message) {
@@ -79,7 +61,6 @@ router
 
       db.updateWorld(respond, req.session.userID, req.body.world);
     }
-    // res.send({message: 'Testing'});
   })
   .patch("/generateCollabLink", function(req, res) {
     if (req.session.userID == undefined) {
@@ -106,7 +87,7 @@ router
         function finalRespond(response) {
           res.send(collaborator);
         }
-        db.updateWorld(finalRespond, req.session.userID, world);
+        db.updateWorldForCollab(finalRespond, world);
       }
       db.getWorld(respond, req.session.userID, req.body.worldID);
     }
@@ -139,7 +120,69 @@ router
           const message = `You've been invited to collaborate on the the ${world.Name} world.  If you wish to do so use <a href='${collaborator.collabLink}'>this link</a>.`;
           emailer.sendEmail(finalRespond, req.body.email, "Author's Notebook, Collaboration Invite", message);
         }
-        db.updateWorld(updateRespond, req.session.userID, world);
+        db.updateWorldForCollab(updateRespond, world);
+      }
+      db.getWorld(respond, req.session.userID, req.body.worldID);
+    }
+  })
+  .patch("/emailCollaborator", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } 
+    else {
+      function respond(world) {
+        const collabID = uuid.v1();
+        const collaborator = { 
+          userID: -1, 
+          email: req.body.email,
+          collabID, 
+          collabLink: `${process.env.ROOT_URL}/world/collaborate/${req.body.worldID}/${collabID}`,
+          editPermission: false, 
+          deletePermission: false,
+          type: "invite" 
+        };
+        
+        if (world.Collaborators === undefined) {
+          world.Collaborators = [];
+        }
+        world.Collaborators.push(collaborator);
+        function updateRespond(response) {
+          function finalRespond(_) {
+            res.send(collaborator);
+          }
+          const message = `You've been invited to collaborate on the the ${world.Name} world.  If you wish to do so use <a href='${collaborator.collabLink}'>this link</a>.`;
+          emailer.sendEmail(finalRespond, req.body.email, "Author's Notebook, Collaboration Invite", message);
+        }
+        db.updateWorldForCollab(updateRespond, world);
+      }
+      db.getWorld(respond, req.session.userID, req.body.worldID);
+    }
+  })
+  .patch("/requestToCollaborate", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } 
+    else {
+      function respond(world) {
+        const collabID = uuid.v1();
+        const collaborator = { 
+          userID: req.session.userID, 
+          email: "",
+          collabID, 
+          collabLink: ``,
+          editPermission: false, 
+          deletePermission: false,
+          type: "request" 
+        };
+        
+        if (world.Collaborators === undefined) {
+          world.Collaborators = [];
+        }
+        world.Collaborators.push(collaborator);
+        function updateRespond(response) {
+          res.send(collaborator);
+        }
+        db.updateWorldForCollab(updateRespond, world);
       }
       db.getWorld(respond, req.session.userID, req.body.worldID);
     }
@@ -150,7 +193,7 @@ router
     } else {
       function gotWorld(world) {
         if (world === null || world.Owner !== req.session.userID) {
-          res.send({ error: "Problem with deleting the Type" });
+          res.send({ error: "Problem with deleting the Collaborator" });
         }
         else {
           function respond(message) {
@@ -158,13 +201,82 @@ router
           }
 
           world.Collaborators = world.Collaborators.filter(c=>c.collabID !== req.body.collabID);
-          db.updateWorld(respond, req.session.userID, world);
+          db.updateWorldForCollab(respond, world);
         }
       }
 
       db.getWorld(gotWorld, req.session.userID, req.body.worldID);
     }
-    // res.send({message: 'Testing'});
+  })
+  .post('/checkCollabID', function (req, res) {
+    function respond(response) {
+      if (response.error !== undefined || response.Collaborators === undefined || response.Collaborators.filter(c=>c.collabID === req.body.collabID && c.type === "invite").length === 0) {
+        res.send({error: "This code isn't good.  Please try again."});
+      }
+      else {
+        res.send({message: "Code is valid.", world: {_id: response._id, Name: response.Name }});
+      }
+    };
+    db.getWorldForCollab(respond, req.body.worldID);
+  })
+  .delete("/declineCollabInvite", function(req, res) {
+    function gotWorld(world) {
+      if (world === null) {
+        res.send({ error: "Problem with declining the Collaborator Invite" });
+      }
+      else {
+        function respond(message) {
+          res.send({message: "Decline successful"});
+        }
+
+        world.Collaborators = world.Collaborators.filter(c=>c.collabID !== req.body.collabID);
+        db.updateWorldForCollab(respond, world);
+      }
+    }
+    db.getWorldForCollab(gotWorld, req.body.worldID);
+  })
+  .patch("/acceptCollabInvite", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } 
+    else {
+      function gotWorld(world) {
+        if (world === null) {
+          res.send({ error: "Problem with accepting the Collaborator Invite" });
+        }
+        else {
+          function respond(message) {
+            res.send({message: "Accept successful"});
+          }
+          const collab = world.Collaborators.filter(c=>c.collabID === req.body.collabID)[0];
+          collab.userID = req.session.userID;
+          collab.type = "collab";
+          db.updateWorldForCollab(respond, world);
+        }
+      }
+      db.getWorldForCollab(gotWorld, req.body.worldID);
+    }
+  })
+  .patch("/updateCollaboratorPermission", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } 
+    else {
+      function gotWorld(world) {
+        if (world === null) {
+          res.send({ error: "Problem with updating permission" });
+        }
+        else {
+          function respond(message) {
+            res.send({message: "Update successful"});
+          }
+          const collab = world.Collaborators.filter(c=>c.collabID === req.body.collabID)[0];
+          collab.editPermission = req.body.editPermission;
+          db.updateWorldForCollab(respond, world);
+        }
+      }
+      db.getWorld(gotWorld, req.session.userID, req.body.worldID);
+    }
   })
   .post("/selectWorld", function(req, res) {
     if (req.body.worldID === null) {
@@ -181,29 +293,15 @@ router
       }
       db.getWorld(respond, req.session.userID, req.body.worldID);
     }
-    // res.send({message: 'Testing'});
   })
   .get("/getTypesForWorld/:worldID", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}, ${req.session.worldID}`);
-    // if (req.params.worldID == undefined) {
-    //   console.log(req.session);
-    //   res.send({ error: "Session lost.  Please log in again." });
-    // } else {
-      function respond(types) {
-        res.send({ types });
-      }
+    function respond(types) {
+      res.send({ types });
+    }
 
-      db.getTypesForWorld(respond, req.params.worldID);
-    // }
-    // res.send({message: 'Testing'});
+    db.getTypesForWorld(respond, req.params.worldID);
   })
   .get("/getType/:worldID/:typeID", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}`);
-    // if (req.session.worldID === undefined) {
-    //   console.log(req.session);
-    //   res.send({ error: "Session lost.  Please log in again." });
-    // }
-    // else {
     function respond(type) {
       if (type === null)
         res.send({ error: "Get Type Failed" });
@@ -212,20 +310,13 @@ router
     }
 
     db.getType(respond, req.params.worldID, req.params.typeID);
-    // }
-    // res.send({message: 'Testing'});
   })
   .post("/createType", function(req, res) {
-    // console.log(`${Date.now()}`);
-    // console.log(req.session);
-    // console.log(req.body.type);
     if (req.session.userID == undefined) {
-      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
-        // console.log(world);
-        if (world === null || world.Owner !== req.session.userID) {
+        if (world === null || (world.Owner !== req.session.userID && world.Collaborators.filter(c=>c.userID === req.session.userID && c.editPermission).length === 0)) {
           res.send({ error: "Problem with creating the Type" });
         }
         else {
@@ -247,17 +338,13 @@ router
 
       db.getWorld(gotWorld, req.session.userID, req.body.type.worldID);
     }
-    // res.send({message: 'Testing'});
   })
   .delete("/deleteType", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}`);
     if (req.session.userID == undefined) {
-      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
-        // console.log(world);
-        if (world === null || world.Owner !== req.session.userID) {
+        if (world === null || (world.Owner !== req.session.userID && world.Collaborators.filter(c=>c.userID === req.session.userID && c.editPermission).length === 0)) {
           res.send({ error: "Problem with deleting the Type" });
         }
         else {
@@ -271,16 +358,13 @@ router
 
       db.getWorld(gotWorld, req.session.userID, req.body.worldID);
     }
-    // res.send({message: 'Testing'});
   })
   .patch("/updateType", function(req, res) {
-    // console.log(req.body.type);
     if (req.session.userID == undefined) {
-      // console.log(req.session);
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
-        if (world === null || world.Owner !== req.session.userID) {
+        if (world === null || (world.Owner !== req.session.userID && world.Collaborators.filter(c=>c.userID === req.session.userID && c.editPermission).length === 0)) {
           res.send({ error: "Problem with updating the Type" });
         }
         else {
@@ -294,45 +378,27 @@ router
 
       db.getWorld(gotWorld, req.session.userID, req.body.type.worldID);
     }
-    // res.send({message: 'Testing'});
   })
   .get("/getThingsForWorld/:worldID", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}`);
-    // if (req.session.worldID == undefined) {
-    //   console.log(req.session);
-    //   res.send({ error: "Session lost.  Please log in again." });
-    // } else {
-      function respond(things) {
-        res.send({ things });
-      }
+    function respond(things) {
+      res.send({ things });
+    }
 
-      db.getThingsForWorld(respond, req.session.userID, req.params.worldID);
-    // }
-    // res.send({message: 'Testing'});
+    db.getThingsForWorld(respond, req.session.userID, req.params.worldID);
   })
   .get("/getThing/:worldID/:thingID", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}`);
-    // if (req.session.worldID == undefined) {
-    //   console.log(req.session);
-    //   res.send({ error: "Session lost.  Please log in again." });
-    // } else {
-      function respond(thing) {
-        // console.log(thing);
-        res.send(thing);
-      }
+    function respond(thing) {
+      res.send(thing);
+    }
 
-      db.getThing(respond, req.params.worldID, req.params.thingID);
-    // }
-    // res.send({message: 'Testing'});
+    db.getThing(respond, req.params.worldID, req.params.thingID);
   })
   .post("/createThing", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.worldID) {
-      // console.log(req.session);
+    if (req.session.userID == undefined) {
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
-        if (world === null || world.Owner !== req.session.userID) {
+        if (world === null || (world.Owner !== req.session.userID && world.Collaborators.filter(c=>c.userID === req.session.userID && c.editPermission).length === 0)) {
           res.send({ error: "Problem with creating the Thing" });
         }
         else {
@@ -358,16 +424,13 @@ router
 
       db.getWorld(gotWorld, req.session.userID, req.body.thing.worldID);
     }
-    // res.send({message: 'Testing'});
   })
   .delete("/deleteThing", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.userID == undefined) { // || req.session.worldID == undefined) {
-      // console.log(req.session);
+    if (req.session.userID == undefined) {
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
-        if (world === null || world.Owner !== req.session.userID) {
+        if (world === null || (world.Owner !== req.session.userID && world.Collaborators.filter(c=>c.userID === req.session.userID && c.editPermission).length === 0)) {
           res.send({ error: "Problem with deleting the Thing" });
         }
         else {
@@ -385,16 +448,13 @@ router
 
       db.getWorld(gotWorld, req.session.userID, req.body.worldID);
     }
-    // res.send({message: 'Testing'});
   })
   .patch("/updateThing", function(req, res) {
-    // console.log(`${Date.now()}: ${req.session.userID}`);
-    if (req.session.userID == undefined) { // || req.session.worldID == undefined || req.session.worldID !== req.body.thing.worldID) {
-      // console.log(req.session);
+    if (req.session.userID == undefined) {
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
-        if (world === null || world.Owner !== req.session.userID) {
+        if (world === null || (world.Owner !== req.session.userID && world.Collaborators.filter(c=>c.userID === req.session.userID && c.editPermission).length === 0)) {
           res.send({ error: "Problem with creating the Thing" });
         }
         else {
@@ -412,7 +472,6 @@ router
 
       db.getWorld(gotWorld, req.session.userID, req.body.thing.worldID);
     }
-    // res.send({message: 'Testing'});
   });
 
 function close() {

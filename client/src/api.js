@@ -253,6 +253,51 @@ class APIClass {
     }
   };
 
+  updateCollaboratorPermission = async (worldID, collabID, editPermission) => {
+    if (this.real) {
+      const response = await this.patchData("/api/world/updateCollaboratorPermission", { worldID, collabID, editPermission });
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
+
+  checkCollabID = async (worldID, collabID) => {
+    if (this.real) {
+      const response = await this.postData("/api/world/checkCollabID", {worldID, collabID});
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
+
+  requestToCollaborate = async (worldID) => {
+    if (this.real) {
+      const response = await this.patchData("/api/world/requestToCollaborate", { worldID });
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
+
+  declineCollabInvite = async (worldID, collabID) => {
+    if (this.real) {
+      const response = await this.deleteData("/api/world/declineCollabInvite", { worldID, collabID });
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
+
+  acceptCollabInvite = async (worldID, collabID) => {
+    if (this.real) {
+      const response = await this.patchData("/api/world/acceptCollabInvite", { worldID, collabID });
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
+
   selectWorld = async (worldID) => {
     if (this.real) {
       const response = await this.postData("/api/world/selectWorld", { worldID: worldID });

@@ -7,6 +7,7 @@ import {
   SET_PUBLIC_WORLDS,
   ADD_WORLD,
   UPDATE_WORLD,
+  UPDATE_PUBLIC_WORLD_COLLAB,
   SELECT_WORLD,
   SET_TYPES,
   ADD_TYPE,
@@ -43,6 +44,9 @@ export function addWorld(payload) {
 }
 export function updateWorld(payload) {
   return { type: UPDATE_WORLD, payload };
+}
+export function updatePublicWorldForCollab(payload) {
+  return { type: UPDATE_PUBLIC_WORLD_COLLAB, payload };
 }
 export function setPublicWorlds(payload) {
   return { type: SET_PUBLIC_WORLDS, payload };

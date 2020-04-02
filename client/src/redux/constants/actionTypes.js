@@ -7,6 +7,7 @@ export const SET_WORLDS = "SET_WORLDS";
 export const SET_PUBLIC_WORLDS = "SET_PUBLIC_WORLDS";
 export const ADD_WORLD = "ADD_WORLD";
 export const UPDATE_WORLD = "UPDATE_WORLD";
+export const UPDATE_PUBLIC_WORLD_COLLAB = "UPDATE_PUBLIC_WORLD_COLLAB";
 export const SELECT_WORLD = "SELECT_WORLD";
 export const SET_TYPES = "SET_TYPES";
 export const ADD_TYPE = "ADD_TYPE";

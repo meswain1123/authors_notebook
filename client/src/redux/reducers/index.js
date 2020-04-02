@@ -7,6 +7,7 @@ import {
   SET_PUBLIC_WORLDS,
   ADD_WORLD,
   UPDATE_WORLD,
+  UPDATE_PUBLIC_WORLD_COLLAB,
   SELECT_WORLD,
   SET_TYPES,
   ADD_TYPE,
@@ -72,7 +73,6 @@ function rootReducer(state = initialState, action) {
       articles: state.articles.concat(action.payload)
     });
   } else if (action.type === LOGIN) {
-    console.log(action.payload);
     sessionStorage.setItem("user", JSON.stringify(action.payload));
     sessionStorage.setItem("followingWorlds", JSON.stringify(action.payload.followingWorlds));
     return Object.assign({}, state, {
@@ -199,6 +199,14 @@ function rootReducer(state = initialState, action) {
         });
       }
     }
+  } else if (action.type === UPDATE_PUBLIC_WORLD_COLLAB) {
+    let publicWorlds = [...state.publicWorlds];
+    const world = publicWorlds.filter(t => t._id === action.payload._id)[0];
+    world.Collaborators = action.payload.Collaborators;
+    sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
+    return Object.assign({}, state, {
+      publicWorlds
+    });
   } else if (action.type === SELECT_WORLD) {
     let world = state.worlds.filter(world => world._id === action.payload);
     if (world.length === 0)
@@ -255,7 +263,6 @@ function rootReducer(state = initialState, action) {
     type.Supers = action.payload.Supers;
     type.AttributesArr = action.payload.AttributesArr;
     sessionStorage.setItem("types", JSON.stringify(types));
-    console.log(types);
     return Object.assign({}, state, {
       types: types
     });

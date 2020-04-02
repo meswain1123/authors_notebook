@@ -128,7 +128,11 @@ class Page extends Component {
     }
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
-    } else if (this.props.selectedWorld !== null && !this.props.selectedWorld.Public && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
+    } else if (this.props.selectedWorld !== null && 
+      !this.props.selectedWorld.Public && 
+      (this.props.user === null || 
+        (this.props.selectedWorld.Owner !== this.props.user._id && 
+          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab").length === 0))) {
       return <Redirect to="/" />;
     } else {
       const references = this.props.things.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));
@@ -154,30 +158,38 @@ class Page extends Component {
                   <h2>{this.state.Name}</h2>
                 </Grid>
                 <Grid item xs={3}>
-                  { this.props.user !== null && this.props.selectedWorld !== null &&  this.props.selectedWorld.Owner === this.props.user._id ?
                   <List>
-                    <ListItem>
-                      <Tooltip title={`Edit ${this.state.Name}`}>
-                        <Fab size="small"
-                          color="primary"
-                          onClick={ _ => {this.setState({redirectTo:`/thing/edit/${this.state._id}`})}}
-                        >
-                          <Edit />
-                        </Fab>
-                      </Tooltip>
-                    </ListItem>
-                    <ListItem>
-                      <Tooltip title={`Delete ${this.state.Name}`}>
-                        <Fab size="small"
-                          color="primary"
-                          onClick={e => {this.setState({modalOpen: true})}}
-                        >
-                          <Delete />
-                        </Fab>
-                      </Tooltip>
-                    </ListItem>
-                  </List>
-                  : "" }
+                    { (this.props.user !== null && 
+                      this.props.selectedWorld !== null && 
+                      (this.props.selectedWorld.Owner === this.props.user._id || 
+                        this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length > 0)) &&
+                      <ListItem>
+                        <Tooltip title={`Edit ${this.state.Name}`}>
+                          <Fab size="small"
+                            color="primary"
+                            onClick={ _ => {this.setState({redirectTo:`/thing/edit/${this.state._id}`})}}
+                          >
+                            <Edit />
+                          </Fab>
+                        </Tooltip>
+                      </ListItem>
+                    }
+                    { (this.props.user !== null && 
+                      this.props.selectedWorld !== null && 
+                      (this.props.selectedWorld.Owner === this.props.user._id || 
+                        this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length > 0)) &&
+                      <ListItem>
+                        <Tooltip title={`Delete ${this.state.Name}`}>
+                          <Fab size="small"
+                            color="primary"
+                            onClick={e => {this.setState({modalOpen: true})}}
+                          >
+                            <Delete />
+                          </Fab>
+                        </Tooltip>
+                      </ListItem>
+                    }
+                  </List> 
                 </Grid>
               </Grid>
               <Grid item container spacing={0} direction="row">

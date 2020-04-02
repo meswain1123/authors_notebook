@@ -11,7 +11,6 @@ import { connect } from "react-redux";
 import {
   selectPage,
   setWorlds,
-  // setPublicWorlds,
   loadFromStorage,
   toggleMenu
 } from "../../redux/actions/index";
@@ -32,7 +31,6 @@ function mapDispatchToProps(dispatch) {
   return {
     selectPage: page => dispatch(selectPage(page)),
     setWorlds: worlds => dispatch(setWorlds(worlds)),
-    // setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
     loadFromStorage: () => dispatch(loadFromStorage({})),
     toggleMenu: () => dispatch(toggleMenu({}))
   };

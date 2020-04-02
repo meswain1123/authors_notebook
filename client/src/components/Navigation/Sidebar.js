@@ -96,8 +96,8 @@ class Bar extends Component {
 
   brand() {
     return (
-      <NavLink to={`/`} className="MyButton" activeClassName="active">
-        <ListItem button>
+      <NavLink to={`/`} className="BlackTextButton" activeClassName="active">
+        <ListItem>
           <img src={logo} alt="logo" className="App-logo" />
           <ListItemText primary={this.props.logoText} />
         </ListItem>

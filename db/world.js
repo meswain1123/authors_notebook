@@ -29,7 +29,7 @@ function getWorldsForUser(respond, userID) {
   try {
     const db = client.db(dbName);
     db.collection("world")
-      .find({ Owner: userID }) // I'll add collaborators later
+      .find({ $or: [ {"Collaborators.userID": userID, "Collaborators.type": "collab"}, { Owner: userID }] })
       .toArray(function(err, docs) {
         if (err) respond({ error: `Error: ${err}.` });
         else if (docs == null || docs.length == 0) respond([]);
@@ -61,7 +61,23 @@ function getWorld(respond, userID, worldID) {
   try {
     const db = client.db(dbName);
     db.collection("world")
-      .find({ $or: [ { Public: true }, { Owner: userID }], _id: ObjectID(worldID) }) // I'll add collaborators later
+      .find({ $or: [ { Public: true }, {"Collaborators.userID": userID, "Collaborators.type": "collab"}, { Owner: userID }], _id: ObjectID(worldID) })
+      .toArray(function(err, docs) {
+        if (err) respond({ error: `Error: ${err}.` });
+        else if (docs == null || docs.length == 0) respond(null);
+        else respond(docs[0]);
+      });
+  } catch (err) {
+    console.log(err);
+    respond(err);
+  }
+}
+
+function getWorldForCollab(respond, worldID) {
+  try {
+    const db = client.db(dbName);
+    db.collection("world")
+      .find({ _id: ObjectID(worldID) })
       .toArray(function(err, docs) {
         if (err) respond({ error: `Error: ${err}.` });
         else if (docs == null || docs.length == 0) respond(null);
@@ -90,7 +106,7 @@ function createWorld(respond, userID, world) {
           Name: world.Name,
           Public: world.Public,
           AcceptingCollaborators: world.AcceptingCollaborators,
-          Collaborators: world.Collaborators
+          Collaborators: []
         }).then(res => {
           respond(res.insertedId);
         });
@@ -143,8 +159,7 @@ function updateWorld(respond, userID, world) {
               Name: world.Name,
               Owner: world.Owner,
               Public: world.Public,
-              AcceptingCollaborators: world.AcceptingCollaborators,
-              Collaborators: world.Collaborators
+              AcceptingCollaborators: world.AcceptingCollaborators
             }
           }
         );
@@ -153,6 +168,20 @@ function updateWorld(respond, userID, world) {
         respond({ error: `You don't own that world!` });
       }
     });
+}
+
+function updateWorldForCollab(respond, world) {
+  const db = client.db(dbName);
+
+  db.collection("world").updateOne(
+    { _id: ObjectID(world._id) },
+    {
+      $set: {
+        Collaborators: world.Collaborators
+      }
+    }
+  );
+  respond({ message: `World ${world.Name} updated!` });
 }
 
 function getTypesForWorld(respond, worldID) {
@@ -287,7 +316,6 @@ function getThing(respond, worldID, thingID) {
     const db = client.db(dbName);
     db.collection("thing")
       .findOne({ _id: ObjectID(thingID), worldID: worldID }).then(doc => {
-        console.log(doc);
         respond(doc);
       });
   } catch (err) {
@@ -346,9 +374,11 @@ module.exports = {
   getWorldsForUser,
   getPublicWorlds,
   getWorld,
+  getWorldForCollab,
   createWorld,
   deleteWorld,
   updateWorld,
+  updateWorldForCollab,
   getTypesForWorld,
   getType,
   getTypeByName,
