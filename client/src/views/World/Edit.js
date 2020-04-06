@@ -220,14 +220,16 @@ class Page extends Component {
           </Helmet>
           <Grid item container spacing={1} direction="row">
             <Grid item xs={1}>
-              <Tooltip title={`Back to ${this.props.selectedWorld.Name} Details`}>
-                <Fab size="small"
-                  color="primary"
-                  onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
-                >
-                  <ArrowBack />
-                </Fab>
-              </Tooltip>
+              { this.props.selectedWorld !== null &&
+                <Tooltip title={`Back to ${this.props.selectedWorld.Name} Details`}>
+                  <Fab size="small"
+                    color="primary"
+                    onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
+                  >
+                    <ArrowBack />
+                  </Fab>
+                </Tooltip>
+              }
             </Grid>
             <Grid item xs={11}>
               <h2>
