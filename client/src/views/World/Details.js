@@ -92,6 +92,7 @@ class Page extends Component {
           });
           const defHash = {};
           if (t.Defaults !== undefined) {
+            console.log(t.Defaults);
             t.Defaults.forEach(def => {
               defHash[def.attrID] = def;
             });

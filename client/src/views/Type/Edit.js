@@ -13,7 +13,8 @@ import {
   updateSelectedType,
   addType,
   updateType,
-  addAttributes
+  addAttributes,
+  setAttributes
 } from "../../redux/actions/index";
 import API from "../../api";
 
@@ -40,7 +41,8 @@ function mapDispatchToProps(dispatch) {
     updateSelectedType: type => dispatch(updateSelectedType(type)),
     addType: type => dispatch(addType(type)),
     updateType: type => dispatch(updateType(type)),
-    addAttributes: attrs => dispatch(addAttributes(attrs))
+    addAttributes: attrs => dispatch(addAttributes(attrs)),
+    setAttributes: attrs => dispatch(setAttributes(attrs))
   };
 }
 class Page extends Component {
@@ -275,10 +277,10 @@ class Page extends Component {
             }
           });
         });
-        Object.keys(this.props.selectedType.DefaultsHash).forEach(_id => {
-          const def = this.props.selectedType.DefaultsHash[_id];
+        Object.keys(this.props.selectedType.DefaultsHash).forEach(attrID => {
+          const def = this.props.selectedType.DefaultsHash[attrID];
           type.Defaults.push({
-            _id, 
+            attrID, 
             FromTypeID: def.FromTypeID, 
             DefaultValue: def.DefaultValue, 
             DefaultListValues: def.DefaultListValues 

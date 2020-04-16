@@ -180,14 +180,14 @@ class Page extends Component {
     } else {
       const references = this.props.types.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));
       const inheritedAttributes = [];
-      console.log(this.props.selectedType);
       this.props.selectedType.Supers.forEach(superType => {
         superType.AttributesArr.forEach(attribute => {
-          if (inheritedAttributes.filter(a=>a._id === attribute._id).length === 0) {
+          if (inheritedAttributes.filter(a=>a.attrID === attribute.attrID).length === 0) {
             inheritedAttributes.push(attribute);
           }
         });
       });
+      console.log(this.props.selectedType.DefaultsHash);
       return (
         <Grid item xs={12} container spacing={0} direction="column">
           { this.props.selectedWorld === null ? "" :
@@ -272,7 +272,8 @@ class Page extends Component {
                         inheritedAttributes.map((attribute, i) => {
                           let definedType = this.props.types.filter(t=>t._id === attribute.DefinedType);
                           definedType = definedType.length === 0 ? {Name:""} : definedType[0];
-                          const def = this.props.selectedType.DefaultsHash[attribute._id];
+                          const def = this.props.selectedType.DefaultsHash[attribute.attrID];
+                          console.log(def);
                           return (
                             <ListItem key={i}>
                               <ListItemText>
@@ -409,7 +410,7 @@ class Page extends Component {
                           this.props.selectedType.AttributesArr.map((attribute, i) => {
                             let definedType = this.props.types.filter(t=>t._id === attribute.DefinedType);
                             definedType = definedType.length === 0 ? {Name:""} : definedType[0];
-                            const def = this.props.selectedType.DefaultsHash[attribute._id];
+                            const def = this.props.selectedType.DefaultsHash[attribute.attrID];
                             return (
                               <ListItem key={i}>
                                 <ListItemText>
