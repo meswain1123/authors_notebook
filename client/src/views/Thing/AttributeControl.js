@@ -21,18 +21,18 @@ const handleTextListChange = (e, props) => {
   attr.ListValues = e;
   props.onChange(attr);
 };
-const handleType2Change = (e, props, respond) => {
+const handleDefinedTypeChange = (e, props, respond) => {
   // const attr = props.attribute;
-  // attr["Type2"] = e.target.value;
+  // attr["DefinedType"] = e.target.value;
   if (e.target.value === "new") {
     function respond2(newThing) {
-      // attr["Type2"] = newType._id;
+      // attr["DefinedType"] = newType._id;
       // props.onChange(attr);
       respond(newThing._id);
     }
     props.onNewThing(
       respond2,
-      props.types.filter(t => t._id === props.attribute.Type2)[0]
+      props.types.filter(t => t._id === props.attribute.DefinedType)[0]
     );
   } else {
     // props.onChange(attr);
@@ -61,7 +61,7 @@ const addType = (selectedItem, props) => {
     }
     props.onNewThing(
       respond2,
-      props.types.filter(t => t._id === props.attribute.Type2)[0]
+      props.types.filter(t => t._id === props.attribute.DefinedType)[0]
     );
   } else {
     const attr = props.attribute;
@@ -80,22 +80,22 @@ const removeType = (selectedList, props) => {
 
 export default function AttributeControl(props) {
   const [value, changeValue] = useState(props.attribute.Value);
-  const type = props.attribute.Type === "" ? "Text" : props.attribute.Type;
+  const attributeType = props.attribute.AttributeType === "" ? "Text" : props.attribute.AttributeType;
 
   const listOptions = [];
   const listOptionValues = [];
-  if (type === "List" && props.attribute.ListType === "Options") {
+  if (attributeType === "List" && props.attribute.ListType === "Options") {
     props.attribute.Options.forEach(o => {
       listOptions.push({ Name: o });
     });
     props.attribute.ListValues.forEach(o => {
       listOptionValues.push({ Name: o });
     });
-  } else if (type === "List" && props.attribute.ListType === "Type") {
-    const type2 = props.types.filter(t => t._id === props.attribute.Type2)[0];
-    listOptions.push({ Name: `+ Create New ${type2.Name}`, _id: "new" });
+  } else if (attributeType === "List" && props.attribute.ListType === "Type") {
+    const definedType = props.types.filter(t => t._id === props.attribute.DefinedType)[0];
+    listOptions.push({ Name: `+ Create New ${definedType.Name}`, _id: "new" });
     props.things
-      .filter(t => t.TypeIDs.includes(props.attribute.Type2))
+      .filter(t => t.TypeIDs.includes(props.attribute.DefinedType))
       .forEach(t => {
         listOptions.push({ Name: t.Name, _id: t._id });
       });
@@ -108,7 +108,7 @@ export default function AttributeControl(props) {
 
   return (
     <Grid item>
-      {type === "Text" ? (
+      {attributeType === "Text" ? (
         <FormControl variant="outlined" fullWidth>
           <InputLabel htmlFor="textField">{props.attribute.Name}</InputLabel>
           <OutlinedInput
@@ -124,10 +124,11 @@ export default function AttributeControl(props) {
             onBlur={e => {
               const attr = {
                 index: props.attribute.index,
+                attrID: props.attribute.attrID,
                 Name: props.attribute.Name,
-                Type: props.attribute.Type,
+                AttributeType: props.attribute.AttributeType,
                 Options: props.attribute.Options,
-                Type2: props.attribute.Type2,
+                DefinedType: props.attribute.DefinedType,
                 ListType: props.attribute.ListType,
                 FromTypes: props.attribute.FromTypes,
                 Value: value,
@@ -140,7 +141,7 @@ export default function AttributeControl(props) {
           />
           <FormHelperText>{props.message}</FormHelperText>
         </FormControl>
-      ) : type === "Number" ? (
+      ) : attributeType === "Number" ? (
         <FormControl variant="outlined" fullWidth>
           <InputLabel htmlFor="numField">{props.attribute.Name}</InputLabel>
           <OutlinedInput
@@ -156,10 +157,11 @@ export default function AttributeControl(props) {
             onBlur={e => {
               const attr = {
                 index: props.attribute.index,
+                attrID: props.attribute.attrID,
                 Name: props.attribute.Name,
-                Type: props.attribute.Type,
+                AttributeType: props.attribute.AttributeType,
                 Options: props.attribute.Options,
-                Type2: props.attribute.Type2,
+                DefinedType: props.attribute.DefinedType,
                 ListType: props.attribute.ListType,
                 FromTypes: props.attribute.FromTypes,
                 Value: value,
@@ -172,7 +174,7 @@ export default function AttributeControl(props) {
           />
           <FormHelperText>{props.message}</FormHelperText>
         </FormControl>
-      ) : type === "True/False" ? (
+      ) : attributeType === "True/False" ? (
         <FormControlLabel
           control={
             <Checkbox checked={props.attribute.Value==="True"} onChange={e => {
@@ -184,7 +186,7 @@ export default function AttributeControl(props) {
           }
           label={props.attribute.Name}
         />
-      ) : type === "Options" ? (
+      ) : attributeType === "Options" ? (
         <FormControl variant="outlined" fullWidth>
           <InputLabel htmlFor="options-select" id="options-select-label">
             {props.attribute.Name}
@@ -199,10 +201,11 @@ export default function AttributeControl(props) {
             onBlur={e => {
               const attr = {
                 index: props.attribute.index,
+                attrID: props.attribute.attrID,
                 Name: props.attribute.Name,
-                Type: props.attribute.Type,
+                AttributeType: props.attribute.AttributeType,
                 Options: props.attribute.Options,
-                Type2: props.attribute.Type2,
+                DefinedType: props.attribute.DefinedType,
                 ListType: props.attribute.ListType,
                 FromTypes: props.attribute.FromTypes,
                 Value: value,
@@ -222,7 +225,7 @@ export default function AttributeControl(props) {
             })}
           </Select>
         </FormControl>
-      ) : type === "Type" ? (
+      ) : attributeType === "Type" ? (
         <FormControl variant="outlined" fullWidth>
           <InputLabel htmlFor="type-select" id="type-select-label">
             {props.attribute.Name}
@@ -232,15 +235,16 @@ export default function AttributeControl(props) {
             id="type-select"
             value={value}
             onChange={e => {
-              handleType2Change(e, props, changeValue);
+              handleDefinedTypeChange(e, props, changeValue);
             }}
             onBlur={e => {
               const attr = {
                 index: props.attribute.index,
+                attrID: props.attribute.attrID,
                 Name: props.attribute.Name,
-                Type: props.attribute.Type,
+                AttributeType: props.attribute.AttributeType,
                 Options: props.attribute.Options,
-                Type2: props.attribute.Type2,
+                DefinedType: props.attribute.DefinedType,
                 ListType: props.attribute.ListType,
                 FromTypes: props.attribute.FromTypes,
                 Value: value,
@@ -253,10 +257,10 @@ export default function AttributeControl(props) {
           >
             <MenuItem value="new">
               + Create New{" "}
-              {props.types.filter(t => t._id === props.attribute.Type2)[0].Name}
+              {props.types.filter(t => t._id === props.attribute.DefinedType)[0].Name}
             </MenuItem>
             {props.things
-              .filter(t => t.TypeIDs.includes(props.attribute.Type2))
+              .filter(t => t.TypeIDs.includes(props.attribute.DefinedType))
               .map((thing, i) => {
                 return (
                   <MenuItem key={i} value={thing._id}>
@@ -266,7 +270,7 @@ export default function AttributeControl(props) {
               })}
           </Select>
         </FormControl>
-      ) : type === "List" ? (
+      ) : attributeType === "List" ? (
         <span>
           {props.attribute.ListType === "Text" ? (
             <ChipInput

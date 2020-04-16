@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import Grid from "@material-ui/core/Grid";
-import Modal from '@material-ui/core/Modal';
-import FormControl from "@material-ui/core/FormControl";
-import InputLabel from "@material-ui/core/InputLabel";
-import OutlinedInput from "@material-ui/core/OutlinedInput";
-import FormHelperText from "@material-ui/core/FormHelperText";
-import Button from "@material-ui/core/Button";
-import { updateSelectedThing, addThing } from "../../redux/actions/index";
+import { 
+  Grid, Modal, FormControl, InputLabel, 
+  OutlinedInput, FormHelperText, Button 
+} from "@material-ui/core";
+// import uuid from 'react-uuid';
+import { 
+  updateSelectedThing, addThing 
+} from "../../redux/actions/index";
 import AttributeControl from "./AttributeControl";
 import API from "../../api";
 
@@ -49,11 +49,12 @@ class Control extends Component {
     const thing = this.props.selectedThing;
     thing.AttributesArr.push({
       index: thing.AttributesArr.length,
+      _id: null,
       Name: "",
-      Type: "Text",
+      AttributeType: "Text",
       Options: [],
-      Type2: "",
-      ListType: "",
+      DefinedType: "",
+      ListType: "Text",
       FromTypes: [],
       Value: "",
       ListValues: [],
@@ -65,10 +66,11 @@ class Control extends Component {
     const thing = this.props.selectedThing;
     thing.AttributesArr[value.index] = {
       index: value.index,
+      attrID: value.attrID,
       Name: value.Name,
-      Type: value.Type,
+      AttributeType: value.AttributeType,
       Options: value.Options,
-      Type2: value.Type2,
+      DefinedType: value.DefinedType,
       ListType: value.ListType,
       FromTypes: value.FromTypes,
       Value: value.Value,

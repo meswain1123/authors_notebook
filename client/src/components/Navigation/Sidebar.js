@@ -22,7 +22,6 @@ import { NavLink } from "react-router-dom";
 import { connect } from "react-redux";
 import menuRoutes from "./routes";
 import {
-  selectPage,
   setWorlds,
   setPublicWorlds,
   setFollowingWorlds
@@ -40,7 +39,6 @@ const mapStateToProps = state => {
 };
 function mapDispatchToProps(dispatch) {
   return {
-    selectPage: page => dispatch(selectPage(page)),
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
     setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs))

@@ -1,5 +1,5 @@
 import {
-  SELECT_PAGE,
+  SET_API,
   ADD_ARTICLE,
   LOGIN,
   LOG_OUT,
@@ -14,7 +14,9 @@ import {
   SET_THINGS,
   ADD_THING,
   UPDATE_TYPE,
-  UPDATE_ATTRIBUTES_ARR,
+  // UPDATE_ATTRIBUTES_ARR,
+  SET_ATTRIBUTES,
+  ADD_ATTRIBUTES,
   UPDATE_SELECTED_TYPE,
   UPDATE_THING,
   UPDATE_SELECTED_THING,
@@ -25,7 +27,7 @@ import {
 } from "../constants/actionTypes";
 
 const initialState = {
-  selectedPage: "Test",
+  api: null,
   articles: [],
   user: null,
   loginError: "",
@@ -37,7 +39,10 @@ const initialState = {
   types: [],
   things: [],
   selectedType: null,
-  attributesArr: [],
+  // attributesArr: [],
+  // attributes: [],
+  attributesByID: {},
+  attributesByName: {},
   selectedThing: null,
   loadIt: true,
   menuOpen: true,
@@ -53,6 +58,9 @@ function rootReducer(state = initialState, action) {
     const types = JSON.parse(sessionStorage.getItem("types"));
     const things = JSON.parse(sessionStorage.getItem("things"));
     const followingWorlds = JSON.parse(sessionStorage.getItem("followingWorlds"));
+    // const attributes = JSON.parse(sessionStorage.getItem("attributes"));
+    const attributesByID = JSON.parse(sessionStorage.getItem("attributesByID"));
+    const attributesByName = JSON.parse(sessionStorage.getItem("attributesByName"));
     
     return Object.assign({}, state, {
       user: user,
@@ -62,11 +70,14 @@ function rootReducer(state = initialState, action) {
       selectedWorldID,
       types: types === null ? [] : types,
       things: things === null ? [] : things,
-      followingWorlds: followingWorlds === null ? [] : followingWorlds
+      followingWorlds: followingWorlds === null ? [] : followingWorlds,
+      // attributes: attributes === null ? [] : attributes,
+      attributesByID: attributesByID === null ? {} : attributesByID,
+      attributesByName: attributesByName === null ? {} : attributesByName,
     });
-  } else if (action.type === SELECT_PAGE) {
+  } else if (action.type === SET_API) {
     return Object.assign({}, state, {
-      selectedPage: action.payload
+      api: action.payload
     });
   } else if (action.type === ADD_ARTICLE) {
     return Object.assign({}, state, {
@@ -96,16 +107,25 @@ function rootReducer(state = initialState, action) {
           sessionStorage.setItem("selectedWorld", JSON.stringify(world));
           return Object.assign({}, state, {
             worlds: action.payload,
-            selectedWorld: world
+            selectedWorld: world,
+            // attributes: [],
+            // attributesByID: {},
+            // attributesByName: {}
           });
         } else {
           return Object.assign({}, state, {
-            worlds: action.payload
+            worlds: action.payload,
+            // attributes: [],
+            // attributesByID: {},
+            // attributesByName: {}
           });
         }
       } else {
         return Object.assign({}, state, {
-          worlds: action.payload
+          worlds: action.payload,
+          // attributes: [],
+          // attributesByID: {},
+          // attributesByName: {}
         });
       }
     }
@@ -124,7 +144,10 @@ function rootReducer(state = initialState, action) {
           sessionStorage.setItem("selectedWorld", JSON.stringify(world));
           return Object.assign({}, state, {
             publicWorlds: action.payload,
-            selectedWorld: world
+            selectedWorld: world,
+            // attributes: [],
+            // attributesByID: {},
+            // attributesByName: {}
           });
         } else {
           return Object.assign({}, state, {
@@ -216,16 +239,57 @@ function rootReducer(state = initialState, action) {
       sessionStorage.setItem("selectedWorld", JSON.stringify(world[0]));
       return Object.assign({}, state, {
         selectedWorldID: action.payload,
-        selectedWorld: world[0]
+        selectedWorld: world[0],
+        // attributes: [],
+        attributesByID: {},
+        attributesByName: {}
       });
     } else {
       sessionStorage.setItem("selectedWorldID", action.payload);
       sessionStorage.removeItem("selectedWorld");
       return Object.assign({}, state, {
         selectedWorldID: action.payload,
-        selectedWorld: null
+        selectedWorld: null,
+        // attributes: [],
+        attributesByID: {},
+        attributesByName: {}
       });
     }
+  } else if (action.type === SET_ATTRIBUTES) {
+    const attributesByID = {};
+    const attributesByName = {};
+    action.payload.forEach(attribute => {
+      attributesByID[attribute._id] = attribute;
+      attributesByName[attribute.Name] = attribute;
+    });
+    
+    // sessionStorage.setItem("attributes", JSON.stringify(action.payload));
+    sessionStorage.setItem("attributesByID", JSON.stringify(attributesByID));
+    sessionStorage.setItem("attributesByName", JSON.stringify(attributesByName));
+
+    return Object.assign({}, state, {
+      // attributes: action.payload,
+      attributesByID: attributesByID,
+      attributesByName: attributesByName
+    });
+  } else if (action.type === ADD_ATTRIBUTES) {
+    // const attributes = state.attributes.concat(action.payload);
+    const attributesByID = state.attributesByID;
+    const attributesByName = state.attributesByName;
+    action.payload.forEach(attribute => {
+      attributesByID[attribute._id] = attribute;
+      attributesByName[attribute.Name] = attribute;
+    });
+    
+    // sessionStorage.setItem("attributes", JSON.stringify(attributes));
+    sessionStorage.setItem("attributesByID", JSON.stringify(attributesByID));
+    sessionStorage.setItem("attributesByName", JSON.stringify(attributesByName));
+    
+    return Object.assign({}, state, {
+      // attributes: attributes,
+      attributesByID: attributesByID,
+      attributesByName: attributesByName
+    });
   } else if (action.type === SET_TYPES) {
     sessionStorage.setItem("types", JSON.stringify(action.payload));
     return Object.assign({}, state, {
@@ -262,14 +326,15 @@ function rootReducer(state = initialState, action) {
     type.Description = action.payload.Description;
     type.Supers = action.payload.Supers;
     type.AttributesArr = action.payload.AttributesArr;
+    type.Attributes = action.payload.Attributes;
     sessionStorage.setItem("types", JSON.stringify(types));
     return Object.assign({}, state, {
       types: types
     });
-  } else if (action.type === UPDATE_ATTRIBUTES_ARR) {
-    return Object.assign({}, state, {
-      attributesArr: action.payload
-    });
+  // } else if (action.type === UPDATE_ATTRIBUTES_ARR) {
+  //   return Object.assign({}, state, {
+  //     attributesArr: action.payload
+  //   });
   } else if (action.type === UPDATE_SELECTED_THING) {
     // This is because Redux won't cause a rerender
     // on changes to arrays.

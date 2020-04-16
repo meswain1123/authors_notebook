@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import {
-  selectPage,
   updateSelectedThing,
   addThing,
   updateThing
@@ -31,12 +30,12 @@ const mapStateToProps = state => {
     selectedWorldID: state.app.selectedWorldID,
     things: state.app.things,
     types: state.app.types,
-    user: state.app.user
+    user: state.app.user,
+    attributesByID: state.app.attributesByID
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
-    selectPage: page => dispatch(selectPage(page)),
     updateSelectedThing: thing => dispatch(updateSelectedThing(thing)),
     addThing: thing => dispatch(addThing(thing)),
     updateThing: thing => dispatch(updateThing(thing))
@@ -50,10 +49,12 @@ class Page extends Component {
       Name: "",
       Description: "",
       Types: [],
-      AttributesArr: [],
+      // AttributesArr: [],
+      Attributes: [],
       fieldValidation: {
         Name: { valid: true, message: "" },
-        AttributesArr: { valid: true, message: "" }
+        // AttributesArr: { valid: true, message: "" },
+        Attributes: { valid: true, message: "" }
       },
       formValid: false,
       message: "",
@@ -61,7 +62,8 @@ class Page extends Component {
       waiting: false,
       addMore: false,
       resetting: false,
-      loaded: true
+      loaded: true,
+      errors: []
     };
     this.api = API.getInstance();
   }
@@ -69,7 +71,7 @@ class Page extends Component {
   componentDidMount() {
   }
 
-  createThingFromType = type => {
+  createThingFromTypeOld = type => {
     let types = [];
     types.push(type);
     type.Supers.forEach(s=>{
@@ -87,13 +89,15 @@ class Page extends Component {
       AttributesArr: []
     };
     let attributes = [];
+    const errors = [];
     for (let i = 0; i < type.AttributesArr.length; i++) {
       const attribute = {...type.AttributesArr[i]};
       attribute.FromTypes = [...attribute.FromSupers];
       delete attribute.FromSupers;
       attribute.FromTypes.push(type._id);
-      const matches = attributes.filter(a => a.Name === attribute.Name);
-      if (matches.length === 0) {
+      const matches = attributes.filter(a => a._id === attribute._id);
+      const nameMatches = attributes.filter(a => a.Name === attribute.Name);
+      if (matches.length === 0 && nameMatches.length === 0) {
         // It's a new attribute.
         // Thing Attributes have Values, so we need to add that field.
         // In the future I'll have List Types, in which case this will be more complicated.
@@ -106,7 +110,28 @@ class Page extends Component {
           attribute.Value = attribute.DefaultValue;
           attribute.ListValues = attribute.DefaultListValues;
         }
+        attribute.index = attributes.length;
         attributes.push(attribute);
+      } else if (matches.length === 0) {
+        // It's a new attribute, but there's an existing attribute with the same name
+        // Check the attribute type data to see if it's a match.
+        // If not then we need to alert the user that it's a name collision
+        if (nameMatches[0].AttributeType !== attribute.AttributeType || 
+          (attribute.AttributeType === "List" && 
+            attribute.ListType !== nameMatches[0].ListType) ||
+          (attribute.AttributeType === "Type" && 
+            attribute.DefinedType !== nameMatches[0].DefinedType) ||
+          (attribute.AttributeType === "List" && 
+            attribute.ListType === "Type" &&
+            attribute.DefinedType !== nameMatches[0].DefinedType)) {
+          // Name collision
+          errors.push(`Attribute ${attribute.Name} has a Name Collision.  Please resolve it.`);
+        }
+      } else if (nameMatches.length === 0) {
+        // It's an existing attribute, but the name was changed on the type.
+        // Update the name to match.
+        errors.push(`Attribute ${attribute.Name} has been changed on its Type to `);
+        attribute.Name = matches[0].Name;
       } else {
         // It's an existing attribute,
         // so we just need to add the appropriate ids to FromTypes.
@@ -122,7 +147,54 @@ class Page extends Component {
     }
     thing.AttributesArr = attributes;
     this.props.updateSelectedThing(thing);
-    this.setState({ _id: null, Types: types, loaded: true });
+    this.setState({ _id: null, Types: types, loaded: true, errors });
+  };
+
+  createThingFromType = type => {
+    let types = [];
+    types.push(type);
+    type.Supers.forEach(s=>{
+      if (types.filter(t=>t._id === s._id).length === 0) {
+        let superType = this.props.types.filter(t=>t._id === s._id);
+        if (superType.length > 0)
+          types.push(superType[0]);
+      }
+    });
+    const thing = {
+      _id: null,
+      Name: "",
+      Description: "",
+      Types: [],
+      Attributes: []
+    };
+    let newAttributes = [];
+    types.forEach(type=> {
+      for (let i = 0; i < type.Attributes.length; i++) {
+        const attribute = {...type.Attributes[i]};
+        console.log(attribute);
+        if (thing.Attributes.filter(a=>a.attrID === attribute.attrID).length === 0) {
+          attribute.FromTypeID = type._id;
+          attribute.index = type.Attributes.length + newAttributes.length;
+          newAttributes.push(attribute);
+        }
+      }
+    });
+    types.forEach(type=> {
+      newAttributes.forEach(attribute => {
+        if (type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
+          attribute.Value = "";
+          attribute.ListValues = [];
+        }
+        else {
+          attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
+          attribute.ListValues = type.DefaultsHash[attribute.attrID].DefaultListValues;
+        }
+      })
+    });
+    let attributes = [...thing.Attributes, ...newAttributes];
+    thing.AttributesArr = attributes;
+    this.props.updateSelectedThing(thing);
+    this.setState({ _id: null, Types: types, loaded: true }); //, errors });
   };
 
   resetForm = () => {
@@ -203,12 +275,11 @@ class Page extends Component {
       case "AttributesArr":
         valid = true;
         value = this.props.selectedThing[fieldName];
-        for (let i = 0; i < value.length; i++) {
-          if (value.filter(attr2 => attr2.Name === value[i].Name).length > 1) {
+        value.forEach(a => {
+          if (valid && value.filter(attr2 => attr2.Name === a.Name).length > 1) {
             valid = false;
-            break;
           }
-        }
+        });
         message = valid ? "" : "Attribute Names must be unique";
         break;
       default:
@@ -220,11 +291,11 @@ class Page extends Component {
 
   validateForm = respond => {
     const nameValid = this.validateField("Name");
-    const attrArrValid = this.validateField("AttributesArr");
-    const formValid = nameValid.valid && attrArrValid.valid;
+    const attrValid = this.validateField("AttributesArr");
+    const formValid = nameValid.valid && attrValid.valid;
     const fieldValidation = this.state.fieldValidation;
     fieldValidation.Name = nameValid;
-    fieldValidation.AttributesArr = attrArrValid;
+    fieldValidation.Attributes = attrValid;
     this.setState(
       {
         formValid: formValid,
@@ -237,7 +308,11 @@ class Page extends Component {
   onSubmit = (addMore) => {
     function respond() {
       if (this.state.formValid) {
-        this.setState({ waiting: true, addMore: addMore }, this.submitThroughAPI);
+        this.setState({ 
+          waiting: true, 
+          addMore: addMore 
+        }, 
+        this.submitThroughAPI);
       }
     }
 
@@ -253,23 +328,32 @@ class Page extends Component {
       Name: this.state.Name,
       Description: this.state.Description,
       TypeIDs: typeIDs,
-      AttributesArr: this.props.selectedThing.AttributesArr,
+      // AttributesArr: this.props.selectedThing.AttributesArr,
+      Attributes: [],
       worldID: this.props.selectedWorld._id,
       ReferenceIDs: []
     };
-    this.props.selectedThing.AttributesArr.filter(a=>a.Type === "Type").forEach(a=>{
-      if (!thing.ReferenceIDs.includes(a.Value)) {
-        thing.ReferenceIDs.push(a.Value);
+    this.props.selectedThing.AttributesArr.forEach(a => {
+      thing.Attributes.push({
+        attrID: a.attrID,
+        index: a.index,
+        Value: a.Value,
+        ListValues: a.ListValues
+      });
+      if (a.AttributeType === "Type") {
+        if (!thing.ReferenceIDs.includes(a.Value)) {
+          thing.ReferenceIDs.push(a.Value);
+        }
+      }
+      if (a.AttributeType === "List" && a.ListType === "Type") {
+        a.ListValues.forEach(v=> {
+          if (!thing.ReferenceIDs.includes(v)) {
+            thing.ReferenceIDs.push(v);
+          }
+        });
       }
     });
-    this.props.selectedThing.AttributesArr.filter(a=>a.Type === "List" && a.ListType === "Type").forEach(a=>{
-      a.ListValues.forEach(v=> {
-        if (!thing.ReferenceIDs.includes(v)) {
-          thing.ReferenceIDs.push(v);
-        }
-      });
-    });
-
+    console.log(thing);
     if (thing._id === null) {
       this.api
         .createThing(thing)
@@ -284,17 +368,17 @@ class Page extends Component {
                 Name: "",
                 Description: "",
                 Types: [],
-                AttributesArr: []
+                Attributes: []
               });
               this.setState({
                 _id: null,
                 Name: "",
                 Description: "",
                 Types: [],
-                AttributesArr: [],
+                Attributes: [],
                 fieldValidation: {
                   Name: { valid: true, message: "" },
-                  AttributesArr: { valid: true, message: "" }
+                  Attributes: { valid: true, message: "" }
                 },
                 formValid: false,
                 message: "",
@@ -327,16 +411,16 @@ class Page extends Component {
                 Name: "",
                 Description: "",
                 Types: [],
-                AttributesArr: []
+                Attributes: []
               });
               this.setState({
                 Name: "",
                 Description: "",
                 Types: [],
-                AttributesArr: [],
+                Attributes: [],
                 fieldValidation: {
                   Name: { valid: true, message: "" },
-                  AttributesArr: { valid: true, message: "" }
+                  Attributes: { valid: true, message: "" }
                 },
                 formValid: false,
                 message: "",
@@ -370,7 +454,7 @@ class Page extends Component {
     this.setState({ Types: types });
   };
 
-  addType = (selectedList, selectedItem) => {
+  addTypeOld = (selectedList, selectedItem) => {
     selectedItem.Supers.forEach(s=>{
       if (selectedList.filter(t=>t._id === s._id).length === 0) {
         let superType = this.props.types.filter(t=>t._id === s._id);
@@ -411,10 +495,10 @@ class Page extends Component {
             typeIDs.push(typeID);
           }
         }
-        if (matches[0].Type !== "List" && (matches[0].Value === undefined || matches[0].Value === "") && attribute.DefaultValue !== undefined && attribute.DefaultValue !== "") {
+        if (matches[0].AttributeType !== "List" && (matches[0].Value === undefined || matches[0].Value === "") && attribute.DefaultValue !== undefined && attribute.DefaultValue !== "") {
           matches[0].Value = attribute.DefaultValue;
         }
-        else if (matches[0].Type === "List" && attribute.DefaultListValues !== undefined) {
+        else if (matches[0].AttributeType === "List" && attribute.DefaultListValues !== undefined) {
           attribute.DefaultListValues.forEach(v=> {
             if (!matches[0].ListValues.includes(v))
               matches[0].ListValues.push(v);
@@ -432,8 +516,59 @@ class Page extends Component {
       this.props.updateSelectedThing(thing);
     }, 500);
   }
+
+  addType = (selectedList, selectedItem) => {
+    const thing = this.props.selectedThing;
+    const newTypes = [];
+    selectedItem.Supers.forEach(s=>{
+      if (selectedList.filter(t=>t._id === s._id).length === 0) {
+        let superType = this.props.types.filter(t=>t._id === s._id);
+        if (superType.length > 0 && selectedList.filter(t=>t._id === superType[0]._id).length === 0){
+          selectedList.push(superType[0]);
+          newTypes.push(superType[0]);
+        }
+      }
+      if (this.state.Types.filter(t=>t._id === s._id).length === 0){
+        newTypes.push(s);
+      }
+    });
+    let newAttributes = [];
+    newTypes.forEach(type=> {
+      for (let i = 0; i < type.Attributes.length; i++) {
+        const attribute = {...type.Attributes[i]};
+        console.log(attribute);
+        if (thing.Attributes.filter(a=>a.attrID === attribute.attrID).length === 0) {
+          attribute.FromTypeID = type._id;
+          attribute.index = type.Attributes.length + newAttributes.length;
+          // attribute.attrID = 
+          newAttributes.push(attribute);
+        }
+      }
+    });
+    newTypes.forEach(type=> {
+      newAttributes.forEach(attribute => {
+        if (type.DefaultsHash === undefined || type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
+          attribute.Value = "";
+          attribute.ListValues = [];
+        }
+        else {
+          attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
+          attribute.ListValues = type.DefaultsHash[attribute.attrID].DefaultListValues;
+        }
+      })
+    });
+    let attributes = [...thing.Attributes, ...newAttributes];
+    this.setState({ Types: selectedList });
+    thing.Attributes = attributes;
+    thing.Attributes = [];
+    this.props.updateSelectedThing(thing);
+    setTimeout(() => {
+      thing.Attributes = attributes;
+      this.props.updateSelectedThing(thing);
+    }, 500);
+  }
   
-  removeType = (selectedList, removedItem) => {
+  removeTypeOld = (selectedList, removedItem) => {
     // TODO: Add a confirmation before doing this
     // to let them know it will also remove sub-types.
     let types = [];
@@ -465,6 +600,28 @@ class Page extends Component {
     thing.AttributesArr = attributes;
     this.props.updateSelectedThing(thing);
   }
+  
+  removeType = (selectedList, removedItem) => {
+    // TODO: Add a confirmation before doing this
+    // to let them know it will also remove sub-types.
+    let types = [];
+    let removeUs = [];
+    this.state.Types.forEach(checkMe => {
+      if (checkMe._id === removedItem._id || checkMe.SuperIDs.includes(removedItem._id))
+        removeUs.push(checkMe._id);
+      else types.push(checkMe);
+    });
+    const thing = this.props.selectedThing;
+    let attributes = [...thing.Attributes];
+    for (let i = 0; i < attributes.length; i++) {
+      const attribute = attributes[i];
+      if (removeUs.includes(attribute.FromTypeID))
+        attribute.FromTypeID = null;
+    }
+    this.setState({ Types: types });
+    thing.Attributes = attributes;
+    this.props.updateSelectedThing(thing);
+  }
 
   renderHeader() {
     let typeStr = "Thing";
@@ -482,9 +639,7 @@ class Page extends Component {
   }
 
   load = (id) => {
-    console.log('load');
     setTimeout(() => {
-      console.log('sto');
       this.setState({
         _id: id,
         redirectTo: null,
@@ -494,8 +649,6 @@ class Page extends Component {
   }
 
   finishLoading = () => {
-    console.log('finish');
-    console.log(this.state);
     if (this.state._id !== null) {
       // We're editing an existing Thing
       this.api.getThing(this.props.selectedWorldID, this.state._id).then(res => {
@@ -506,43 +659,46 @@ class Page extends Component {
         res.TypeIDs.forEach(tID=> {
           Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
         });
-        let attributes = [...res.AttributesArr];
+        let newAttributes = [];
         Types.forEach(type=> {
-          for (let i = 0; i < type.AttributesArr.length; i++) {
-            const attribute = {...type.AttributesArr[i]};
-            attribute.FromTypes = [...attribute.FromSupers];
-            delete attribute.FromSupers;
-            attribute.FromTypes.push(type._id);
-            const matches = attributes.filter(a => a.Name === attribute.Name);
-            if (matches.length === 0) {
-              // It's a new attribute.
-              // Thing Attributes have Values, so we need to add that field.
-              // In the future I'll have List Types, in which case this will be more complicated.
-              // Also I'll be adding default values.
-              if (attribute.DefaultValue === undefined) {
-                attribute.Value = "";
-                attribute.ListValues = [];
-              }
-              else {
-                attribute.Value = attribute.DefaultValue;
-                attribute.ListValues = attribute.DefaultListValues;
-              }
-              attributes.push(attribute);
-            } else {
-              // It's an existing attribute,
-              // so we just need to add the appropriate ids to FromTypes.
-              const typeIDs = [...matches[0].FromTypes];
-              for (let i = 0; i < attribute.FromTypes.length; i++) {
-                const typeID = attribute.FromTypes[i];
-                if (!typeIDs.includes(typeID)) {
-                  typeIDs.push(typeID);
-                }
-              }
-              matches[0].FromTypes = typeIDs;
+          for (let i = 0; i < type.Attributes.length; i++) {
+            const attribute = {...type.Attributes[i]};
+            console.log(attribute);
+            if (res.Attributes.filter(a=>a.attrID === attribute.attrID).length === 0) {
+              attribute.FromTypeID = type._id;
+              attribute.index = res.Attributes.length + newAttributes.length;
+              newAttributes.push(attribute);
             }
           }
         });
-        res.AttributesArr = attributes;
+        Types.forEach(type=> {
+          newAttributes.forEach(attribute => {
+            if (type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
+              attribute.Value = "";
+              attribute.ListValues = [];
+            }
+            else {
+              attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
+              attribute.ListValues = type.DefaultsHash[attribute.attrID].DefaultListValues;
+            }
+          })
+        });
+        let attributes = [...res.Attributes, ...newAttributes];
+        res.Attributes = attributes;
+        res.AttributesArr = [];
+        res.Attributes.forEach(a => {
+          const attr = this.props.attributesByID[a.attrID];
+          res.AttributesArr.push({
+            index: res.AttributesArr.length,
+            Name: attr.Name,
+            AttributeType: attr.AttributeType,
+            Options: attr.Options,
+            DefinedType: attr.DefinedType,
+            ListType: attr.ListType,
+            attrID: a.attrID,
+            Value: a.Value
+          });
+        });
         this.props.updateSelectedThing(res);
         this.setState({
           Name: res.Name,
@@ -554,7 +710,6 @@ class Page extends Component {
       });
     } else {
       let { id } = this.props.match.params;
-      console.log(id);
       if (id !== undefined && id.includes("type_id_")) {
         // We're creating it from a type rather than from blank
         const typeID = id.substring(8);
@@ -574,7 +729,7 @@ class Page extends Component {
           Name: "",
           Description: "",
           Types: [],
-          AttributesArr: []
+          Attributes: []
         });
         this.setState({ loaded: true });
       }
@@ -582,7 +737,6 @@ class Page extends Component {
   }
 
   render() {
-    console.log(this.state.loaded);
     let { id } = this.props.match.params;
     if (id === undefined || id.includes("type_id_"))
       id = null;
@@ -673,7 +827,7 @@ class Page extends Component {
                   <AttributesControl />
                 }
                 <FormHelperText>
-                  {this.state.fieldValidation.AttributesArr.message}
+                  {this.state.fieldValidation.Attributes.message}
                 </FormHelperText>
               </Grid>
               <Grid item>
@@ -719,6 +873,11 @@ class Page extends Component {
                 </div>
               </Grid>
               <Grid item>{this.state.message}</Grid>
+              <Grid item>
+                {this.state.errors.map((e, key) => {
+                  return (<div key={key}>{e}</div>);
+                })}
+              </Grid>
               <Grid item>
                 {Object.keys(this.state.fieldValidation).map((fieldName, i) => {
                   if (

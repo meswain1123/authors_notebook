@@ -11,17 +11,21 @@ import MainPage from "./views/MainPage";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import { 
-  setWidth
+  setWidth,
+  setAPI
 } from "./redux/actions/index";
+import API from "./api";
 
 const mapStateToProps = state => {
   return {
-    menuOpen: state.app.menuOpen
+    menuOpen: state.app.menuOpen,
+    api: state.app.api
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
-    setWidth: width => dispatch(setWidth(width))
+    setWidth: width => dispatch(setWidth(width)),
+    setAPI: api => dispatch(setAPI(api))
   };
 }
 class AppLayout extends Component {
@@ -32,6 +36,7 @@ class AppLayout extends Component {
       width: 0,
       marginLeft: 220
     };
+    this.api = API.getInstance();
   }
 
   componentDidMount() {
@@ -57,6 +62,9 @@ class AppLayout extends Component {
   }
 
   render() {
+    if (this.props.api === null) {
+      this.props.setAPI(this.api);
+    }
     return (
       <Router>
         {this.props.menuOpen ? 

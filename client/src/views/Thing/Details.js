@@ -8,7 +8,6 @@ import {
 } from "@material-ui/core";
 import { Helmet } from 'react-helmet';
 import {
-  selectPage,
   updateSelectedThing,
   addThing,
   updateThing,
@@ -25,12 +24,12 @@ const mapStateToProps = state => {
     selectedWorldID: state.app.selectedWorldID,
     types: state.app.types,
     things: state.app.things,
-    user: state.app.user
+    user: state.app.user,
+    attributesByID: state.app.attributesByID
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
-    selectPage: page => dispatch(selectPage(page)),
     updateSelectedThing: thing => dispatch(updateSelectedThing(thing)),
     addThing: thing => dispatch(addThing(thing)),
     updateThing: thing => dispatch(updateThing(thing)),
@@ -97,6 +96,20 @@ class Page extends Component {
           let Types = [];
           res.TypeIDs.forEach(tID=> {
             Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
+          });
+          res.AttributesArr = [];
+          res.Attributes.forEach(a => {
+            const attr = this.props.attributesByID[a.attrID];
+            res.AttributesArr.push({
+              index: res.AttributesArr.length,
+              Name: attr.Name,
+              AttributeType: attr.AttributeType,
+              Options: attr.Options,
+              DefinedType: attr.DefinedType,
+              ListType: attr.ListType,
+              attrID: a.attrID,
+              Value: a.Value
+            });
           });
           this.setState({
             Name: res.Name,
@@ -207,7 +220,7 @@ class Page extends Component {
                                 <ListItem key={i}>
                                   <ListItemText>
                                     {attribute.Name}:&nbsp;
-                                    {attribute.Type === "Type" && attribute.Value !== "" ?
+                                    {attribute.AttributeType === "Type" && attribute.Value !== "" ?
                                     <Button
                                       variant="contained"
                                       color="primary"
@@ -215,7 +228,7 @@ class Page extends Component {
                                     >
                                       <ListItemText primary={this.props.things.filter(t=>t._id === attribute.Value)[0].Name}/>
                                     </Button>
-                                    : attribute.Type === "List" ?
+                                    : attribute.AttributeType === "List" ?
                                       attribute.ListValues.map(
                                         (listValue, i) => {
                                           return (

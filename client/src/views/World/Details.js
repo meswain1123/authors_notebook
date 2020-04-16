@@ -3,7 +3,8 @@ import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import { 
   selectWorld, setTypes, setThings, setWorlds, 
-  setPublicWorlds, updatePublicWorldForCollab
+  setPublicWorlds, updatePublicWorldForCollab,
+  setAttributes
 } from "../../redux/actions/index";
 import API from "../../api";
 import Index from "./Index";
@@ -28,7 +29,8 @@ const mapStateToProps = state => {
     publicWorlds: state.app.publicWorlds,
     types: state.app.types,
     things: state.app.things,
-    user: state.app.user
+    user: state.app.user,
+    attributesByID: state.app.attributesByID
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -38,7 +40,8 @@ function mapDispatchToProps(dispatch) {
     setThings: things => dispatch(setThings(things)),
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
-    updatePublicWorldForCollab: world => dispatch(updatePublicWorldForCollab(world))
+    updatePublicWorldForCollab: world => dispatch(updatePublicWorldForCollab(world)),
+    setAttributes: attributes => dispatch(setAttributes(attributes))
   };
 }
 class Page extends Component {
@@ -54,6 +57,16 @@ class Page extends Component {
   componentDidMount() {
   }
 
+  getAttributes() {
+    this.api.getAttributesForWorld(this.props.selectedWorldID).then(res => {
+      if (res !== undefined && res.error === undefined) {
+        // We store the attributes in two hashes, by name and by id
+        this.props.setAttributes(res.attributes);
+        this.getTypes();
+      }
+    });
+  }
+
   getTypes() {
     this.api.getTypesForWorld(this.props.selectedWorldID).then(res => {
       if (res !== undefined && res.error === undefined) {
@@ -64,6 +77,26 @@ class Page extends Component {
           t.SuperIDs.forEach(sID=> {
             t.Supers = t.Supers.concat(types.filter(t2=>t2._id === sID));
           });
+          t.AttributesArr = [];
+          t.Attributes.forEach(a => {
+            const attr = this.props.attributesByID[a.attrID];
+            t.AttributesArr.push({
+              index: t.AttributesArr.length,
+              Name: attr.Name,
+              AttributeType: attr.AttributeType,
+              Options: attr.Options,
+              DefinedType: attr.DefinedType,
+              ListType: attr.ListType,
+              attrID: a.attrID
+            });
+          });
+          const defHash = {};
+          if (t.Defaults !== undefined) {
+            t.Defaults.forEach(def => {
+              defHash[def.attrID] = def;
+            });
+          }
+          t.DefaultsHash = defHash;
         });
         this.props.setTypes(types);
         this.getThings();
@@ -113,14 +146,13 @@ class Page extends Component {
     setTimeout(() => {
       this.props.selectWorld(id);
       this.api.selectWorld(id).then(res => {
-        this.getTypes();
+        this.getAttributes();
       });
     }, 500);
   }
 
   requestToCollaborate = () => {
     this.api.requestToCollaborate(this.props.selectedWorldID).then(res => {
-      // console.log(res);
       const world = this.props.selectedWorld;
       world.Collaborators.push(res);
       this.props.updatePublicWorldForCollab(world);

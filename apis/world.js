@@ -294,6 +294,95 @@ router
       db.getWorld(respond, req.session.userID, req.body.worldID);
     }
   })
+  .get("/getAttributesForWorld/:worldID", function(req, res) {
+    function respond(attributes) {
+      res.send({ attributes });
+    }
+
+    db.getAttributesForWorld(respond, req.params.worldID);
+  })
+  .post("/createAttribute", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else {
+      function gotWorld(world) {
+        if (world === null || (world.Owner !== req.session.userID && world.Collaborators.filter(c=>c.userID === req.session.userID && c.editPermission).length === 0)) {
+          res.send({ error: "Problem with creating the Attribute" });
+        }
+        else {
+          function gotType(type) {
+            if (type.error == undefined || type.error != "Attribute not found") {
+              res.send({ error: "This world already has a Attribute by that name." });
+            } else {
+              function respond(typeID) {
+                res.send({ typeID });
+              }
+        
+              db.createType(respond, req.body.type);
+            }
+          }
+
+          db.getAttributeByName(gotType, req.body.type.worldID, req.body.type.Name);
+        }
+      }
+
+      db.getWorld(gotWorld, req.session.userID, req.body.type.worldID);
+    }
+  })
+  .patch("/updateAttribute", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else {
+      function gotWorld(world) {
+        if (world === null || (world.Owner !== req.session.userID && world.Collaborators.filter(c=>c.userID === req.session.userID && c.editPermission).length === 0)) {
+          res.send({ error: "Problem with updating the Attribute" });
+        }
+        else {
+          function respond(message) {
+            res.send(message);
+          }
+
+          db.updateAttribute(respond, req.body.type.worldID, req.body.attribute);
+        }
+      }
+
+      db.getWorld(gotWorld, req.session.userID, req.body.attribute.worldID);
+    }
+  })
+  .patch("/upsertAttributes", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else if (req.body.attributes.length === 0) {
+      res.send({ attributes: {} });
+    } else {
+      function gotWorld(world) {
+        if (world === null || (world.Owner !== req.session.userID && world.Collaborators.filter(c=>c.userID === req.session.userID && c.editPermission).length === 0)) {
+          res.send({ error: "Problem with updating the Attribute" });
+        }
+        else {
+          let pos = 0;
+          const returnAttributesHash = {};
+
+          function respond(message) {
+            console.log(message);
+            returnAttributesHash[req.body.attributes[pos].Name] = message;
+            pos++;
+            if (pos === req.body.attributes.length) {
+              res.send({ attributes: returnAttributesHash });
+            }
+            else {
+              db.upsertAttribute(respond, req.body.worldID, req.body.attributes[pos]);
+            }
+          }
+
+          console.log(req.body);
+          db.upsertAttribute(respond, req.body.worldID, req.body.attributes[pos]);
+        }
+      }
+
+      db.getWorld(gotWorld, req.session.userID, req.body.worldID);
+    }
+  })
   .get("/getTypesForWorld/:worldID", function(req, res) {
     function respond(types) {
       res.send({ types });
@@ -310,7 +399,7 @@ router
     }
 
     db.getType(respond, req.params.worldID, req.params.typeID);
-  })
+  }) 
   .post("/createType", function(req, res) {
     if (req.session.userID == undefined) {
       res.send({ error: "Session lost.  Please log in again." });
@@ -372,6 +461,7 @@ router
             res.send(message);
           }
 
+          // I need to make it check for changed attributes and propagate the changes to all child types and things
           db.updateType(respond, req.body.type.worldID, req.body.type);
         }
       }

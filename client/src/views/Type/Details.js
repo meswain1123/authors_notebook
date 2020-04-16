@@ -2,11 +2,11 @@ import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import {
-  selectPage,
   updateSelectedType,
   addType,
   updateType,
-  setTypes
+  setTypes,
+  setAttributes
 } from "../../redux/actions/index";
 import { Edit, Delete, Add, ArrowBack } from "@material-ui/icons";
 import { Fab, Modal, Grid, Button, Tooltip, List, ListItem, ListItemText } from "@material-ui/core";
@@ -38,16 +38,18 @@ const mapStateToProps = state => {
     subTypes: subTypes,
     instances: things,
     user: state.app.user,
-    things: state.app.things
+    things: state.app.things,
+    attributesByID: state.app.attributesByID,
+    attributesByName: state.app.attributesByName,
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
-    selectPage: page => dispatch(selectPage(page)),
     updateSelectedType: type => dispatch(updateSelectedType(type)),
     addType: type => dispatch(addType(type)),
     updateType: type => dispatch(updateType(type)),
-    setTypes: types => dispatch(setTypes(types))
+    setTypes: types => dispatch(setTypes(types)),
+    setAttributes: attributes => dispatch(setAttributes(attributes))
   };
 }
 class Page extends Component {
@@ -110,14 +112,35 @@ class Page extends Component {
     if (id !== undefined) { // When I move to storing more in session, this is the kind of place where I'll check.
       this.api.getType(this.props.selectedWorldID, id).then(res => {
         if (res.error === undefined) {
-          const supers = this.props.types.filter(type =>
-            res.SuperIDs.includes(type._id)
-          );
+          res.Supers = [];
+          res.SuperIDs.forEach(sID=> {
+            res.Supers = res.Supers.concat(this.props.types.filter(t2=>t2._id === sID));
+          });
+          res.AttributesArr = [];
+          res.Attributes.forEach(a => {
+            const attr = this.props.attributesByID[a.attrID];
+            res.AttributesArr.push({
+              index: res.AttributesArr.length,
+              Name: attr.Name,
+              AttributeType: attr.AttributeType,
+              Options: attr.Options,
+              DefinedType: attr.DefinedType,
+              ListType: attr.ListType,
+              attrID: a.attrID
+            });
+          });
+          const defHash = {};
+          if (res.Defaults !== undefined) {
+            res.Defaults.forEach(def => {
+              defHash[def.attrID] = def;
+            });
+          }
+          res.DefaultsHash = defHash;
           this.setState({
             Name: res.Name,
             Description: res.Description,
             _id: id,
-            Supers: supers,
+            Supers: res.Supers,
             Major: res.Major
           });
           this.props.updateSelectedType(res);
@@ -133,6 +156,7 @@ class Page extends Component {
         Description: "",
         Supers: [],
         AttributesArr: [],
+        Attributes: [],
         Major: false
       });
     }
@@ -151,8 +175,19 @@ class Page extends Component {
         (this.props.selectedWorld.Owner !== this.props.user._id && 
           this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab").length === 0))) {
       return <Redirect to="/" />;
+    } else if (this.props.selectedType === undefined || this.props.selectedType === null) {
+      return (<span>Loading</span>);
     } else {
       const references = this.props.types.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));
+      const inheritedAttributes = [];
+      console.log(this.props.selectedType);
+      this.props.selectedType.Supers.forEach(superType => {
+        superType.AttributesArr.forEach(attribute => {
+          if (inheritedAttributes.filter(a=>a._id === attribute._id).length === 0) {
+            inheritedAttributes.push(attribute);
+          }
+        });
+      });
       return (
         <Grid item xs={12} container spacing={0} direction="column">
           { this.props.selectedWorld === null ? "" :
@@ -233,18 +268,47 @@ class Page extends Component {
                   <Grid item>
                     Attributes
                     <List>
-                      {this.props.selectedType === null ||
-                      this.props.selectedType === undefined
-                        ? ""
-                        : this.props.selectedType.AttributesArr.map(
-                            (attribute, i) => {
-                              let type2 = this.props.types.filter(t=>t._id === attribute.Type2);
-                              type2 = type2.length === 0 ? {Name:""} : type2[0];
-                              return (
-                                <ListItem key={i}>
-                                  <ListItemText>
-                                    {attribute.Name}:&nbsp;
-                                    {attribute.Type === "Options" ? (
+                      { this.props.selectedType !== null && this.props.selectedType !== undefined &&
+                        inheritedAttributes.map((attribute, i) => {
+                          let definedType = this.props.types.filter(t=>t._id === attribute.DefinedType);
+                          definedType = definedType.length === 0 ? {Name:""} : definedType[0];
+                          const def = this.props.selectedType.DefaultsHash[attribute._id];
+                          return (
+                            <ListItem key={i}>
+                              <ListItemText>
+                                {attribute.Name}:&nbsp;
+                                {attribute.AttributeType === "Options" ? (
+                                  <span>
+                                    Options:
+                                    {attribute.Options.map((option, j) => {
+                                      return (
+                                        <span key={j}>
+                                          {j === 0 ? " " : ", "}
+                                          {option}
+                                        </span>
+                                      );
+                                    })}
+                                    { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" &&
+                                      ` (Default: ${def.DefaultValue})`
+                                    }
+                                  </span>
+                                ) : attribute.AttributeType === "Type" ? (
+                                  <span>
+                                    <Button
+                                      variant="contained"
+                                      color="primary"
+                                      onClick={ _ => {this.setState({redirectTo:`/type/details/${attribute.DefinedType}`})}}
+                                    >
+                                      <ListItemText primary={definedType.Name}/>
+                                    </Button>
+                                    { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" &&
+                                      ` (Default: ${this.props.things.filter(t=>t._id === def.DefaultValue)[0].Name})`
+                                    }
+                                  </span>
+                                ) : attribute.AttributeType === "List" ? (
+                                  <span>
+                                    List:&nbsp;
+                                    {attribute.ListType === "Options" ? (
                                       <span>
                                         Options:
                                         {attribute.Options.map((option, j) => {
@@ -255,130 +319,233 @@ class Page extends Component {
                                             </span>
                                           );
                                         })}
-                                        { attribute.DefaultValue !== undefined && attribute.DefaultValue !== "" &&
-                                          ` (Default: ${attribute.DefaultValue})`
+                                        { def !== undefined && def.DefaultListValues !== undefined && def.DefaultListValues.length > 0 &&
+                                          <span>
+                                            &nbsp;(Defaults:
+                                            {def.DefaultListValues.map((defaultValue, j) => {
+                                              return (
+                                                <span key={j}>
+                                                  {j === 0 ? " " : ", "}
+                                                  {defaultValue}
+                                                </span>
+                                              );
+                                            })}
+                                            )
+                                          </span>
                                         }
                                       </span>
-                                    ) : attribute.Type === "Type" ? (
+                                    ) : attribute.ListType === "Type" ? (
                                       <span>
                                         <Button
                                           variant="contained"
                                           color="primary"
-                                          onClick={ _ => {this.setState({redirectTo:`/type/details/${attribute.Type2}`})}}
+                                          onClick={ _ => {this.setState({redirectTo:`/type/details/${attribute.DefinedType}`})}}
                                         >
-                                          <ListItemText primary={type2.Name}/>
+                                          <ListItemText primary={definedType.Name}/>
                                         </Button>
-                                        { attribute.DefaultValue !== undefined && attribute.DefaultValue !== "" ?
-                                        ` (Default: ${this.props.things.filter(t=>t._id === attribute.DefaultValue)[0].Name})`
-                                        : ""}
-                                      </span>
-                                    ) : attribute.Type === "List" ? (
-                                      <span>
-                                        List:&nbsp;
-                                        {attribute.ListType === "Options" ? (
+                                        { def !== undefined && def.DefaultListValues !== undefined && def.DefaultListValues.length > 0 &&
                                           <span>
-                                            Options:
-                                            {attribute.Options.map((option, j) => {
+                                            &nbsp;(Defaults:
+                                            {attribute.DefaultListValues.map((defaultValue, j) => {
                                               return (
                                                 <span key={j}>
                                                   {j === 0 ? " " : ", "}
-                                                  {option}
+                                                  <Button
+                                                    variant="contained"
+                                                    color="primary"
+                                                    onClick={ _ => {this.setState({redirectTo:`/thing/details/${defaultValue}`})}}
+                                                  >
+                                                    <ListItemText primary={this.props.things.filter(t=>t._id === defaultValue)[0].Name}/>
+                                                  </Button>
                                                 </span>
                                               );
                                             })}
-                                            { attribute.DefaultListValues !== undefined && attribute.DefaultListValues.length > 0 &&
-                                              <span>
-                                                &nbsp;(Defaults:
-                                                {attribute.DefaultListValues.map((defaultValue, j) => {
-                                                  return (
-                                                    <span key={j}>
-                                                      {j === 0 ? " " : ", "}
-                                                      {defaultValue}
-                                                    </span>
-                                                  );
-                                                })}
-                                                )
-                                              </span>
-                                            }
+                                            )
                                           </span>
-                                        ) : attribute.ListType === "Type" ? (
-                                          <span>
-                                            <Button
-                                              variant="contained"
-                                              color="primary"
-                                              onClick={ _ => {this.setState({redirectTo:`/type/details/${attribute.Type2}`})}}
-                                            >
-                                              <ListItemText primary={type2.Name}/>
-                                            </Button>
-                                            { attribute.DefaultListValues !== undefined && attribute.DefaultListValues.length > 0 ?
-                                              <span>
-                                                &nbsp;(Defaults:
-                                                {attribute.DefaultListValues.map((defaultValue, j) => {
-                                                  return (
-                                                    <span key={j}>
-                                                      {j === 0 ? " " : ", "}
-                                                      <Button
-                                                        variant="contained"
-                                                        color="primary"
-                                                        onClick={ _ => {this.setState({redirectTo:`/thing/details/${defaultValue}`})}}
-                                                      >
-                                                        <ListItemText primary={this.props.things.filter(t=>t._id === defaultValue)[0].Name}/>
-                                                      </Button>
-                                                    </span>
-                                                  );
-                                                })}
-                                                )
-                                              </span>
-                                              : ""
-                                            }
-                                          </span>
-                                        ) : (
-                                          <span>
-                                            {attribute.ListType}
-                                            { attribute.DefaultListValues !== undefined && attribute.DefaultListValues.length > 0 &&
-                                              <span>
-                                                &nbsp;(Defaults:
-                                                {attribute.DefaultListValues.map((defaultValue, j) => {
-                                                  return (
-                                                    <span key={j}>
-                                                      {j === 0 ? " " : ", "}
-                                                      {defaultValue}
-                                                    </span>
-                                                  );
-                                                })}
-                                                )
-                                              </span>
-                                            }
-                                          </span>
-                                        )}
-                                      </span>
-                                    ) : attribute.Type === "True/False" ? (
-                                      <span>
-                                        {attribute.Type}
-                                        { attribute.DefaultValue !== undefined && attribute.DefaultValue !== "" ?
-                                          ` (Default: ${attribute.DefaultValue})`
-                                        : " (Default: False)"}
+                                        }
                                       </span>
                                     ) : (
                                       <span>
-                                        {attribute.Type}
-                                        { attribute.DefaultValue !== undefined && attribute.DefaultValue !== "" &&
-                                          ` (Default: ${attribute.DefaultValue})`
+                                        {attribute.ListType}
+                                        { def !== undefined && def.DefaultListValues !== undefined && def.DefaultListValues.length > 0 &&
+                                          <span>
+                                            &nbsp;(Defaults:
+                                            {def.DefaultListValues.map((defaultValue, j) => {
+                                              return (
+                                                <span key={j}>
+                                                  {j === 0 ? " " : ", "}
+                                                  {defaultValue}
+                                                </span>
+                                              );
+                                            })}
+                                            )
+                                          </span>
                                         }
                                       </span>
                                     )}
-                                  </ListItemText>
-                                </ListItem>
-                              );
-                            }
-                          )}
+                                  </span>
+                                ) : attribute.AttributeType === "True/False" ? (
+                                  <span>
+                                    {attribute.AttributeType}
+                                    { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" ?
+                                      ` (Default: ${def.DefaultValue})`
+                                    : " (Default: False)"}
+                                  </span>
+                                ) : (
+                                  <span>
+                                    {attribute.AttributeType}
+                                    { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" &&
+                                      ` (Default: ${def.DefaultValue})`
+                                    }
+                                  </span>
+                                )}
+                              </ListItemText>
+                            </ListItem>
+                          );
+                        })
+                      }
+                      { this.props.selectedType !== null &&
+                        this.props.selectedType !== undefined && 
+                          this.props.selectedType.AttributesArr.map((attribute, i) => {
+                            let definedType = this.props.types.filter(t=>t._id === attribute.DefinedType);
+                            definedType = definedType.length === 0 ? {Name:""} : definedType[0];
+                            const def = this.props.selectedType.DefaultsHash[attribute._id];
+                            return (
+                              <ListItem key={i}>
+                                <ListItemText>
+                                  {attribute.Name}:&nbsp;
+                                  {attribute.AttributeType === "Options" ? (
+                                    <span>
+                                      Options:
+                                      {attribute.Options.map((option, j) => {
+                                        return (
+                                          <span key={j}>
+                                            {j === 0 ? " " : ", "}
+                                            {option}
+                                          </span>
+                                        );
+                                      })}
+                                      { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" &&
+                                        ` (Default: ${def.DefaultValue})`
+                                      }
+                                    </span>
+                                  ) : attribute.AttributeType === "Type" ? (
+                                    <span>
+                                      <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={ _ => {this.setState({redirectTo:`/type/details/${attribute.DefinedType}`})}}
+                                      >
+                                        <ListItemText primary={definedType.Name}/>
+                                      </Button>
+                                      { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" &&
+                                        ` (Default: ${this.props.things.filter(t=>t._id === def.DefaultValue)[0].Name})`
+                                      }
+                                    </span>
+                                  ) : attribute.AttributeType === "List" ? (
+                                    <span>
+                                      List:&nbsp;
+                                      {attribute.ListType === "Options" ? (
+                                        <span>
+                                          Options:
+                                          {attribute.Options.map((option, j) => {
+                                            return (
+                                              <span key={j}>
+                                                {j === 0 ? " " : ", "}
+                                                {option}
+                                              </span>
+                                            );
+                                          })}
+                                          { def !== undefined && def.DefaultListValues !== undefined && def.DefaultListValues.length > 0 &&
+                                            <span>
+                                              &nbsp;(Defaults:
+                                              {def.DefaultListValues.map((defaultValue, j) => {
+                                                return (
+                                                  <span key={j}>
+                                                    {j === 0 ? " " : ", "}
+                                                    {defaultValue}
+                                                  </span>
+                                                );
+                                              })}
+                                              )
+                                            </span>
+                                          }
+                                        </span>
+                                      ) : attribute.ListType === "Type" ? (
+                                        <span>
+                                          <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={ _ => {this.setState({redirectTo:`/type/details/${attribute.DefinedType}`})}}
+                                          >
+                                            <ListItemText primary={definedType.Name}/>
+                                          </Button>
+                                          { def !== undefined && def.DefaultListValues !== undefined && def.DefaultListValues.length > 0 &&
+                                            <span>
+                                              &nbsp;(Defaults:
+                                              {attribute.DefaultListValues.map((defaultValue, j) => {
+                                                return (
+                                                  <span key={j}>
+                                                    {j === 0 ? " " : ", "}
+                                                    <Button
+                                                      variant="contained"
+                                                      color="primary"
+                                                      onClick={ _ => {this.setState({redirectTo:`/thing/details/${defaultValue}`})}}
+                                                    >
+                                                      <ListItemText primary={this.props.things.filter(t=>t._id === defaultValue)[0].Name}/>
+                                                    </Button>
+                                                  </span>
+                                                );
+                                              })}
+                                              )
+                                            </span>
+                                          }
+                                        </span>
+                                      ) : (
+                                        <span>
+                                          {attribute.ListType}
+                                          { def !== undefined && def.DefaultListValues !== undefined && def.DefaultListValues.length > 0 &&
+                                            <span>
+                                              &nbsp;(Defaults:
+                                              {def.DefaultListValues.map((defaultValue, j) => {
+                                                return (
+                                                  <span key={j}>
+                                                    {j === 0 ? " " : ", "}
+                                                    {defaultValue}
+                                                  </span>
+                                                );
+                                              })}
+                                              )
+                                            </span>
+                                          }
+                                        </span>
+                                      )}
+                                    </span>
+                                  ) : attribute.AttributeType === "True/False" ? (
+                                    <span>
+                                      {attribute.AttributeType}
+                                      { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" ?
+                                        ` (Default: ${def.DefaultValue})`
+                                      : " (Default: False)"}
+                                    </span>
+                                  ) : (
+                                    <span>
+                                      {attribute.AttributeType}
+                                      { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" &&
+                                        ` (Default: ${def.DefaultValue})`
+                                      }
+                                    </span>
+                                  )}
+                                </ListItemText>
+                              </ListItem>
+                            );
+                          })
+                      }
                     </List>
                   </Grid>
                 </Grid>
                 <Grid item sm={3} xs={12} container spacing={0} direction="column">
-                  {this.state.Supers.length === 0 ? (
-                    ""
-                  ) : (
+                  {this.state.Supers.length === 0 && (
                     <Grid item>
                       <List>
                         <ListItem>
@@ -400,9 +567,7 @@ class Page extends Component {
                       </List>
                     </Grid>
                   )}
-                  {this.props.subTypes.length === 0 ? (
-                    ""
-                  ) : (
+                  {this.props.subTypes.length === 0 && (
                     <Grid item>
                       <List>
                         <ListItem>
@@ -424,9 +589,7 @@ class Page extends Component {
                       </List>
                     </Grid>
                   )}
-                  {references.length === 0 ? (
-                    ""
-                  ) : (
+                  {references.length !== 0 && (
                     <Grid item>
                       <List>
                         <ListItem>
@@ -448,9 +611,7 @@ class Page extends Component {
                       </List>
                     </Grid>
                   )}
-                  {this.props.instances.length === 0 ? (
-                    ""
-                  ) : (
+                  {this.props.instances.length === 0 && (
                     <Grid item>
                       <List>
                         <ListItem>

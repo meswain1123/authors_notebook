@@ -2,14 +2,14 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
-import { selectPage } from "../../redux/actions/index";
+// import { selectPage } from "../../redux/actions/index";
 
 const mapStateToProps = state => {
   return { selectedPage: state.app.selectedPage };
 };
 function mapDispatchToProps(dispatch) {
   return {
-    selectPage: page => dispatch(selectPage(page))
+    // selectPage: page => dispatch(selectPage(page))
   };
 }
 class Page extends Component {

@@ -10,10 +10,10 @@ import { Helmet } from 'react-helmet';
 import { Multiselect } from 'multiselect-react-dropdown';
 import AttributesControl from "./AttributesControl";
 import {
-  selectPage,
   updateSelectedType,
   addType,
-  updateType
+  updateType,
+  addAttributes
 } from "../../redux/actions/index";
 import API from "../../api";
 
@@ -30,15 +30,17 @@ const mapStateToProps = state => {
     selectedWorld: state.app.selectedWorld,
     selectedWorldID: state.app.selectedWorldID,
     types: state.app.types,
-    user: state.app.user
+    user: state.app.user,
+    attributesByID: state.app.attributesByID,
+    attributesByName: state.app.attributesByName
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
-    selectPage: page => dispatch(selectPage(page)),
     updateSelectedType: type => dispatch(updateSelectedType(type)),
     addType: type => dispatch(addType(type)),
-    updateType: type => dispatch(updateType(type))
+    updateType: type => dispatch(updateType(type)),
+    addAttributes: attrs => dispatch(addAttributes(attrs))
   };
 }
 class Page extends Component {
@@ -53,7 +55,8 @@ class Page extends Component {
       Major: false,
       fieldValidation: {
         Name: { valid: true, message: "" },
-        AttributesArr: { valid: true, message: "" }
+        AttributesArr: { valid: true, message: "" },
+        Attributes: { valid: true, message: "" }
       },
       formValid: false,
       message: "",
@@ -126,7 +129,29 @@ class Page extends Component {
           if (!valid) message = "This Type Name is already in use";
         }
         break;
-      case "AttributesArr":
+      // case "AttributesArr":
+      //   valid = true;
+      //   value = this.props.selectedType[fieldName];
+      //   message = "";
+      //   for (let i = 0; i < value.length; i++) {
+      //     if (value.filter(attr2 => attr2.Name === value[i].Name).length > 1) {
+      //       valid = false;
+      //       message = "Attribute Names must be unique";
+      //       break;
+      //     }
+      //     else if ((value[i].AttributeType === "Type" || (value[i].AttributeType === "List" && value[i].ListType === "Type")) && (value[i].DefinedType === undefined || value[i].DefinedType === null || value[i].DefinedType === "")) {
+      //       valid = false;
+      //       message = `A Defined Type must be selected for ${value[i].Name}.`;
+      //       break;
+      //     }
+      //     else if ((value[i].AttributeType === "Options" || (value[i].AttributeType === "List" && value[i].ListType === "Options")) && (value[i].Options === undefined || value[i].Options === null || value[i].Options.length === 0)) {
+      //       valid = false;
+      //       message = `At least one Option must be set for ${value[i].Name}.`;
+      //       break;
+      //     }
+      //   } 
+      //   break;
+      case "Attributes":
         valid = true;
         value = this.props.selectedType[fieldName];
         message = "";
@@ -136,12 +161,12 @@ class Page extends Component {
             message = "Attribute Names must be unique";
             break;
           }
-          else if ((value[i].Type === "Type" || (value[i].Type === "List" && value[i].ListType === "Type")) && (value[i].Type2 === undefined || value[i].Type2 === null || value[i].Type2 === "")) {
+          else if ((value[i].AttributeType === "Type" || (value[i].AttributeType === "List" && value[i].ListType === "Type")) && (value[i].DefinedType === undefined || value[i].DefinedType === null || value[i].DefinedType === "")) {
             valid = false;
             message = `A Defined Type must be selected for ${value[i].Name}.`;
             break;
           }
-          else if ((value[i].Type === "Options" || (value[i].Type === "List" && value[i].ListType === "Options")) && (value[i].Options === undefined || value[i].Options === null || value[i].Options.length === 0)) {
+          else if ((value[i].AttributeType === "Options" || (value[i].AttributeType === "List" && value[i].ListType === "Options")) && (value[i].Options === undefined || value[i].Options === null || value[i].Options.length === 0)) {
             valid = false;
             message = `At least one Option must be set for ${value[i].Name}.`;
             break;
@@ -158,10 +183,12 @@ class Page extends Component {
   validateForm = respond => {
     const nameValid = this.validateField("Name");
     const attrArrValid = this.validateField("AttributesArr");
+    // const attrValid = this.validateField("Attributes");
     const formValid = nameValid.valid && attrArrValid.valid;
     const fieldValidation = this.state.fieldValidation;
     fieldValidation.Name = nameValid;
     fieldValidation.AttributesArr = attrArrValid;
+    // fieldValidation.Attributes = attrValid;
     this.setState(
       {
         formValid: formValid,
@@ -185,131 +212,212 @@ class Page extends Component {
     const superIDs = this.state.Supers.map(s => {
       return s._id;
     });
-    const type = {
-      _id: this.state._id,
-      Name: this.state.Name,
-      Description: this.state.Description,
-      SuperIDs: superIDs,
-      AttributesArr: this.props.selectedType.AttributesArr,
-      worldID: this.props.selectedWorld._id,
-      Major: this.state.Major,
-      ReferenceIDs: [],
-      DefaultReferenceIDs: [],
-      loaded: true
-    };
-    this.props.selectedType.AttributesArr.filter(a=>a.Type === "Type" || (a.Type === "List" && a.ListType === "Type")).forEach(a=>{
-      if (!type.ReferenceIDs.includes(a.Type2)) {
-        type.ReferenceIDs.push(a.Type2);
-      }
-    });
 
-    if (type._id === null) {
-      this.api
-        .createType(type)
-        .then(res => {
-          if (res.typeID !== undefined) {
-            type._id = res.typeID;
-            type.Supers = [];
-            type.SuperIDs.forEach(sID=> {
-              type.Supers = type.Supers.concat(this.props.types.filter(t2=>t2._id === sID));
-            });
-            this.props.addType(type);
-            if (this.state.addMore) {
-              this.props.updateSelectedType({
-                _id: null,
-                Name: "",
-                Description: "",
-                Supers: [],
-                AttributesArr: [],
-                Major: false
-              });
-              this.setState({
-                _id: null,
-                Name: "",
-                Description: "",
-                Supers: [],
-                Attributes: [],
-                Major: false,
-                fieldValidation: {
-                  Name: { valid: true, message: "" },
-                  AttributesArr: { valid: true, message: "" }
-                },
-                formValid: false,
-                message: "",
-                redirectTo: null,
-                waiting: false,
-                addMore: false,
-                resetting: true
-              }, this.resetForm);
-            }
-            else {
-              this.setState({
-                waiting: false,
-                redirectTo: `/world/details/${this.props.selectedWorld._id}`
-              });
-            }
+    const attributes = this.props.selectedType.AttributesArr.map(a => {
+      return {
+        _id: a.attrID,
+        Name: a.Name,
+        AttributeType: a.AttributeType,
+        Options: a.Options,
+        DefinedType: a.DefinedType,
+        ListType: a.ListType
+      };
+    });
+    
+    this.api.upsertAttributes(this.props.selectedWorldID, attributes).then(res => {
+      const typeAttributes = [];
+      this.props.selectedType.AttributesArr.forEach(a => {
+        const id = a.attrID.includes("null") ? res.attributes[a.Name] : a.attrID;
+        typeAttributes.push({
+          attrID: id,
+          index: a.index,
+          // Name: a.Name,
+          // AttributeType: a.AttributeType,
+          // Options: a.Options,
+          // DefinedType: a.DefinedType,
+          // ListType: a.ListType
+        });
+      });
+
+      this.api.getAttributesForWorld(this.props.selectedWorldID).then(res2 => {
+        if (res2 !== undefined && res2.error === undefined) {
+          // We store the attributes in two hashes, by name and by id
+          this.props.setAttributes(res2.attributes);
+        }
+          
+        const type = {
+          _id: this.state._id,
+          Name: this.state.Name,
+          Description: this.state.Description,
+          SuperIDs: superIDs,
+          // AttributesArr: this.props.selectedType.AttributesArr,
+          Attributes: typeAttributes,
+          Defaults: [],
+          worldID: this.props.selectedWorld._id,
+          Major: this.state.Major,
+          ReferenceIDs: [],
+          DefaultReferenceIDs: []
+        };
+        // this.props.selectedType.AttributesArr.filter(a=>a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")).forEach(a=>{
+        //   if (!type.ReferenceIDs.includes(a.DefinedType)) {
+        //     type.ReferenceIDs.push(a.DefinedType);
+        //   }
+        // });
+        this.props.selectedType.AttributesArr.filter(a=>a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")).forEach(a=>{
+          if (!type.ReferenceIDs.includes(a.DefinedType)) {
+            type.ReferenceIDs.push(a.DefinedType);
           }
-          else if (res.error !== undefined) {
-            this.setState({
-              waiting: false, 
-              message: res.error 
-            });
-          }
-        })
-        .catch(err => console.log(err));
-    } else {
-      this.api
-        .updateType(type)
-        .then(res => {
-          if (res.error === undefined) {
-            type.Supers = [];
-            type.SuperIDs.forEach(sID=> {
-              type.Supers = type.Supers.concat(this.props.types.filter(t2=>t2._id === sID));
-            });
-            this.props.updateType(type);
-            if (this.state.addMore) {
-              this.props.updateSelectedType({
-                _id: null,
-                Name: "",
-                Description: "",
-                Supers: [],
-                AttributesArr: [],
-                Major: false
-              });
-              this.setState({
-                Name: "",
-                Description: "",
-                Supers: [],
-                Attributes: [],
-                Major: false,
-                fieldValidation: {
-                  Name: { valid: true, message: "" },
-                  AttributesArr: { valid: true, message: "" }
-                },
-                formValid: false,
-                message: "",
-                waiting: false,
-                addMore: false,
-                resetting: true, 
-                redirectTo: `/type/create`
-              });
+        });
+        this.props.selectedType.Supers.forEach(s=> {
+          s.AttributesArr.filter(a=>a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")).forEach(a=>{
+            if (!type.ReferenceIDs.includes(a.DefinedType)) {
+              type.ReferenceIDs.push(a.DefinedType);
             }
-            else {
-              this.setState({
-                waiting: false,
-                redirectTo: `/world/details/${this.props.selectedWorld._id}`
-              });
-            }
-          }
-          else {
-            this.setState({
-              waiting: false, 
-              message: res.error 
-            });
-          }
-        })
-        .catch(err => console.log(err));
-    }
+          });
+        });
+        Object.keys(this.props.selectedType.DefaultsHash).forEach(_id => {
+          const def = this.props.selectedType.DefaultsHash[_id];
+          type.Defaults.push({
+            _id, 
+            FromTypeID: def.FromTypeID, 
+            DefaultValue: def.DefaultValue, 
+            DefaultListValues: def.DefaultListValues 
+          });
+        });
+    
+        if (type._id === null) {
+          this.api
+            .createType(type)
+            .then(res => {
+              if (res.typeID !== undefined) {
+                type._id = res.typeID;
+                type.Supers = [];
+                type.SuperIDs.forEach(sID=> {
+                  type.Supers = type.Supers.concat(this.props.types.filter(t2=>t2._id === sID));
+                });
+                this.props.addType(type);
+                if (this.state.addMore) {
+                  this.props.updateSelectedType({
+                    _id: null,
+                    Name: "",
+                    Description: "",
+                    Supers: [],
+                    AttributesArr: [],
+                    Attributes: [],
+                    Major: false
+                  });
+                  this.setState({
+                    _id: null,
+                    Name: "",
+                    Description: "",
+                    Supers: [],
+                    Attributes: [],
+                    Major: false,
+                    fieldValidation: {
+                      Name: { valid: true, message: "" },
+                      AttributesArr: { valid: true, message: "" },
+                      Attributes: { valid: true, message: "" }
+                    },
+                    formValid: false,
+                    message: "",
+                    redirectTo: null,
+                    waiting: false,
+                    addMore: false,
+                    resetting: true
+                  }, this.resetForm);
+                }
+                else {
+                  this.setState({
+                    waiting: false,
+                    redirectTo: `/world/details/${this.props.selectedWorld._id}`
+                  });
+                }
+              }
+              else if (res.error !== undefined) {
+                this.setState({
+                  waiting: false, 
+                  message: res.error 
+                });
+              }
+            })
+            .catch(err => console.log(err));
+        } else {
+          this.api
+            .updateType(type)
+            .then(res => {
+              if (res.error === undefined) {
+                type.Supers = [];
+                type.SuperIDs.forEach(sID=> {
+                  type.Supers = type.Supers.concat(this.props.types.filter(t2=>t2._id === sID));
+                });
+                type.AttributesArr = [];
+                type.Attributes.forEach(a => {
+                  const attr = this.props.attributesByID[a.attrID];
+                  type.AttributesArr.push({
+                    index: type.AttributesArr.length,
+                    Name: attr.Name,
+                    AttributeType: attr.AttributeType,
+                    Options: attr.Options,
+                    DefinedType: attr.DefinedType,
+                    ListType: attr.ListType,
+                    attrID: a.attrID
+                  });
+                });
+                const defHash = {};
+                if (type.Defaults !== undefined) {
+                  type.Defaults.forEach(def => {
+                    defHash[def.attrID] = def;
+                  });
+                }
+                type.DefaultsHash = defHash;
+                this.props.updateType(type);
+                if (this.state.addMore) {
+                  this.props.updateSelectedType({
+                    _id: null,
+                    Name: "",
+                    Description: "",
+                    Supers: [],
+                    AttributesArr: [],
+                    Attributes: [],
+                    Major: false
+                  });
+                  this.setState({
+                    Name: "",
+                    Description: "",
+                    Supers: [],
+                    Attributes: [],
+                    Major: false,
+                    fieldValidation: {
+                      Name: { valid: true, message: "" },
+                      AttributesArr: { valid: true, message: "" },
+                      Attributes: { valid: true, message: "" }
+                    },
+                    formValid: false,
+                    message: "",
+                    waiting: false,
+                    addMore: false,
+                    resetting: true, 
+                    redirectTo: `/type/create`
+                  });
+                }
+                else {
+                  this.setState({
+                    waiting: false,
+                    redirectTo: `/world/details/${this.props.selectedWorld._id}`
+                  });
+                }
+              }
+              else {
+                this.setState({
+                  waiting: false, 
+                  message: res.error 
+                });
+              }
+            })
+            .catch(err => console.log(err));
+        }
+      });
+    });
   };
 
   supersChange = (e, value) => {
@@ -322,7 +430,7 @@ class Page extends Component {
     this.setState({ Supers: supers });
   };
 
-  addSuper = (selectedList, selectedItem) => {
+  addSuperOld = (selectedList, selectedItem) => {
     selectedItem.Supers.forEach(s => {
       if (selectedList.filter(s2 => s2._id === s._id).length === 0) selectedList.push(s);
     });
@@ -354,35 +462,41 @@ class Page extends Component {
     type.AttributesArr = attributes;
     this.props.updateSelectedType(type);
   }
+
+  addSuper = (selectedList, selectedItem) => {
+    const type = this.props.selectedType;
+    type.SuperIDs.push(selectedItem._id);
+    selectedItem.Supers.forEach(s => {
+      if (selectedList.filter(s2 => s2._id === s._id).length === 0) {
+        selectedList.push(s);
+        type.SuperIDs.push(s._id);
+      }
+    });
+    type.Supers = selectedList;
+    this.props.updateSelectedType(type);
+    this.setState({ Supers: selectedList });
+  }
   
   removeSuper = (selectedList, removedItem) => {
     let supers = [];
+    let superIDs = [];
     let removeUs = [removedItem._id];
+    const type = this.props.selectedType;
     for (let i = 0; i < this.state.Supers.length; i++) {
       const checkMe = this.props.types.filter(
         t => t._id === this.state.Supers[i]._id
       )[0];
       if (checkMe._id === removedItem._id || checkMe.SuperIDs.includes(removedItem._id))
         removeUs.push(checkMe._id);
-      else supers.push(checkMe);
-    }
-    const type = this.props.selectedType;
-    let attributes = [...type.AttributesArr];
-    for (let i = 0; i < attributes.length; i++) {
-      const attribute = attributes[i];
-      let j = 0;
-      while (j < attribute.FromSupers.length) {
-        const checkMe = attribute.FromSupers[j];
-        if (removeUs.includes(checkMe)) {
-          attribute.FromSupers.splice(j, 1);
-        } else {
-          j++;
-        }
+      else {
+        supers.push(checkMe);
+        superIDs.push(checkMe._id);
       }
     }
-    this.setState({ Supers: supers });
-    type.AttributesArr = attributes;
+    type.Supers = supers;
+    type.SuperIDs = superIDs;
     this.props.updateSelectedType(type);
+    this.setState({ Supers: supers });
   }
 
   load = (id) => {
@@ -403,6 +517,28 @@ class Page extends Component {
           const supers = this.props.types.filter(type =>
             res.SuperIDs.includes(type._id)
           );
+          res.Supers = supers;
+          res.AttributesArr = [];
+          res.Attributes.forEach(a => {
+            const attr = this.props.attributesByID[a.attrID];
+            res.AttributesArr.push({
+              index: res.AttributesArr.length,
+              Name: attr.Name,
+              AttributeType: attr.AttributeType,
+              Options: attr.Options,
+              DefinedType: attr.DefinedType,
+              ListType: attr.ListType,
+              attrID: a.attrID
+            });
+          });
+          const defHash = {};
+          if (res.Defaults !== undefined) {
+            res.Defaults.forEach(def => {
+              defHash[def.attrID] = def;
+            });
+          }
+          res.DefaultsHash = defHash;
+
           this.props.updateSelectedType(res);
           this.setState({
             Name: res.Name,
@@ -423,8 +559,11 @@ class Page extends Component {
         Name: "",
         Description: "",
         Supers: [],
+        SuperIDs: [],
         AttributesArr: [],
-        Major: false
+        Attributes: [],
+        Major: false,
+        DefaultsHash: {}
       });
       this.setState({ loaded: true });
     }
@@ -454,7 +593,7 @@ class Page extends Component {
       return (
         <Grid item xs={12} container spacing={1} direction="column">
           { this.props.selectedWorld === null ? "" :
-            <div>
+            <Grid item container spacing={1} direction="column">
               <Helmet>
                 <title>{ `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
               </Helmet>
@@ -598,7 +737,7 @@ class Page extends Component {
                 </div>
               </Grid>
               <Grid item>{this.state.message}</Grid>
-            </div>
+            </Grid>
           }
         </Grid>
       );

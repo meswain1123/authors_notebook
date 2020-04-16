@@ -17,6 +17,7 @@ const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology:
 function open() {
   console.log('opening');
   client.connect(function(err) {
+    // console.log(err);
     assert.equal(null, err);
   });
 }

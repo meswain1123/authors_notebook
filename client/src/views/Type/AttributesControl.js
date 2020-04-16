@@ -12,9 +12,10 @@ import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import OutlinedInput from "@material-ui/core/OutlinedInput";
 import FormHelperText from "@material-ui/core/FormHelperText";
+import uuid from 'react-uuid';
 import {
   updateSelectedType,
-  updateAttributesArr,
+  // updateAttributesArr,
   addType,
   addThing
 } from "../../redux/actions/index";
@@ -40,7 +41,7 @@ const Label = styled("label")`
 const mapStateToProps = state => {
   return {
     selectedType: state.app.selectedType,
-    attributesArr: state.app.attributesArr,
+    // attributesArr: state.app.attributesArr,
     types: state.app.types,
     things: state.app.things,
     selectedWorldID: state.app.selectedWorldID
@@ -49,7 +50,7 @@ const mapStateToProps = state => {
 function mapDispatchToProps(dispatch) {
   return {
     updateSelectedType: type => dispatch(updateSelectedType(type)),
-    updateAttributesArr: arr => dispatch(updateAttributesArr(arr)),
+    // updateAttributesArr: arr => dispatch(updateAttributesArr(arr)),
     addType: type => dispatch(addType(type)),
     addThing: thing => dispatch(addThing(thing))
   };
@@ -78,32 +79,69 @@ class Control extends Component {
 
   newAttribute = () => {
     const type = this.props.selectedType;
+    // type.AttributesArr.push({
+    //   index: type.AttributesArr.length,
+    //   _id: null,
+    //   Name: "",
+    //   AttributeType: "Text",
+    //   Options: [],
+    //   DefinedType: "",
+    //   ListType: "",
+    //   FromSupers: [],
+    //   AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
+    // });
     type.AttributesArr.push({
       index: type.AttributesArr.length,
+      attrID: `null_${uuid()}`,
       Name: "",
-      Type: "Text",
+      AttributeType: "Text",
       Options: [],
-      Type2: "",
+      DefinedType: "",
       ListType: "",
-      FromSupers: [],
-      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
+      // FromSuper: null,
+      // AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
     });
     this.props.updateSelectedType(type);
   };
 
   changeAttribute = value => {
     const type = this.props.selectedType;
+    // type.AttributesArr[value.index] = {
+    //   index: value.index,
+    //   _id: value._id,
+    //   Name: value.Name,
+    //   Attribute: value.AttributeType,
+    //   Options: value.Options,
+    //   DefinedType: value.DefinedType,
+    //   ListType: value.ListType,
+    //   FromSupers: value.FromSupers,
+    //   AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"],
+    //   DefaultValue: value.DefaultValue,
+    //   DefaultListValues: value.DefaultListValues
+    // };
     type.AttributesArr[value.index] = {
       index: value.index,
+      attrID: value.attrID,
       Name: value.Name,
-      Type: value.Type,
+      AttributeType: value.AttributeType,
       Options: value.Options,
-      Type2: value.Type2,
+      DefinedType: value.DefinedType,
       ListType: value.ListType,
-      FromSupers: value.FromSupers,
-      AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"],
+      // FromSuper: value.FromSuper,
+      // AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"],
+      // DefaultValue: value.DefaultValue,
+      // DefaultListValues: value.DefaultListValues
+    };
+    this.props.updateSelectedType(type);
+  };
+
+  changeDefault = value => {
+    const type = this.props.selectedType;
+    type.DefaultsHash[value.attrID] = {
+      attrID: value.attrID,
       DefaultValue: value.DefaultValue,
-      DefaultListValues: value.DefaultListValues
+      DefaultListValues: value.DefaultListValues,
+      FromTypeID: value.FromTypeID
     };
     this.props.updateSelectedType(type);
   };
@@ -111,7 +149,7 @@ class Control extends Component {
   blurAttribute = e => {
   };
 
-  deleteAttribute = value => {
+  deleteAttributeOld = value => {
     const type = this.props.selectedType;
     const attributesArr = [];
     type.AttributesArr.forEach(t => {
@@ -125,6 +163,30 @@ class Control extends Component {
     this.props.updateSelectedType(type);
     setTimeout(() => {
       type.AttributesArr = attributesArr;
+      this.props.updateSelectedType(type);
+    }, 500);
+  };
+
+  deleteAttribute = value => {
+    const type = this.props.selectedType;
+    const attributes = [];
+    type.AttributesArr.forEach(t => {
+      if (t.index !== value.index) {
+        if (t.index > value.index)
+          t.index--;
+        attributes.push(t);
+      }
+    });
+    type.AttributesArr = [];
+    let defaults = {...type.DefaultsHash};
+    if (defaults[value.attrID] !== undefined) {
+      delete defaults[value.attrID];
+    }
+    type.DefaultsHash = {};
+    this.props.updateSelectedType(type);
+    setTimeout(() => {
+      type.AttributesArr = attributes;
+      type.DefaultsHash = defaults;
       this.props.updateSelectedType(type);
     }, 500);
   };
@@ -233,6 +295,7 @@ class Control extends Component {
       Description: "",
       SuperIDs: [],
       AttributesArr: [],
+      Attributes: [],
       worldID: this.props.selectedWorldID,
       Major: false
     };
@@ -282,7 +345,8 @@ class Control extends Component {
       Name: this.state.Name,
       Description: "",
       TypeIDs: typeIDs,
-      AttributesArr: [],
+      // AttributesArr: [],
+      Attributes: [],
       worldID: this.props.selectedWorldID
     };
 
@@ -313,6 +377,20 @@ class Control extends Component {
   };
 
   render() {
+    // I should move this somewhere else so it's not happening on every render.
+    const inheritedAttributes = [];
+    console.log(this.props.selectedType);
+    this.props.selectedType.SuperIDs.forEach(s => {
+      let superType = this.props.types.filter(t => t._id === s);
+      if (superType.length > 0) {
+        superType = superType[0];
+        superType.AttributesArr.forEach(attribute => {
+          if (inheritedAttributes.filter(a=>a.attrID === attribute.attrID).length === 0) {
+            inheritedAttributes.push(attribute);
+          }
+        });
+      }
+    });
     return (
       <Grid item xs={12} container spacing={0} direction="column">
         <Grid item>
@@ -335,20 +413,54 @@ class Control extends Component {
                 </Grid>
               </Grid>
             </ListItem>
-            {this.props.selectedType === null ||
-            this.props.selectedType === undefined
-              ? ""
-              : this.props.selectedType.AttributesArr.map((attribute, i) => {
-                // TODO: Once all attributes have these fields then I can remove these two lines.
-                attribute.DefaultValue = attribute.DefaultValue === undefined ? "" : attribute.DefaultValue;
-                attribute.DefaultListValues = attribute.DefaultListValues === undefined ? [] : attribute.DefaultListValues;
+            { this.props.selectedType !== null && this.props.selectedType !== undefined &&
+              inheritedAttributes.map((attribute, i) => {
+                let def = this.props.selectedType.DefaultsHash[attribute.attrID];
+                if (def === undefined)
+                  def = { attrID: attribute.attrID, DefaultValue: "", DefaultListValues: [] };
                 return (
                   <ListItem key={i}>
                     { this.state.defaultsMode ? 
                       <AttributeDefaultControl
                         typeID={this.props.selectedType._id}
                         attribute={attribute}
-                        onChange={this.changeAttribute}
+                        def={def}
+                        onChange={this.changeDefault}
+                        // onBlur={this.blurAttribute}
+                        types={this.props.types}
+                        things={this.props.things}
+                        onNewThing={this.addNewThing}
+                      /> : 
+                      <AttributeControl
+                        typeID={this.props.selectedType._id}
+                        disabled={true}
+                        attribute={attribute}
+                        // onChange={this.changeAttribute}
+                        // onDelete={this.deleteAttribute}
+                        // onBlur={this.blurAttribute}
+                        types={this.props.types}
+                        things={this.props.things}
+                        onNewType={this.addNewType}
+                      /> 
+                    }
+                  </ListItem>
+                );
+              })
+            }
+            { this.props.selectedType !== null && this.props.selectedType !== undefined &&
+              this.props.selectedType.AttributesArr.map((attribute, i) => {
+                let def = this.props.selectedType.DefaultsHash[attribute.attrID];
+                if (def === undefined)
+                  def = { attrID: attribute.attrID, DefaultValue: "", DefaultListValues: [] };
+                
+                return (
+                  <ListItem key={i}>
+                    { this.state.defaultsMode ? 
+                      <AttributeDefaultControl
+                        typeID={this.props.selectedType._id}
+                        attribute={attribute}
+                        def={def}
+                        onChange={this.changeDefault}
                         onBlur={this.blurAttribute}
                         types={this.props.types}
                         things={this.props.things}
@@ -367,7 +479,8 @@ class Control extends Component {
                     }
                   </ListItem>
                 );
-              })}
+              })
+            }
           </List>
         </Grid>
         <Modal

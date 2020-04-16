@@ -13,16 +13,16 @@ import ChipInput from "material-ui-chip-input";
 
 const handleTypeChange = (e, props) => {
   const attr = props.attribute;
-  attr["Type"] = e.target.value;
+  attr["AttributeType"] = e.target.value;
   props.onChange(attr);
 };
 
-const handleType2Change = (e, props) => {
+const handleDefinedTypeChange = (e, props) => {
   const attr = props.attribute;
-  attr["Type2"] = e.target.value;
+  attr["DefinedType"] = e.target.value;
   if (e.target.value === "new") {
     function respond(newType) {
-      attr["Type2"] = newType._id;
+      attr["DefinedType"] = newType._id;
       props.onChange(attr);
     }
     props.onNewType(respond);
@@ -54,24 +54,30 @@ export default function AttributeControl(props) {
     "Type", 
     "List"
   ];
-  const type =
-    props.attribute.Type === "" ? attributeTypes[0] : props.attribute.Type;
-
   const listTypes = [
     "Text",
     "Options", 
     "Type"
   ];
 
+  const selectedType =
+    props.attribute.AttributeType === undefined || props.attribute.AttributeType === null || props.attribute.AttributeType === "" ? attributeTypes[0] : props.attribute.AttributeType;
+
+  const selectedListType =
+    props.attribute.ListType === undefined || props.attribute.ListType === "" ? listTypes[0] : props.attribute.ListType;
+
+  const selectedDefinedType =
+    props.attribute.DefinedType === undefined || props.attribute.DefinedType === "" ? "" : props.attribute.DefinedType;
+
   return (
     <Grid container spacing={1} direction="row">
       <Grid item sm={3} xs={12}>
         <FormControl variant="outlined" fullWidth>
-          <InputLabel htmlFor="AttrName">Name</InputLabel>
+          <InputLabel htmlFor={`AttrName_${props.attribute.attrID}_${props.attribute.index}`}>Name</InputLabel>
           <OutlinedInput
-            disabled={props.attribute.FromSupers.length > 0}
-            id="AttrName"
-            name="AttrName"
+            disabled={props.disabled}
+            id={`AttrName_${props.attribute.attrID}_${props.attribute.index}`}
+            name={`AttrName_${props.attribute.attrID}_${props.attribute.index}`}
             type="text"
             error={props.error}
             value={name}
@@ -85,11 +91,11 @@ export default function AttributeControl(props) {
               // const attr = {
               //   index: props.attribute.index,
               //   Name: name,
-              //   Type: props.attribute.Type,
+              //   Type: props.attribute.AttributeType,
               //   Options: props.attribute.Options,
               //   ListType: props.attribute.ListType,
               //   FromSupers: props.attribute.FromSupers,
-              //   Type2: props.attribute.Type2,
+              //   DefinedType: props.attribute.DefinedType,
               //   AttributeTypes: props.attribute.AttributeTypes,
               //   DefaultValue: defaultValue,
               //   DefaultListValues: defaultListValues
@@ -110,8 +116,9 @@ export default function AttributeControl(props) {
           <Select
             labelId="attribute-type-label"
             id="attribute-type"
-            disabled={props.attribute.FromSupers.length > 0} 
-            value={props.attribute.Type}
+            disabled={props.disabled}
+            // disabled={props.attribute.FromSupers.length > 0} 
+            value={selectedType}
             onChange={e => {handleTypeChange(e, props)}}
             fullWidth
             labelWidth={100}
@@ -123,24 +130,26 @@ export default function AttributeControl(props) {
         </FormControl>
       </Grid>
       <Grid item sm={3} xs={12}>
-          {type === "Options" ? (
+          {selectedType === "Options" ? (
             <ChipInput
               variant="outlined"
-              disabled={props.attribute.FromSupers.length > 0}
+              disabled={props.disabled}
+              // disabled={props.attribute.FromSupers.length > 0}
               defaultValue={props.attribute.Options}
               onChange={chips => handleOptionsChange(chips, props)}
             />
-          ) : type === "Type" ? (
+          ) : selectedType === "Type" ? (
             <FormControl variant="outlined" fullWidth>
-              <InputLabel htmlFor="type2" id="type2-label">
+              <InputLabel htmlFor="definedType" id="definedType-label">
                 Defined Type
               </InputLabel>
               <Select
-                labelId="type2-label"
-                id="type2"
-                disabled={props.attribute.FromSupers.length > 0} 
-                value={props.attribute.Type2}
-                onChange={e => {handleType2Change(e, props)}}
+                labelId="definedType-label"
+                id="definedType"
+                disabled={props.disabled}
+                // disabled={props.attribute.FromSupers.length > 0} 
+                value={selectedDefinedType}
+                onChange={e => {handleDefinedTypeChange(e, props)}}
                 fullWidth
                 labelWidth={100}
               >
@@ -150,7 +159,7 @@ export default function AttributeControl(props) {
                 })}
               </Select>
             </FormControl>
-          ) : type === "List" ? (
+          ) : selectedType === "List" ? (
             <Grid container spacing={1} direction="column">
               <Grid item>
                 <FormControl variant="outlined" fullWidth>
@@ -160,8 +169,9 @@ export default function AttributeControl(props) {
                   <Select
                     labelId="list-type-label"
                     id="list-type"
-                    disabled={props.attribute.FromSupers.length > 0} 
-                    value={props.attribute.ListType}
+                    disabled={props.disabled}
+                    // disabled={props.attribute.FromSupers.length > 0} 
+                    value={selectedListType}
                     onChange={e => {handleListTypeChange(e, props)}}
                     fullWidth
                     labelWidth={70}
@@ -176,15 +186,16 @@ export default function AttributeControl(props) {
                 (
                   <Grid item>
                     <FormControl variant="outlined" fullWidth>
-                      <InputLabel htmlFor="type2" id="type2-label">
+                      <InputLabel htmlFor="definedType" id="definedType-label">
                         Defined Type
                       </InputLabel>
                       <Select
-                        labelId="type2-label"
-                        id="type2"
-                        disabled={props.attribute.FromSupers.length > 0} 
-                        value={props.attribute.Type2}
-                        onChange={e => {handleType2Change(e, props)}}
+                        labelId="definedType-label"
+                        id="definedType"
+                        disabled={props.disabled}
+                        // disabled={props.attribute.FromSupers.length > 0} 
+                        value={selectedDefinedType}
+                        onChange={e => {handleDefinedTypeChange(e, props)}}
                         fullWidth
                         labelWidth={100}
                       >
@@ -200,7 +211,8 @@ export default function AttributeControl(props) {
                   <Grid item>
                     <ChipInput
                       variant="outlined"
-                      disabled={props.attribute.FromSupers.length > 0}
+                      disabled={props.disabled}
+                      // disabled={props.attribute.FromSupers.length > 0}
                       defaultValue={props.attribute.Options}
                       onChange={chips => handleOptionsChange(chips, props)}
                     />
@@ -216,7 +228,8 @@ export default function AttributeControl(props) {
         <Button
           variant="contained" color="primary"
           className="w200" fullWidth
-          disabled={props.attribute.FromSupers.length > 0}
+          disabled={props.disabled}
+          // disabled={props.attribute.FromSupers.length > 0}
           onClick={_ => props.onDelete(props.attribute)}
           type="submit"
         >

@@ -1,7 +1,7 @@
 
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { selectPage } from "../../redux/actions/index";
+// import { selectPage } from "../../redux/actions/index";
 
 // This is a template to use when creating pages.
 // It's recommended not to make your own base component classes,
@@ -14,7 +14,7 @@ const mapStateToProps = state => {
 };
 function mapDispatchToProps(dispatch) {
   return {
-    selectPage: page => dispatch(selectPage(page))
+    // selectPage: page => dispatch(selectPage(page))
   };
 }
 class Page extends Component {

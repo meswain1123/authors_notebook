@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import {
-  selectPage,
   selectWorld,
   addWorld,
   updateWorld
@@ -31,7 +30,6 @@ const mapStateToProps = state => {
 };
 function mapDispatchToProps(dispatch) {
   return {
-    selectPage: page => dispatch(selectPage(page)),
     selectWorld: worldID => dispatch(selectWorld(worldID)),
     addWorld: world => dispatch(addWorld(world)),
     updateWorld: world => dispatch(updateWorld(world))

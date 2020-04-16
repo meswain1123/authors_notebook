@@ -17,22 +17,22 @@ import ChipInput from "material-ui-chip-input";
 import { Multiselect } from "multiselect-react-dropdown";
 
 const handleTextListChange = (e, props) => {
-  const attr = props.attribute;
-  attr.DefaultListValues = e;
-  props.onChange(attr);
+  const def = props.def;
+  def.DefaultListValues = e;
+  props.onChange(def);
 };
-const handleType2Change = (e, props, respond) => {
+const handleDefinedTypeChange = (e, props, respond) => {
   // const attr = props.attribute;
-  // attr["Type2"] = e.target.value;
+  // attr["DefinedType"] = e.target.value;
   if (e.target.value === "new") {
     function respond2(newThing) {
-      // attr["Type2"] = newType._id;
+      // attr["DefinedType"] = newType._id;
       // props.onChange(attr);
       respond(newThing._id);
     }
     props.onNewThing(
       respond2,
-      props.types.filter(t => t._id === props.attribute.Type2)[0]
+      props.types.filter(t => t._id === props.attribute.DefinedType)[0]
     );
   } else {
     // props.onChange(attr);
@@ -40,67 +40,68 @@ const handleType2Change = (e, props, respond) => {
   }
 };
 const addOption = (selectedItem, props) => {
-  const attr = props.attribute;
-  attr.DefaultListValues.push(selectedItem.Name);
-  props.onChange(attr);
+  const def = props.def;
+  def.DefaultListValues.push(selectedItem.Name);
+  props.onChange(def);
 };
 const removeOption = (selectedList, props) => {
-  const attr = props.attribute;
-  attr.DefaultListValues = [];
+  const def = props.def;
+  def.DefaultListValues = [];
   selectedList.forEach(o => {
-    attr.DefaultListValues.push(o.Name);
+    def.DefaultListValues.push(o.Name);
   });
-  props.onChange(attr);
+  props.onChange(def);
 };
 const addType = (selectedItem, props) => {
   if (selectedItem._id === "new") {
     function respond2(newThing) {
-      const attr = props.attribute;
-      attr.DefaultListValues.push(newThing._id);
-      props.onChange(attr);
+      const def = props.def;
+      def.DefaultListValues.push(newThing._id);
+      props.onChange(def);
     }
     props.onNewThing(
       respond2,
-      props.types.filter(t => t._id === props.attribute.Type2)[0]
+      props.types.filter(t => t._id === props.attribute.DefinedType)[0]
     );
   } else {
-    const attr = props.attribute;
-    attr.DefaultListValues.push(selectedItem._id);
-    props.onChange(attr);
+    const def = props.def;
+    def.DefaultListValues.push(selectedItem._id);
+    props.onChange(def);
   }
 };
 const removeType = (selectedList, props) => {
-  const attr = props.attribute;
-  attr.DefaultListValues = [];
+  const def = props.def;
+  def.DefaultListValues = [];
   selectedList.forEach(o => {
-    attr.DefaultListValues.push(o._id);
+    def.DefaultListValues.push(o._id);
   });
-  props.onChange(attr);
+  props.onChange(def);
 };
 
 export default function AttributeDefaultControl(props) {
-  const [value, changeValue] = useState(props.attribute.DefaultValue);
-  const type = props.attribute.Type === "" ? "Text" : props.attribute.Type;
-
+  // I'm passing in attribute and def.
+  const [value, changeValue] = useState(props.def.DefaultValue);
+  const attributeType = props.attribute.AttributeType === "" ? "Text" : props.attribute.AttributeType;
+  
   const listOptions = [];
   const listOptionValues = [];
-  if (type === "List" && props.attribute.ListType === "Options") {
+  if (attributeType === "List" && props.attribute.ListType === "Options") {
     props.attribute.Options.forEach(o => {
       listOptions.push({ Name: o });
     });
-    props.attribute.DefaultListValues.forEach(o => {
+    props.def.DefaultListValues.forEach(o => {
       listOptionValues.push({ Name: o });
     });
-  } else if (type === "List" && props.attribute.ListType === "Type") {
-    const type2 = props.types.filter(t => t._id === props.attribute.Type2)[0];
-    listOptions.push({ Name: `+ Create New ${type2.Name}`, _id: "new" });
+  } else if (attributeType === "List" && props.attribute.ListType === "Type") {
+    const definedType = props.types.filter(t => t._id === props.attribute.DefinedType)[0];
+    listOptions.push({ Name: `+ Create New ${definedType.Name}`, _id: "new" });
     props.things
-      .filter(t => t.TypeIDs.includes(props.attribute.Type2))
+      .filter(t => t.TypeIDs.includes(props.attribute.DefinedType))
       .forEach(t => {
         listOptions.push({ Name: t.Name, _id: t._id });
       });
     listOptions
-      .filter(t => props.attribute.DefaultListValues.includes(t._id))
+      .filter(t => props.def.DefaultListValues.includes(t._id))
       .forEach(t => {
         listOptionValues.push(t);
       });
@@ -108,171 +109,171 @@ export default function AttributeDefaultControl(props) {
 
   return (
     <Grid container spacing={1} direction="row">
-    <Grid item xs={12}>
-      {type === "Text" ? (
-        <FormControl variant="outlined" fullWidth>
-          <InputLabel htmlFor="textField">{props.attribute.Name} Default Value</InputLabel>
-          <OutlinedInput
-            id="textField"
-            name="textField"
-            type="text"
-            error={props.error}
-            value={value}
-            autoComplete="off"
-            onChange={e => {
-              changeValue(e.target.value);
-            }}
-            onBlur={e => {
-              const attr = props.attribute;
-              attr.DefaultValue = value;
-              props.onChange(attr);
-            }}
-            labelWidth={props.attribute.Name.length * 9 + 100}
-            fullWidth
+      <Grid item xs={12}>
+        {attributeType === "Text" ? (
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel htmlFor="textField">{props.attribute.Name} Default Value</InputLabel>
+            <OutlinedInput
+              id="textField"
+              name="textField"
+              type="text"
+              error={props.error}
+              value={value}
+              autoComplete="off"
+              onChange={e => {
+                changeValue(e.target.value);
+              }}
+              onBlur={e => {
+                const def = props.def;
+                def.DefaultValue = value;
+                props.onChange(def);
+              }}
+              labelWidth={props.attribute.Name.length * 9 + 100}
+              fullWidth
+            />
+            <FormHelperText>{props.message}</FormHelperText>
+          </FormControl>
+        ) : attributeType === "Number" ? (
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel htmlFor="numField">{props.attribute.Name} Default Value</InputLabel>
+            <OutlinedInput
+              id="numField"
+              name="numField"
+              type="number"
+              error={props.error}
+              value={value}
+              autoComplete="off"
+              onChange={e => {
+                changeValue(e.target.value);
+              }}
+              onBlur={e => {
+                const def = props.def;
+                def.DefaultValue = value;
+                props.onChange(def);
+              }}
+              labelWidth={props.attribute.Name.length * 9 + 100}
+              fullWidth
+            />
+            <FormHelperText>{props.message}</FormHelperText>
+          </FormControl>
+        ) : attributeType === "True/False" ? (
+          <FormControlLabel
+            control={
+              <Checkbox checked={props.def.DefaultValue==="True"} onChange={e => {
+                const def = props.def;
+                def.DefaultValue = e.target.checked ? "True" : "False";
+                props.onChange(def);
+              }}
+              color="primary" />
+            }
+            label={`${props.attribute.Name} Default True`}
           />
-          <FormHelperText>{props.message}</FormHelperText>
-        </FormControl>
-      ) : type === "Number" ? (
-        <FormControl variant="outlined" fullWidth>
-          <InputLabel htmlFor="numField">{props.attribute.Name} Default Value</InputLabel>
-          <OutlinedInput
-            id="numField"
-            name="numField"
-            type="number"
-            error={props.error}
-            value={value}
-            autoComplete="off"
-            onChange={e => {
-              changeValue(e.target.value);
-            }}
-            onBlur={e => {
-              const attr = props.attribute;
-              attr.DefaultValue = value;
-              props.onChange(attr);
-            }}
-            labelWidth={props.attribute.Name.length * 9 + 100}
-            fullWidth
-          />
-          <FormHelperText>{props.message}</FormHelperText>
-        </FormControl>
-      ) : type === "True/False" ? (
-        <FormControlLabel
-          control={
-            <Checkbox checked={props.attribute.DefaultValue==="True"} onChange={e => {
-              const attr = props.attribute;
-              attr.DefaultValue = e.target.checked ? "True" : "False";
-              props.onChange(attr);
-            }}
-            color="primary" />
-          }
-          label={`${props.attribute.Name} Default True`}
-        />
-      ) : type === "Options" ? (
-        <FormControl variant="outlined" fullWidth>
-          <InputLabel htmlFor="options-select" id="options-select-label">
-            {props.attribute.Name} Default Value
-          </InputLabel>
-          <Select
-            labelId="options-select-label"
-            id="options-select"
-            value={value}
-            onChange={e => {
-              changeValue(e.target.value);
-            }}
-            onBlur={e => {
-              const attr = props.attribute;
-              attr.DefaultValue = value;
-              props.onChange(attr);
-            }}
-            fullWidth
-            labelWidth={props.attribute.Name.length * 9 + 100}
-          >
-            {props.attribute.Options.map((option, i) => {
-              return (
-                <MenuItem key={i} value={option}>
-                  {option}
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </FormControl>
-      ) : type === "Type" ? (
-        <FormControl variant="outlined" fullWidth>
-          <InputLabel htmlFor="type-select" id="type-select-label">
-            {props.attribute.Name} Default Value
-          </InputLabel>
-          <Select
-            labelId="type-select-label"
-            id="type-select"
-            value={value}
-            onChange={e => {
-              handleType2Change(e, props, changeValue);
-            }}
-            onBlur={e => {
-              const attr = props.attribute;
-              attr.DefaultValue = value;
-              props.onChange(attr);
-            }}
-            fullWidth
-            labelWidth={props.attribute.Name.length * 9 + 100}
-          >
-            <MenuItem value="new">
-              + Create New{" "}
-              {props.types.filter(t => t._id === props.attribute.Type2)[0].Name}
-            </MenuItem>
-            {props.things
-              .filter(t => t.TypeIDs.includes(props.attribute.Type2))
-              .map((thing, i) => {
+        ) : attributeType === "Options" ? (
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel htmlFor="options-select" id="options-select-label">
+              {props.attribute.Name} Default Value
+            </InputLabel>
+            <Select
+              labelId="options-select-label"
+              id="options-select"
+              value={value}
+              onChange={e => {
+                changeValue(e.target.value);
+              }}
+              onBlur={e => {
+                const def = props.def;
+                def.DefaultValue = value;
+                props.onChange(def);
+              }}
+              fullWidth
+              labelWidth={props.attribute.Name.length * 9 + 100}
+            >
+              {props.attribute.Options.map((option, i) => {
                 return (
-                  <MenuItem key={i} value={thing._id}>
-                    {thing.Name}
+                  <MenuItem key={i} value={option}>
+                    {option}
                   </MenuItem>
                 );
               })}
-          </Select>
-        </FormControl>
-      ) : type === "List" ? (
-        <span>
-          {props.attribute.ListType === "Text" ? (
-            <ChipInput
-              placeholder={`${props.attribute.Name} Default Values`}
-              variant="outlined"
-              defaultValue={props.attribute.DefaultListValues}
-              onChange={chips => handleTextListChange(chips, props)}
-            />
-          ) : props.attribute.ListType === "Options" ? (
-            <Multiselect
-              placeholder={`${props.attribute.Name} Default Values`}
-              options={listOptions}
-              selectedValues={listOptionValues}
-              onSelect={(_, selectedItem) => {
-                addOption(selectedItem, props);
+            </Select>
+          </FormControl>
+        ) : attributeType === "Type" ? (
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel htmlFor="type-select" id="type-select-label">
+              {props.attribute.Name} Default Value
+            </InputLabel>
+            <Select
+              labelId="type-select-label"
+              id="type-select"
+              value={value}
+              onChange={e => {
+                handleDefinedTypeChange(e, props, changeValue);
               }}
-              onRemove={(selectedList, _) => {
-                removeOption(selectedList, props);
+              onBlur={e => {
+                const def = props.def;
+                def.DefaultValue = value;
+                props.onChange(def);
               }}
-              displayValue="Name"
-            />
-          ) : props.attribute.ListType === "Type" ? (
-            <Multiselect
-              placeholder={`${props.attribute.Name} Default Values`}
-              options={listOptions}
-              selectedValues={listOptionValues}
-              onSelect={(_, selectedItem) => {
-                addType(selectedItem, props);
-              }}
-              onRemove={(selectedList, _) => {
-                removeType(selectedList, props);
-              }}
-              displayValue="Name"
-            />
-          ) : (
-            ""
-          )}
-        </span>
-      ) : (
-        ""
-      )}
+              fullWidth
+              labelWidth={props.attribute.Name.length * 9 + 100}
+            >
+              <MenuItem value="new">
+                + Create New{" "}
+                {props.types.filter(t => t._id === props.attribute.DefinedType)[0].Name}
+              </MenuItem>
+              {props.things
+                .filter(t => t.TypeIDs.includes(props.attribute.DefinedType))
+                .map((thing, i) => {
+                  return (
+                    <MenuItem key={i} value={thing._id}>
+                      {thing.Name}
+                    </MenuItem>
+                  );
+                })}
+            </Select>
+          </FormControl>
+        ) : attributeType === "List" ? (
+          <span>
+            {props.attribute.ListType === "Text" ? (
+              <ChipInput
+                placeholder={`${props.attribute.Name} Default Values`}
+                variant="outlined"
+                defaultValue={props.def.DefaultListValues}
+                onChange={chips => handleTextListChange(chips, props)}
+              />
+            ) : props.attribute.ListType === "Options" ? (
+              <Multiselect
+                placeholder={`${props.attribute.Name} Default Values`}
+                options={listOptions}
+                selectedValues={listOptionValues}
+                onSelect={(_, selectedItem) => {
+                  addOption(selectedItem, props);
+                }}
+                onRemove={(selectedList, _) => {
+                  removeOption(selectedList, props);
+                }}
+                displayValue="Name"
+              />
+            ) : props.attribute.ListType === "Type" ? (
+              <Multiselect
+                placeholder={`${props.attribute.Name} Default Values`}
+                options={listOptions}
+                selectedValues={listOptionValues}
+                onSelect={(_, selectedItem) => {
+                  addType(selectedItem, props);
+                }}
+                onRemove={(selectedList, _) => {
+                  removeType(selectedList, props);
+                }}
+                displayValue="Name"
+              />
+            ) : (
+              ""
+            )}
+          </span>
+        ) : (
+          ""
+        )}
       </Grid>
     </Grid>
   );

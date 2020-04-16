@@ -307,6 +307,71 @@ class APIClass {
     }
   };
 
+  // Attribute
+  getAttributesForWorld = async (worldID) => {
+    if (this.real) {
+      const response = await this.fetchData(
+        `/api/world/getAttributesForWorld/${worldID}`
+      );
+      return this.processResponse(response);
+    } else {
+      return [{ _id: -1, worldID: -1, Name: "Character" }];
+    }
+  };
+
+  getAttribute = async (worldID, attrID) => {
+    if (this.real) {
+      const response = await this.fetchData(
+        `/api/world/getAttribute/${worldID}/${attrID}`
+      );
+      return this.processResponse(response);
+    } else {
+      return {
+        _id: -1,
+        worldID: -1,
+        Name: "Character",
+        Description: "",
+        // AttributesArr: {},
+        Attributes: {}
+      };
+    }
+  };
+
+  createAttribute = async (attribute) => {
+    if (this.real) {
+      const response = await this.postData("/api/world/createAttribute", { attribute: attribute });
+      return this.processResponse(response);
+    } else {
+      return -1;
+    }
+  };
+
+  // deleteAttribute = async (worldID, attrID) => {
+  //   if (this.real) {
+  //     const response = await this.deleteData("/api/world/deleteAttribute", { worldID: worldID, attrID: attrID });
+  //     return this.processResponse(response);
+  //   } else {
+  //     return "success";
+  //   }
+  // };
+
+  // updateAttribute = async (attribute) => {
+  //   if (this.real) {
+  //     const response = await this.patchData("/api/world/updateAttribute", { attribute: attribute });
+  //     return this.processResponse(response);
+  //   } else {
+  //     return "success";
+  //   }
+  // };
+
+  upsertAttributes = async (worldID, attributes) => {
+    if (this.real) {
+      const response = await this.patchData("/api/world/upsertAttributes", { worldID, attributes: attributes });
+      return this.processResponse(response);
+    } else {
+      return "success";
+    }
+  };
   // Type
   getTypesForWorld = async (worldID) => {
     if (this.real) {
@@ -331,7 +396,8 @@ class APIClass {
         worldID: -1,
         Name: "Character",
         Description: "",
-        AttributesArr: {}
+        // AttributesArr: {},
+        Attributes: {}
       };
     }
   };

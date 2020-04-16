@@ -9,7 +9,6 @@ import MenuIcon from "@material-ui/icons/Menu";
 import { NavLink } from "react-router-dom";
 import { connect } from "react-redux";
 import {
-  selectPage,
   setWorlds,
   loadFromStorage,
   toggleMenu
@@ -29,7 +28,6 @@ const mapStateToProps = state => {
 };
 function mapDispatchToProps(dispatch) {
   return {
-    selectPage: page => dispatch(selectPage(page)),
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     loadFromStorage: () => dispatch(loadFromStorage({})),
     toggleMenu: () => dispatch(toggleMenu({}))

@@ -1,5 +1,5 @@
 import {
-  SELECT_PAGE,
+  SET_API,
   ADD_ARTICLE,
   LOGIN,
   LOG_OUT,
@@ -9,12 +9,13 @@ import {
   UPDATE_WORLD,
   UPDATE_PUBLIC_WORLD_COLLAB,
   SELECT_WORLD,
+  SET_ATTRIBUTES,
+  ADD_ATTRIBUTES,
   SET_TYPES,
   ADD_TYPE,
   SET_THINGS,
   ADD_THING,
   UPDATE_TYPE,
-  UPDATE_ATTRIBUTES_ARR,
   UPDATE_SELECTED_TYPE,
   UPDATE_THING,
   UPDATE_SELECTED_THING,
@@ -24,8 +25,8 @@ import {
   SET_WIDTH
 } from "../constants/actionTypes";
 
-export function selectPage(payload) {
-  return { type: SELECT_PAGE, payload };
+export function setAPI(payload) {
+  return { type: SET_API, payload };
 }
 export function addArticle(payload) {
   return { type: ADD_ARTICLE, payload };
@@ -54,6 +55,12 @@ export function setPublicWorlds(payload) {
 export function selectWorld(payload) {
   return { type: SELECT_WORLD, payload };
 }
+export function setAttributes(payload) {
+  return { type: SET_ATTRIBUTES, payload };
+}
+export function addAttributes(payload) {
+  return { type: ADD_ATTRIBUTES, payload };
+}
 export function setTypes(payload) {
   return { type: SET_TYPES, payload };
 }
@@ -68,9 +75,6 @@ export function addThing(payload) {
 }
 export function updateType(payload) {
   return { type: UPDATE_TYPE, payload };
-}
-export function updateAttributesArr(payload) {
-  return { type: UPDATE_ATTRIBUTES_ARR, payload };
 }
 export function updateSelectedType(payload) {
   return { type: UPDATE_SELECTED_TYPE, payload };
