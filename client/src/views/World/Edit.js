@@ -163,7 +163,7 @@ class Page extends Component {
   submitThroughAPI = () => {
     const world = {
       _id: this.state._id,
-      Name: this.state.Name,
+      Name: this.state.Name.trim(),
       Public: this.state.Public,
       AcceptingCollaborators: this.state.AcceptingCollaborators,
       Owner: this.props.user._id

@@ -181,9 +181,9 @@ class Control extends Component {
 
   submitThroughAPI = () => {
     const user = {
-      email: this.state.email,
+      email: this.state.email.trim(),
       password: this.state.password,
-      username: this.state.username,
+      username: this.state.username.trim(),
       followingWorlds: this.props.followingWorlds
     };
     if (this.state.formMode === "login") {
@@ -201,7 +201,6 @@ class Control extends Component {
           }
           this.props.userLogin(res.user);
           this.api.getWorldsForUser(res.user._id).then(res => {
-            console.log(res.worlds);
             this.props.setWorlds(res.worlds);
             this.props.onLogin(res.user);
             // this.setState({ redirectTo: "/" });
@@ -211,7 +210,6 @@ class Control extends Component {
       .catch(err => console.log(err));
     } else if (this.state.formMode === "register") {
       this.api.register(user).then(res => {
-        console.log(res);
         if (res.error === undefined) {
           this.setState({ 
             message: res.message, 

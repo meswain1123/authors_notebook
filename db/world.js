@@ -481,13 +481,24 @@ function upsertAttribute(respond, worldID, attribute) {
   console.log(attribute);
   const db = client.db(dbName);
   if (attribute._id !== undefined && attribute._id !== null && !attribute._id.includes("null")) {
+    attribute._id = ObjectID(attribute._id);
     db.collection("attribute").updateOne(
       { 
         _id: attribute._id, worldID: worldID
       },
-      { $set: attribute }
+      { $set: 
+        {
+          Name: attribute.Name.trim(),
+          AttributeType: attribute.AttributeType,
+          Options: attribute.Options,
+          DefinedType: attribute.DefinedType,
+          ListType: attribute.ListType,
+          worldID: worldID
+        } 
+      }
     ).then(res => {
-      respond(attribute._id);
+      // console.log(res);
+      respond(attribute._id.toString());
     });
   }
   else {

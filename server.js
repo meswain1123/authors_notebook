@@ -1,22 +1,4 @@
 
-// import path from 'path';
-// import express from 'express';
-// const PORT = process.env.HTTP_PORT || 4001;
-// const app = express();
-// app.use(express.static(path.join(__dirname, 'client', 'build')));
-// app.get('/', (req, res) => {
-//   res.send('just gonna send it');
-// });
-// app.get('/flower', (req, res) => {
-//   res.json({
-//     name: 'Dandelion',
-//     colour: 'Blue-ish'
-//   });
-// });
-// app.listen(PORT, () => {
-//   console.log(`Server listening at port ${PORT}.`);
-// });
-
 
 import path from 'path';
 import express from 'express';
@@ -77,7 +59,6 @@ const version = "0.0.1";
 // API calls
 app.route('/version')
   .get(function (req, res) {
-    console.log('version called');
     res.send({ version: version });
   });
 // app.use(express.static(path.join(__dirname, 'client', 'build')));

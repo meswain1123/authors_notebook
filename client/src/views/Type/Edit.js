@@ -218,7 +218,7 @@ class Page extends Component {
     const attributes = this.props.selectedType.AttributesArr.map(a => {
       return {
         _id: a.attrID,
-        Name: a.Name,
+        Name: a.Name.trim(),
         AttributeType: a.AttributeType,
         Options: a.Options,
         DefinedType: a.DefinedType,

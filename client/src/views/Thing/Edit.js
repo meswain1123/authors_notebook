@@ -171,7 +171,6 @@ class Page extends Component {
     types.forEach(type=> {
       for (let i = 0; i < type.Attributes.length; i++) {
         const attribute = {...type.Attributes[i]};
-        console.log(attribute);
         if (thing.Attributes.filter(a=>a.attrID === attribute.attrID).length === 0) {
           attribute.FromTypeID = type._id;
           attribute.index = type.Attributes.length + newAttributes.length;
@@ -325,8 +324,8 @@ class Page extends Component {
     });
     const thing = {
       _id: this.state._id,
-      Name: this.state.Name,
-      Description: this.state.Description,
+      Name: this.state.Name.trim(),
+      Description: this.state.Description.trim(),
       TypeIDs: typeIDs,
       // AttributesArr: this.props.selectedThing.AttributesArr,
       Attributes: [],
@@ -337,7 +336,7 @@ class Page extends Component {
       thing.Attributes.push({
         attrID: a.attrID,
         index: a.index,
-        Value: a.Value,
+        Value: a.Value.trim(),
         ListValues: a.ListValues
       });
       if (a.AttributeType === "Type") {
@@ -353,7 +352,6 @@ class Page extends Component {
         });
       }
     });
-    console.log(thing);
     if (thing._id === null) {
       this.api
         .createThing(thing)
@@ -536,7 +534,6 @@ class Page extends Component {
     newTypes.forEach(type=> {
       for (let i = 0; i < type.Attributes.length; i++) {
         const attribute = {...type.Attributes[i]};
-        console.log(attribute);
         if (thing.Attributes.filter(a=>a.attrID === attribute.attrID).length === 0) {
           attribute.FromTypeID = type._id;
           attribute.index = type.Attributes.length + newAttributes.length;
@@ -663,7 +660,6 @@ class Page extends Component {
         Types.forEach(type=> {
           for (let i = 0; i < type.Attributes.length; i++) {
             const attribute = {...type.Attributes[i]};
-            console.log(attribute);
             if (res.Attributes.filter(a=>a.attrID === attribute.attrID).length === 0) {
               attribute.FromTypeID = type._id;
               attribute.index = res.Attributes.length + newAttributes.length;
@@ -696,7 +692,8 @@ class Page extends Component {
             DefinedType: attr.DefinedType,
             ListType: attr.ListType,
             attrID: a.attrID,
-            Value: a.Value
+            Value: a.Value,
+            ListValues: a.ListValues
           });
         });
         this.props.updateSelectedThing(res);

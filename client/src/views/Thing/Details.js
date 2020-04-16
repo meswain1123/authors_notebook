@@ -108,7 +108,8 @@ class Page extends Component {
               DefinedType: attr.DefinedType,
               ListType: attr.ListType,
               attrID: a.attrID,
-              Value: a.Value
+              Value: a.Value,
+              ListValues: a.ListValues
             });
           });
           this.setState({

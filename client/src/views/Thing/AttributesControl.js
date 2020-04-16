@@ -187,7 +187,7 @@ class Control extends Component {
     });
     const thing = {
       _id: this.state._id,
-      Name: this.state.Name,
+      Name: this.state.Name.trim(),
       Description: "",
       TypeIDs: typeIDs,
       AttributesArr: [],

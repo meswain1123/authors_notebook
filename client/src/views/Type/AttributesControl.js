@@ -291,7 +291,7 @@ class Control extends Component {
   submitThroughAPI = () => {
     const type = {
       _id: null,
-      Name: this.state.Name,
+      Name: this.state.Name.trim(),
       Description: "",
       SuperIDs: [],
       AttributesArr: [],
@@ -342,7 +342,7 @@ class Control extends Component {
     });
     const thing = {
       _id: null,
-      Name: this.state.Name,
+      Name: this.state.Name.trim(),
       Description: "",
       TypeIDs: typeIDs,
       // AttributesArr: [],
@@ -379,7 +379,6 @@ class Control extends Component {
   render() {
     // I should move this somewhere else so it's not happening on every render.
     const inheritedAttributes = [];
-    console.log(this.props.selectedType);
     this.props.selectedType.SuperIDs.forEach(s => {
       let superType = this.props.types.filter(t => t._id === s);
       if (superType.length > 0) {

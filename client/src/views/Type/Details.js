@@ -187,7 +187,6 @@ class Page extends Component {
           }
         });
       });
-      console.log(this.props.selectedType.DefaultsHash);
       return (
         <Grid item xs={12} container spacing={0} direction="column">
           { this.props.selectedWorld === null ? "" :
@@ -273,7 +272,6 @@ class Page extends Component {
                           let definedType = this.props.types.filter(t=>t._id === attribute.DefinedType);
                           definedType = definedType.length === 0 ? {Name:""} : definedType[0];
                           const def = this.props.selectedType.DefaultsHash[attribute.attrID];
-                          console.log(def);
                           return (
                             <ListItem key={i}>
                               <ListItemText>

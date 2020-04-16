@@ -364,7 +364,6 @@ router
           const returnAttributesHash = {};
 
           function respond(message) {
-            console.log(message);
             returnAttributesHash[req.body.attributes[pos].Name] = message;
             pos++;
             if (pos === req.body.attributes.length) {
@@ -375,7 +374,6 @@ router
             }
           }
 
-          console.log(req.body);
           db.upsertAttribute(respond, req.body.worldID, req.body.attributes[pos]);
         }
       }
