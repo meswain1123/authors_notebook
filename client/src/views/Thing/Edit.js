@@ -178,6 +178,7 @@ class Page extends Component {
         }
       }
     });
+    console.log(newAttributes);
     types.forEach(type=> {
       newAttributes.forEach(attribute => {
         if (type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
@@ -191,7 +192,22 @@ class Page extends Component {
       })
     });
     let attributes = [...thing.Attributes, ...newAttributes];
-    thing.AttributesArr = attributes;
+    thing.Attributes = attributes;
+    thing.AttributesArr = [];
+    thing.Attributes.forEach(a => {
+      const attr = this.props.attributesByID[a.attrID];
+      thing.AttributesArr.push({
+        index: thing.AttributesArr.length,
+        Name: attr.Name,
+        AttributeType: attr.AttributeType,
+        Options: attr.Options,
+        DefinedType: attr.DefinedType,
+        ListType: attr.ListType,
+        attrID: a.attrID,
+        Value: a.Value,
+        ListValues: a.ListValues
+      });
+    });
     this.props.updateSelectedThing(thing);
     this.setState({ _id: null, Types: types, loaded: true }); //, errors });
   };
@@ -242,7 +258,8 @@ class Page extends Component {
     const fieldValidation = this.state.fieldValidation;
     if (
       fieldValidation[name] !== undefined &&
-      fieldValidation[name].valid !== validation.valid
+      (fieldValidation[name].valid !== validation.valid ||
+        fieldValidation[name].message !== validation.message)
     ) {
       fieldValidation[name].valid = validation.valid;
       fieldValidation[name].message = validation.message;
@@ -274,8 +291,11 @@ class Page extends Component {
       case "AttributesArr":
         valid = true;
         value = this.props.selectedThing[fieldName];
+        console.log(value);
         value.forEach(a => {
           if (valid && value.filter(attr2 => attr2.Name === a.Name).length > 1) {
+            console.log(a);
+            console.log(value.filter(attr2 => attr2.Name === a.Name));
             valid = false;
           }
         });
@@ -366,7 +386,8 @@ class Page extends Component {
                 Name: "",
                 Description: "",
                 Types: [],
-                Attributes: []
+                Attributes: [],
+                AttributesArr: []
               });
               this.setState({
                 _id: null,
@@ -409,7 +430,8 @@ class Page extends Component {
                 Name: "",
                 Description: "",
                 Types: [],
-                Attributes: []
+                Attributes: [],
+                AttributesArr: []
               });
               this.setState({
                 Name: "",
@@ -517,7 +539,7 @@ class Page extends Component {
 
   addType = (selectedList, selectedItem) => {
     const thing = this.props.selectedThing;
-    const newTypes = [];
+    const newTypes = [selectedItem];
     selectedItem.Supers.forEach(s=>{
       if (selectedList.filter(t=>t._id === s._id).length === 0) {
         let superType = this.props.types.filter(t=>t._id === s._id);
@@ -532,15 +554,17 @@ class Page extends Component {
     });
     let newAttributes = [];
     newTypes.forEach(type=> {
-      for (let i = 0; i < type.Attributes.length; i++) {
-        const attribute = {...type.Attributes[i]};
+      console.log(type);
+      type.Attributes.forEach(a => {
+        const attribute = {...a};
+        console.log(attribute);
         if (thing.Attributes.filter(a=>a.attrID === attribute.attrID).length === 0) {
           attribute.FromTypeID = type._id;
           attribute.index = type.Attributes.length + newAttributes.length;
           // attribute.attrID = 
           newAttributes.push(attribute);
         }
-      }
+      });
     });
     newTypes.forEach(type=> {
       newAttributes.forEach(attribute => {
@@ -554,13 +578,31 @@ class Page extends Component {
         }
       })
     });
+    console.log(newAttributes);
     let attributes = [...thing.Attributes, ...newAttributes];
     this.setState({ Types: selectedList });
     thing.Attributes = attributes;
-    thing.Attributes = [];
+    thing.AttributesArr = [];
+    const AttributesArr = [];
+    thing.Attributes.forEach(a => {
+      const attr = this.props.attributesByID[a.attrID];
+      AttributesArr.push({
+        index: thing.AttributesArr.length,
+        Name: attr.Name,
+        AttributeType: attr.AttributeType,
+        Options: attr.Options,
+        DefinedType: attr.DefinedType,
+        ListType: attr.ListType,
+        attrID: a.attrID,
+        Value: a.Value,
+        ListValues: a.ListValues
+      });
+    });
     this.props.updateSelectedThing(thing);
     setTimeout(() => {
       thing.Attributes = attributes;
+      thing.AttributesArr = AttributesArr;
+      console.log(thing);
       this.props.updateSelectedThing(thing);
     }, 500);
   }
@@ -617,6 +659,21 @@ class Page extends Component {
     }
     this.setState({ Types: types });
     thing.Attributes = attributes;
+    thing.AttributesArr = [];
+    thing.Attributes.forEach(a => {
+      const attr = this.props.attributesByID[a.attrID];
+      thing.AttributesArr.push({
+        index: thing.AttributesArr.length,
+        Name: attr.Name,
+        AttributeType: attr.AttributeType,
+        Options: attr.Options,
+        DefinedType: attr.DefinedType,
+        ListType: attr.ListType,
+        attrID: a.attrID,
+        Value: a.Value,
+        ListValues: a.ListValues
+      });
+    });
     this.props.updateSelectedThing(thing);
   }
 
@@ -726,7 +783,8 @@ class Page extends Component {
           Name: "",
           Description: "",
           Types: [],
-          Attributes: []
+          Attributes: [],
+          AttributesArr: []
         });
         this.setState({ loaded: true });
       }

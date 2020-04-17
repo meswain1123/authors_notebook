@@ -130,6 +130,7 @@ class Page extends Component {
         Name: "",
         Description: "",
         Types: [],
+        Attributes: [],
         AttributesArr: []
       });
     }

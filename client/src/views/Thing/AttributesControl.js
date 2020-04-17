@@ -64,18 +64,9 @@ class Control extends Component {
 
   changeAttribute = value => {
     const thing = this.props.selectedThing;
-    thing.AttributesArr[value.index] = {
-      index: value.index,
-      attrID: value.attrID,
-      Name: value.Name,
-      AttributeType: value.AttributeType,
-      Options: value.Options,
-      DefinedType: value.DefinedType,
-      ListType: value.ListType,
-      FromTypes: value.FromTypes,
-      Value: value.Value,
-      ListValues: value.ListValues,
-    };
+    const attribute = thing.AttributesArr.filter(a=>a.attrID === value.attrID)[0];
+    attribute.Value = value.Value;
+    attribute.ListValues = value.ListValues;
     this.props.updateSelectedThing(thing);
   };
 
@@ -221,11 +212,13 @@ class Control extends Component {
   };
 
   render() {
+    if (this.props.selectedThing !== null && this.props.selectedThing !== undefined)
+      console.log(this.props.selectedThing.AttributesArr);
     return (
       <Grid item xs={12} container spacing={1} direction="column">
         <Grid item>Attributes</Grid>
-        {this.props.selectedThing === null || this.props.selectedThing === undefined ? ""
-          : this.props.selectedThing.AttributesArr.map((attribute, i) => {
+        {this.props.selectedThing !== null && this.props.selectedThing !== undefined &&
+          this.props.selectedThing.AttributesArr.map((attribute, i) => {
             return (
               <AttributeControl
                 key={i}
