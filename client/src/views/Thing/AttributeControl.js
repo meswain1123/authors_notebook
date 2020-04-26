@@ -12,6 +12,7 @@ import {
   MenuItem,
   Checkbox
 } from "@material-ui/core";
+import InfoIcon from '@material-ui/icons/Info';
 
 import ChipInput from "material-ui-chip-input";
 import { Multiselect } from "multiselect-react-dropdown";
@@ -93,225 +94,237 @@ export default function AttributeControl(props) {
     });
   } else if (attributeType === "List" && props.attribute.ListType === "Type") {
     const definedType = props.types.filter(t => t._id === props.attribute.DefinedType)[0];
-    listOptions.push({ Name: `+ Create New ${definedType.Name}`, _id: "new" });
-    props.things
-      .filter(t => t.TypeIDs.includes(props.attribute.DefinedType))
-      .forEach(t => {
-        listOptions.push({ Name: t.Name, _id: t._id });
-      });
-    listOptions
-      .filter(t => props.attribute.ListValues.includes(t._id))
-      .forEach(t => {
-        listOptionValues.push(t);
-      });
+    if (definedType !== undefined) {
+      listOptions.push({ Name: `+ Create New ${definedType.Name}`, _id: "new" });
+      props.things
+        .filter(t => t.TypeIDs.includes(props.attribute.DefinedType))
+        .forEach(t => {
+          listOptions.push({ Name: t.Name, _id: t._id });
+        });
+      listOptions
+        .filter(t => props.attribute.ListValues.includes(t._id))
+        .forEach(t => {
+          listOptionValues.push(t);
+        });
+    }
   }
 
   return (
-    <Grid item>
-      {attributeType === "Text" ? (
-        <FormControl variant="outlined" fullWidth>
-          <InputLabel htmlFor="textField">{props.attribute.Name}</InputLabel>
-          <OutlinedInput
-            id="textField"
-            name="textField"
-            type="text"
-            error={props.error}
-            value={value}
-            autoComplete="off"
-            onChange={e => {
-              changeValue(e.target.value);
-            }}
-            onBlur={e => {
-              const attr = {
-                index: props.attribute.index,
-                attrID: props.attribute.attrID,
-                Name: props.attribute.Name,
-                AttributeType: props.attribute.AttributeType,
-                Options: props.attribute.Options,
-                DefinedType: props.attribute.DefinedType,
-                ListType: props.attribute.ListType,
-                FromTypes: props.attribute.FromTypes,
-                Value: value,
-                ListValues: props.attribute.ListValues
-              };
-              props.onChange(attr);
-            }}
-            labelWidth={props.attribute.Name.length * 9}
-            fullWidth
+    <Grid item container spacing={1} direction="row">
+      <Grid item xs={11}>
+        {attributeType === "Text" ? (
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel htmlFor={`attribute_name_${props.attribute.attrID}`}>{props.attribute.Name}</InputLabel>
+            <OutlinedInput
+              id={`attribute_name_${props.attribute.attrID}`}
+              name={`attribute_name_${props.attribute.attrID}`}
+              type="text"
+              error={props.error}
+              value={value}
+              autoComplete="off"
+              onChange={e => {
+                changeValue(e.target.value);
+              }}
+              onBlur={e => {
+                const attr = {
+                  index: props.attribute.index,
+                  attrID: props.attribute.attrID,
+                  Name: props.attribute.Name,
+                  AttributeType: props.attribute.AttributeType,
+                  Options: props.attribute.Options,
+                  DefinedType: props.attribute.DefinedType,
+                  ListType: props.attribute.ListType,
+                  FromTypes: props.attribute.FromTypes,
+                  Value: value,
+                  ListValues: props.attribute.ListValues
+                };
+                props.onChange(attr);
+              }}
+              labelWidth={props.attribute.Name.length * 9}
+              fullWidth
+            />
+            <FormHelperText>{props.message}</FormHelperText>
+          </FormControl>
+        ) : attributeType === "Number" ? (
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel htmlFor="numField">{props.attribute.Name}</InputLabel>
+            <OutlinedInput
+              id="numField"
+              name="numField"
+              type="number"
+              error={props.error}
+              value={value}
+              autoComplete="off"
+              onChange={e => {
+                changeValue(e.target.value);
+              }}
+              onBlur={e => {
+                const attr = {
+                  index: props.attribute.index,
+                  attrID: props.attribute.attrID,
+                  Name: props.attribute.Name,
+                  AttributeType: props.attribute.AttributeType,
+                  Options: props.attribute.Options,
+                  DefinedType: props.attribute.DefinedType,
+                  ListType: props.attribute.ListType,
+                  FromTypes: props.attribute.FromTypes,
+                  Value: value,
+                  ListValues: props.attribute.ListValues
+                };
+                props.onChange(attr);
+              }}
+              labelWidth={props.attribute.Name.length * 9}
+              fullWidth
+            />
+            <FormHelperText>{props.message}</FormHelperText>
+          </FormControl>
+        ) : attributeType === "True/False" ? (
+          <FormControlLabel
+            control={
+              <Checkbox checked={props.attribute.Value==="True"} onChange={e => {
+                const attr = props.attribute;
+                attr.Value = e.target.checked ? "True" : "False";
+                props.onChange(attr);
+              }}
+              color="primary" />
+            }
+            label={props.attribute.Name}
           />
-          <FormHelperText>{props.message}</FormHelperText>
-        </FormControl>
-      ) : attributeType === "Number" ? (
-        <FormControl variant="outlined" fullWidth>
-          <InputLabel htmlFor="numField">{props.attribute.Name}</InputLabel>
-          <OutlinedInput
-            id="numField"
-            name="numField"
-            type="number"
-            error={props.error}
-            value={value}
-            autoComplete="off"
-            onChange={e => {
-              changeValue(e.target.value);
-            }}
-            onBlur={e => {
-              const attr = {
-                index: props.attribute.index,
-                attrID: props.attribute.attrID,
-                Name: props.attribute.Name,
-                AttributeType: props.attribute.AttributeType,
-                Options: props.attribute.Options,
-                DefinedType: props.attribute.DefinedType,
-                ListType: props.attribute.ListType,
-                FromTypes: props.attribute.FromTypes,
-                Value: value,
-                ListValues: props.attribute.ListValues
-              };
-              props.onChange(attr);
-            }}
-            labelWidth={props.attribute.Name.length * 9}
-            fullWidth
-          />
-          <FormHelperText>{props.message}</FormHelperText>
-        </FormControl>
-      ) : attributeType === "True/False" ? (
-        <FormControlLabel
-          control={
-            <Checkbox checked={props.attribute.Value==="True"} onChange={e => {
-              const attr = props.attribute;
-              attr.Value = e.target.checked ? "True" : "False";
-              props.onChange(attr);
-            }}
-            color="primary" />
-          }
-          label={props.attribute.Name}
-        />
-      ) : attributeType === "Options" ? (
-        <FormControl variant="outlined" fullWidth>
-          <InputLabel htmlFor="options-select" id="options-select-label">
-            {props.attribute.Name}
-          </InputLabel>
-          <Select
-            labelId="options-select-label"
-            id="options-select"
-            value={value}
-            onChange={e => {
-              changeValue(e.target.value);
-            }}
-            onBlur={e => {
-              const attr = {
-                index: props.attribute.index,
-                attrID: props.attribute.attrID,
-                Name: props.attribute.Name,
-                AttributeType: props.attribute.AttributeType,
-                Options: props.attribute.Options,
-                DefinedType: props.attribute.DefinedType,
-                ListType: props.attribute.ListType,
-                FromTypes: props.attribute.FromTypes,
-                Value: value,
-                ListValues: props.attribute.ListValues
-              };
-              props.onChange(attr);
-            }}
-            fullWidth
-            labelWidth={props.attribute.Name.length * 9}
-          >
-            {props.attribute.Options.map((option, i) => {
-              return (
-                <MenuItem key={i} value={option}>
-                  {option}
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </FormControl>
-      ) : attributeType === "Type" ? (
-        <FormControl variant="outlined" fullWidth>
-          <InputLabel htmlFor="type-select" id="type-select-label">
-            {props.attribute.Name}
-          </InputLabel>
-          <Select
-            labelId="type-select-label"
-            id="type-select"
-            value={value}
-            onChange={e => {
-              handleDefinedTypeChange(e, props, changeValue);
-            }}
-            onBlur={e => {
-              const attr = {
-                index: props.attribute.index,
-                attrID: props.attribute.attrID,
-                Name: props.attribute.Name,
-                AttributeType: props.attribute.AttributeType,
-                Options: props.attribute.Options,
-                DefinedType: props.attribute.DefinedType,
-                ListType: props.attribute.ListType,
-                FromTypes: props.attribute.FromTypes,
-                Value: value,
-                ListValues: props.attribute.ListValues
-              };
-              props.onChange(attr);
-            }}
-            fullWidth
-            labelWidth={props.attribute.Name.length * 9}
-          >
-            <MenuItem value="new">
-              + Create New{" "}
-              {props.types.filter(t => t._id === props.attribute.DefinedType)[0].Name}
-            </MenuItem>
-            {props.things
-              .filter(t => t.TypeIDs.includes(props.attribute.DefinedType))
-              .map((thing, i) => {
+        ) : attributeType === "Options" ? (
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel htmlFor="options-select" id="options-select-label">
+              {props.attribute.Name}
+            </InputLabel>
+            <Select
+              labelId="options-select-label"
+              id="options-select"
+              value={value}
+              onChange={e => {
+                changeValue(e.target.value);
+              }}
+              onBlur={e => {
+                const attr = {
+                  index: props.attribute.index,
+                  attrID: props.attribute.attrID,
+                  Name: props.attribute.Name,
+                  AttributeType: props.attribute.AttributeType,
+                  Options: props.attribute.Options,
+                  DefinedType: props.attribute.DefinedType,
+                  ListType: props.attribute.ListType,
+                  FromTypes: props.attribute.FromTypes,
+                  Value: value,
+                  ListValues: props.attribute.ListValues
+                };
+                props.onChange(attr);
+              }}
+              fullWidth
+              labelWidth={props.attribute.Name.length * 9}
+            >
+              {props.attribute.Options.map((option, i) => {
                 return (
-                  <MenuItem key={i} value={thing._id}>
-                    {thing.Name}
+                  <MenuItem key={i} value={option}>
+                    {option}
                   </MenuItem>
                 );
               })}
-          </Select>
-        </FormControl>
-      ) : attributeType === "List" ? (
-        <span>
-          {props.attribute.ListType === "Text" ? (
-            <ChipInput
-              placeholder={props.attribute.Name}
-              variant="outlined"
-              defaultValue={props.attribute.ListValues}
-              onChange={chips => handleTextListChange(chips, props)}
-            />
-          ) : props.attribute.ListType === "Options" ? (
-            <Multiselect
-              placeholder={props.attribute.Name}
-              options={listOptions}
-              selectedValues={listOptionValues}
-              onSelect={(_, selectedItem) => {
-                addOption(selectedItem, props);
+            </Select>
+          </FormControl>
+        ) : attributeType === "Type" ? (
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel htmlFor="type-select" id="type-select-label">
+              {props.attribute.Name}
+            </InputLabel>
+            <Select
+              labelId="type-select-label"
+              id="type-select"
+              value={value}
+              onChange={e => {
+                handleDefinedTypeChange(e, props, changeValue);
               }}
-              onRemove={(selectedList, _) => {
-                removeOption(selectedList, props);
+              onBlur={e => {
+                const attr = {
+                  index: props.attribute.index,
+                  attrID: props.attribute.attrID,
+                  Name: props.attribute.Name,
+                  AttributeType: props.attribute.AttributeType,
+                  Options: props.attribute.Options,
+                  DefinedType: props.attribute.DefinedType,
+                  ListType: props.attribute.ListType,
+                  FromTypes: props.attribute.FromTypes,
+                  Value: value,
+                  ListValues: props.attribute.ListValues
+                };
+                props.onChange(attr);
               }}
-              displayValue="Name"
-            />
-          ) : props.attribute.ListType === "Type" ? (
-            <Multiselect
-              placeholder={props.attribute.Name}
-              options={listOptions}
-              selectedValues={listOptionValues}
-              onSelect={(_, selectedItem) => {
-                addType(selectedItem, props);
-              }}
-              onRemove={(selectedList, _) => {
-                removeType(selectedList, props);
-              }}
-              displayValue="Name"
-            />
-          ) : (
-            ""
-          )}
-        </span>
-      ) : (
-        ""
-      )}
+              fullWidth
+              labelWidth={props.attribute.Name.length * 9}
+            >
+              <MenuItem value="new">
+                + Create New{" "}
+                {props.types.filter(t => t._id === props.attribute.DefinedType)[0].Name}
+              </MenuItem>
+              {props.things
+                .filter(t => t.TypeIDs.includes(props.attribute.DefinedType))
+                .map((thing, i) => {
+                  return (
+                    <MenuItem key={i} value={thing._id}>
+                      {thing.Name}
+                    </MenuItem>
+                  );
+                })}
+            </Select>
+          </FormControl>
+        ) : attributeType === "List" ? (
+          <span>
+            {props.attribute.ListType === "Text" ? (
+              <ChipInput
+                placeholder={props.attribute.Name}
+                variant="outlined"
+                defaultValue={props.attribute.ListValues}
+                onChange={chips => handleTextListChange(chips, props)}
+              />
+            ) : props.attribute.ListType === "Options" ? (
+              <Multiselect
+                placeholder={props.attribute.Name}
+                options={listOptions}
+                selectedValues={listOptionValues}
+                onSelect={(_, selectedItem) => {
+                  addOption(selectedItem, props);
+                }}
+                onRemove={(selectedList, _) => {
+                  removeOption(selectedList, props);
+                }}
+                displayValue="Name"
+              />
+            ) : props.attribute.ListType === "Type" ? (
+              <Multiselect
+                placeholder={props.attribute.Name}
+                options={listOptions}
+                selectedValues={listOptionValues}
+                onSelect={(_, selectedItem) => {
+                  addType(selectedItem, props);
+                }}
+                onRemove={(selectedList, _) => {
+                  removeType(selectedList, props);
+                }}
+                displayValue="Name"
+              />
+            ) : (
+              ""
+            )}
+          </span>
+        ) : (
+          ""
+        )}
+      </Grid>
+      <Grid item xs={1}>
+        <InfoIcon
+          style={{ cursor: "pointer" }}
+          onClick={ _ => {
+            props.infoModal(props.attribute);
+          }} 
+        />
+      </Grid>
     </Grid>
   );
 }

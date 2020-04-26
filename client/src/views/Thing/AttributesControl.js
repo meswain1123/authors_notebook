@@ -2,9 +2,10 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { 
   Grid, Modal, FormControl, InputLabel, 
-  OutlinedInput, FormHelperText, Button 
+  OutlinedInput, FormHelperText, Button,
+  // List,
+  // ListItem,
 } from "@material-ui/core";
-// import uuid from 'react-uuid';
 import { 
   updateSelectedThing, addThing 
 } from "../../redux/actions/index";
@@ -30,6 +31,8 @@ class Control extends Component {
     super(props);
     this.state = {
       modalOpen: false,
+      infoModalOpen: false,
+      // infoAttribute: null,
       Name: "",
       fieldValidation: {
         Name: { valid: true, message: "" }
@@ -58,6 +61,8 @@ class Control extends Component {
       FromTypes: [],
       Value: "",
       ListValues: [],
+      FromTypeIDs: [],
+      TypeIDs: []
     });
     this.props.updateSelectedThing(thing);
   };
@@ -86,9 +91,13 @@ class Control extends Component {
     // Opens a Modal where they enter a name.
     this.setState({modalOpen: true, modalSubmit: respond, newThingType: type});
   }
+
+  infoModal = (attribute) => {
+    this.props.onInfo(attribute);
+  }
   
   getModalStyle = () => {
-    const top = Math.round(window.innerHeight / 2) - 50;
+    const top = Math.round(window.innerHeight / 2) - 100;
     const left = Math.round(window.innerWidth / 2) - 200;
   
     return {
@@ -181,7 +190,7 @@ class Control extends Component {
       Name: this.state.Name.trim(),
       Description: "",
       TypeIDs: typeIDs,
-      AttributesArr: [],
+      Attributes: [],
       worldID: this.props.selectedWorldID
     };
 
@@ -192,6 +201,7 @@ class Control extends Component {
         if (res.thingID !== undefined) {
           thing._id = res.thingID;
           thing.Types = types;
+          thing.AttributesArr = [];
           // Adds to props 
           this.props.addThing(thing);
           // Calls respond back to Attribute to set the thing
@@ -212,11 +222,8 @@ class Control extends Component {
   };
 
   render() {
-    if (this.props.selectedThing !== null && this.props.selectedThing !== undefined)
-      console.log(this.props.selectedThing.AttributesArr);
     return (
       <Grid item xs={12} container spacing={1} direction="column">
-        <Grid item>Attributes</Grid>
         {this.props.selectedThing !== null && this.props.selectedThing !== undefined &&
           this.props.selectedThing.AttributesArr.map((attribute, i) => {
             return (
@@ -230,6 +237,7 @@ class Control extends Component {
                 things={this.props.things}
                 types={this.props.types}
                 onNewThing={this.addNewThing}
+                infoModal={this.infoModal}
               />
             );
           })

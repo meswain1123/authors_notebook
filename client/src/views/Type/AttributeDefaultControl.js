@@ -112,10 +112,10 @@ export default function AttributeDefaultControl(props) {
       <Grid item xs={12}>
         {attributeType === "Text" ? (
           <FormControl variant="outlined" fullWidth>
-            <InputLabel htmlFor="textField">{props.attribute.Name} Default Value</InputLabel>
+            <InputLabel htmlFor={`attribute_name_${props.attribute.attrID}`}>{props.attribute.Name} Default Value</InputLabel>
             <OutlinedInput
-              id="textField"
-              name="textField"
+              id={`attribute_name_${props.attribute.attrID}`}
+              name={`attribute_name_${props.attribute.attrID}`}
               type="text"
               error={props.error}
               value={value}

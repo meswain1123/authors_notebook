@@ -1,10 +1,12 @@
 import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
-import { ArrowBack } from "@material-ui/icons";
+import uuid from 'react-uuid';
+import { ArrowBack, Add, Search } from "@material-ui/icons";
 import { 
   Grid, Button, Checkbox, FormControl, FormControlLabel,
-  OutlinedInput, InputLabel, FormHelperText, Tooltip, Fab 
+  OutlinedInput, InputLabel, FormHelperText, Tooltip, Fab,
+  Select, MenuItem 
 } from "@material-ui/core";
 import { Helmet } from 'react-helmet';
 import { Multiselect } from 'multiselect-react-dropdown';
@@ -65,7 +67,9 @@ class Page extends Component {
       redirectTo: null,
       waiting: false,
       addMore: false,
-      resetting: false
+      resetting: false,
+      browseAttributes: false,
+      browseAttributesSelected: ""
     };
     this.api = API.getInstance();
   }
@@ -131,36 +135,40 @@ class Page extends Component {
           if (!valid) message = "This Type Name is already in use";
         }
         break;
-      // case "AttributesArr":
-      //   valid = true;
-      //   value = this.props.selectedType[fieldName];
-      //   message = "";
-      //   for (let i = 0; i < value.length; i++) {
-      //     if (value.filter(attr2 => attr2.Name === value[i].Name).length > 1) {
-      //       valid = false;
-      //       message = "Attribute Names must be unique";
-      //       break;
-      //     }
-      //     else if ((value[i].AttributeType === "Type" || (value[i].AttributeType === "List" && value[i].ListType === "Type")) && (value[i].DefinedType === undefined || value[i].DefinedType === null || value[i].DefinedType === "")) {
-      //       valid = false;
-      //       message = `A Defined Type must be selected for ${value[i].Name}.`;
-      //       break;
-      //     }
-      //     else if ((value[i].AttributeType === "Options" || (value[i].AttributeType === "List" && value[i].ListType === "Options")) && (value[i].Options === undefined || value[i].Options === null || value[i].Options.length === 0)) {
-      //       valid = false;
-      //       message = `At least one Option must be set for ${value[i].Name}.`;
-      //       break;
-      //     }
-      //   } 
-      //   break;
+      case "AttributesArr":
+        valid = true;
+        value = this.props.selectedType[fieldName];
+        message = "";
+        for (let i = 0; i < value.length; i++) {
+          const attrByName = this.props.attributesByName[value[i].Name];
+          if (attrByName !== undefined && 
+            attrByName._id !== value[i].attrID) {
+            valid = false;
+            message = `An attribute with the name '${value[i].Name}' already exists`;
+            break;
+          }
+          else if ((value[i].AttributeType === "Type" || (value[i].AttributeType === "List" && value[i].ListType === "Type")) && (value[i].DefinedType === undefined || value[i].DefinedType === null || value[i].DefinedType === "")) {
+            valid = false;
+            message = `A Defined Type must be selected for ${value[i].Name}.`;
+            break;
+          }
+          else if ((value[i].AttributeType === "Options" || (value[i].AttributeType === "List" && value[i].ListType === "Options")) && (value[i].Options === undefined || value[i].Options === null || value[i].Options.length === 0)) {
+            valid = false;
+            message = `At least one Option must be set for ${value[i].Name}.`;
+            break;
+          }
+        } 
+        break;
       case "Attributes":
         valid = true;
         value = this.props.selectedType[fieldName];
         message = "";
         for (let i = 0; i < value.length; i++) {
-          if (value.filter(attr2 => attr2.Name === value[i].Name).length > 1) {
+          const attrByName = this.props.attributesByName[value[i].Name];
+          if (attrByName !== undefined && 
+            attrByName._id !== value[i].attrID) {
             valid = false;
-            message = "Attribute Names must be unique";
+            message = `An attribute with this name already exists`;
             break;
           }
           else if ((value[i].AttributeType === "Type" || (value[i].AttributeType === "List" && value[i].ListType === "Type")) && (value[i].DefinedType === undefined || value[i].DefinedType === null || value[i].DefinedType === "")) {
@@ -432,39 +440,6 @@ class Page extends Component {
     this.setState({ Supers: supers });
   };
 
-  addSuperOld = (selectedList, selectedItem) => {
-    selectedItem.Supers.forEach(s => {
-      if (selectedList.filter(s2 => s2._id === s._id).length === 0) selectedList.push(s);
-    });
-    const type = this.props.selectedType;
-    let attributes = [...type.AttributesArr];
-    for (let i = 0; i < selectedItem.AttributesArr.length; i++) {
-      const attribute = selectedItem.AttributesArr[i];
-      attribute.FromSupers.push(selectedItem._id);
-      const matches = attributes.filter(a => a.Name === attribute.Name);
-      if (matches.length === 0) {
-        // It's a new attribute.
-        attribute.index = attributes.length;
-        attributes.push(attribute);
-      } else {
-        // It's an existing attribute,
-        // so we just need to add the appropriate ids to FromSupers.
-        // TODO: I also need to make sure the type and details match.
-        const superIDs = [...matches[0].FromSupers];
-        for (let i = 0; i < attribute.FromSupers.length; i++) {
-          const superID = attribute.FromSupers[i];
-          if (!superIDs.includes(superID)) {
-            superIDs.push(superID);
-          }
-        }
-        matches[0].FromSupers = superIDs;
-      }
-    }
-    this.setState({ Supers: selectedList });
-    type.AttributesArr = attributes;
-    this.props.updateSelectedType(type);
-  }
-
   addSuper = (selectedList, selectedItem) => {
     const type = this.props.selectedType;
     type.SuperIDs.push(selectedItem._id);
@@ -477,6 +452,61 @@ class Page extends Component {
     type.Supers = selectedList;
     this.props.updateSelectedType(type);
     this.setState({ Supers: selectedList });
+  }
+
+  newAttribute = () => {
+    const type = this.props.selectedType;
+    type.AttributesArr.push({
+      index: type.AttributesArr.length,
+      attrID: `null_${uuid()}`,
+      Name: "",
+      AttributeType: "Text",
+      Options: [],
+      DefinedType: "",
+      ListType: ""
+    });
+    this.props.updateSelectedType(type);
+  }
+
+  addSelectedAttribute = () => {
+    const type = this.props.selectedType;
+    const attr = this.props.attributesByID[this.state.browseAttributesSelected];
+    let attrType = this.props.types.filter(t => attr.TypeIDs.includes(t._id));
+    if (attrType.length > 0) {
+      attrType = attrType[0];
+    
+      type.SuperIDs.push(attrType._id);
+      const selectedList = type.Supers;
+      selectedList.push(attrType);
+
+      attrType.Supers.forEach(s => {
+        if (selectedList.filter(s2 => s2._id === s._id).length === 0) {
+          selectedList.push(s);
+          type.SuperIDs.push(s._id);
+        }
+      });
+      type.Supers = [];
+      this.props.updateSelectedType(type);
+      this.setState({ Supers: [] });
+      setTimeout(() => {
+        type.Supers = selectedList;
+        this.props.updateSelectedType(type);
+        this.setState({ browseAttributesSelected: "", Supers: selectedList });
+      }, 500);
+    }
+    else {
+      const type = this.props.selectedType;
+      type.AttributesArr.push({
+        index: type.AttributesArr.length,
+        attrID: attr._id,
+        Name: attr.Name,
+        AttributeType: attr.AttributeType,
+        Options: attr.Options,
+        DefinedType: attr.DefinedType,
+        ListType: attr.ListType
+      });
+      this.props.updateSelectedType(type);
+    }
   }
   
   removeSuper = (selectedList, removedItem) => {
@@ -592,6 +622,29 @@ class Page extends Component {
           ? this.props.types
           : this.props.types.filter(type => type._id !== this.state._id);
       
+      let additionalAttributes = [];
+      if (this.state.browseAttributes) {
+        Object.keys(this.props.attributesByID).forEach(id => {
+          const attr = this.props.attributesByID[id];
+          if (!attr.TypeIDs.includes(this.props.selectedType._id)) {
+            let found = false;
+            for (let i = 0; i < this.state.Supers.length; i++) {
+              if (attr.TypeIDs.includes(this.state.Supers[i]._id)) {
+                found = true;
+                break;
+              }
+            }
+            if (!found) {
+              const attrTypes = this.props.types.filter(t => attr.TypeIDs.includes(t._id));
+              additionalAttributes.push({
+                _id: attr._id,
+                Name: attr.Name,
+                Type: attrTypes.length > 0 ? attrTypes[0] : null
+              });
+            }
+          }
+        });
+      }
       return (
         <Grid item xs={12} container spacing={1} direction="column">
           { this.props.selectedWorld === null ? "" :
@@ -675,9 +728,84 @@ class Page extends Component {
                   />
                 }
               </Grid>
+              <Grid item container spacing={0} direction="row">
+                <Grid item xs={6}>
+                  <span>Attributes&nbsp;
+                    <Tooltip 
+                      title={`Add New Attribute`} 
+                      disabled={this.state.defaultsMode}>
+                      <Fab size="small"
+                        color="primary"
+                        onClick={ _ => { this.newAttribute()}}
+                      >
+                        <Add />
+                      </Fab>
+                    </Tooltip>
+                    <Tooltip 
+                      title={`Browse Additional Attributes`} 
+                      disabled={this.state.defaultsMode}>
+                      <Fab
+                        size="small"
+                        color="primary"
+                        onClick={e => {
+                          this.setState({ browseAttributes: !this.state.browseAttributes });
+                        }}
+                      >
+                        <Search />
+                      </Fab>
+                    </Tooltip>
+                  </span>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button variant="contained" color="primary" onClick={e => { this.setState({defaultsMode: !this.state.defaultsMode}) }}>
+                    { this.state.defaultsMode ? "Set Attribute Types" : "Set Defaults"}
+                  </Button>
+                </Grid>
+              </Grid>
+              { this.state.browseAttributes && 
+                <Grid item container spacing={1} direction="row">
+                  <Grid item xs={12} sm={6}>
+                    <FormControl variant="outlined" fullWidth>
+                      <InputLabel htmlFor="browseForAttributes" id="browseForAttributes-label">
+                        Browse Types by Attribute
+                      </InputLabel>
+                      <Select
+                        labelId="browseForAttributes-label"
+                        id="browseForAttributes"
+                        value={this.state.browseAttributesSelected}
+                        onChange={e => {
+                          this.setState({ browseAttributesSelected: e.target.value });
+                        }}
+                        fullWidth
+                        labelWidth={200}
+                      >
+                        {
+                          additionalAttributes.map((attr, i) => {
+                            return (
+                              <MenuItem key={i} value={attr._id}>
+                                {attr.Name} ({ attr.Type !== null ? attr.Type.Name : "None" })
+                              </MenuItem>
+                            );
+                          })
+                        }
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Button
+                      variant="contained" color="primary"
+                      disabled={ this.state.browseAttributesSelected === "" }
+                      onClick={e => {this.addSelectedAttribute();}}
+                      type="submit"
+                    >
+                      Add { this.state.browseAttributesSelected === "" || additionalAttributes.filter(attr => attr._id === this.state.browseAttributesSelected && attr.Type !== null).length > 0 ? "Type" : "Attribute" }
+                    </Button>
+                  </Grid>
+                </Grid>
+              }
               <Grid item>
                 { this.state.loaded &&
-                  <AttributesControl />
+                  <AttributesControl defaultsMode={this.state.defaultsMode} />
                 }
               </Grid>
               <Grid item>

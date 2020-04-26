@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import FormControl from "@material-ui/core/FormControl";
 import OutlinedInput from "@material-ui/core/OutlinedInput";
 import InputLabel from "@material-ui/core/InputLabel";
-import DeleteForever from "@material-ui/icons/DeleteForever";
-import Button from "@material-ui/core/Button";
+import {Delete} from "@material-ui/icons";
+import {Fab, Tooltip} from "@material-ui/core";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Grid from "@material-ui/core/Grid";
 import Select from '@material-ui/core/Select';
@@ -69,6 +69,10 @@ export default function AttributeControl(props) {
   const selectedDefinedType =
     props.attribute.DefinedType === undefined || props.attribute.DefinedType === "" ? "" : props.attribute.DefinedType;
 
+  let fromType = props.types.filter(t=>t._id === props.attribute.FromTypeID);
+  if (fromType.length > 0)
+    fromType = fromType[0];
+
   return (
     <Grid container spacing={1} direction="row">
       <Grid item sm={3} xs={12}>
@@ -130,111 +134,115 @@ export default function AttributeControl(props) {
         </FormControl>
       </Grid>
       <Grid item sm={3} xs={12}>
-          {selectedType === "Options" ? (
-            <ChipInput
-              variant="outlined"
+        {selectedType === "Options" ? (
+          <ChipInput
+            variant="outlined"
+            disabled={props.disabled}
+            // disabled={props.attribute.FromSupers.length > 0}
+            defaultValue={props.attribute.Options}
+            onChange={chips => handleOptionsChange(chips, props)}
+          />
+        ) : selectedType === "Type" ? (
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel htmlFor="definedType" id="definedType-label">
+              Defined Type
+            </InputLabel>
+            <Select
+              labelId="definedType-label"
+              id="definedType"
               disabled={props.disabled}
-              // disabled={props.attribute.FromSupers.length > 0}
-              defaultValue={props.attribute.Options}
-              onChange={chips => handleOptionsChange(chips, props)}
-            />
-          ) : selectedType === "Type" ? (
-            <FormControl variant="outlined" fullWidth>
-              <InputLabel htmlFor="definedType" id="definedType-label">
-                Defined Type
-              </InputLabel>
-              <Select
-                labelId="definedType-label"
-                id="definedType"
-                disabled={props.disabled}
-                // disabled={props.attribute.FromSupers.length > 0} 
-                value={selectedDefinedType}
-                onChange={e => {handleDefinedTypeChange(e, props)}}
-                fullWidth
-                labelWidth={100}
-              >
-                <MenuItem value="new">+ Create New Type</MenuItem>
-                {props.types.map((type, i) => {
-                  return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
-                })}
-              </Select>
-            </FormControl>
-          ) : selectedType === "List" ? (
-            <Grid container spacing={1} direction="column">
-              <Grid item>
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel htmlFor="list-type" id="list-type-label">
-                    List Type
-                  </InputLabel>
-                  <Select
-                    labelId="list-type-label"
-                    id="list-type"
-                    disabled={props.disabled}
-                    // disabled={props.attribute.FromSupers.length > 0} 
-                    value={selectedListType}
-                    onChange={e => {handleListTypeChange(e, props)}}
-                    fullWidth
-                    labelWidth={70}
-                  >
-                    {listTypes.map((type, i) => {
-                      return (<MenuItem key={i} value={type}>{type}</MenuItem>);
-                    })}
-                  </Select>
-                </FormControl>
-              </Grid>
-              { props.attribute.ListType === "Type" ? 
-                (
-                  <Grid item>
-                    <FormControl variant="outlined" fullWidth>
-                      <InputLabel htmlFor="definedType" id="definedType-label">
-                        Defined Type
-                      </InputLabel>
-                      <Select
-                        labelId="definedType-label"
-                        id="definedType"
-                        disabled={props.disabled}
-                        // disabled={props.attribute.FromSupers.length > 0} 
-                        value={selectedDefinedType}
-                        onChange={e => {handleDefinedTypeChange(e, props)}}
-                        fullWidth
-                        labelWidth={100}
-                      >
-                        <MenuItem value="new">+ Create New Type</MenuItem>
-                        {props.types.map((type, i) => {
-                          return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
-                        })}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                ) : props.attribute.ListType === "Options" ?
-                (
-                  <Grid item>
-                    <ChipInput
-                      variant="outlined"
-                      disabled={props.disabled}
-                      // disabled={props.attribute.FromSupers.length > 0}
-                      defaultValue={props.attribute.Options}
-                      onChange={chips => handleOptionsChange(chips, props)}
-                    />
-                  </Grid>
-                ) : ""
-              }
+              // disabled={props.attribute.FromSupers.length > 0} 
+              value={selectedDefinedType}
+              onChange={e => {handleDefinedTypeChange(e, props)}}
+              fullWidth
+              labelWidth={100}
+            >
+              <MenuItem value="new">+ Create New Type</MenuItem>
+              {props.types.map((type, i) => {
+                return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
+              })}
+            </Select>
+          </FormControl>
+        ) : selectedType === "List" ? (
+          <Grid container spacing={1} direction="column">
+            <Grid item>
+              <FormControl variant="outlined" fullWidth>
+                <InputLabel htmlFor="list-type" id="list-type-label">
+                  List Type
+                </InputLabel>
+                <Select
+                  labelId="list-type-label"
+                  id="list-type"
+                  disabled={props.disabled}
+                  // disabled={props.attribute.FromSupers.length > 0} 
+                  value={selectedListType}
+                  onChange={e => {handleListTypeChange(e, props)}}
+                  fullWidth
+                  labelWidth={70}
+                >
+                  {listTypes.map((type, i) => {
+                    return (<MenuItem key={i} value={type}>{type}</MenuItem>);
+                  })}
+                </Select>
+              </FormControl>
             </Grid>
-          ) : (
-            ""
-          )}
-        </Grid>
-      <Grid item sm={3} xs={12}>
-        <Button
-          variant="contained" color="primary"
-          className="w200" fullWidth
-          disabled={props.disabled}
-          // disabled={props.attribute.FromSupers.length > 0}
-          onClick={_ => props.onDelete(props.attribute)}
-          type="submit"
-        >
-          <DeleteForever />
-        </Button>
+            { props.attribute.ListType === "Type" ? 
+              (
+                <Grid item>
+                  <FormControl variant="outlined" fullWidth>
+                    <InputLabel htmlFor="definedType" id="definedType-label">
+                      Defined Type
+                    </InputLabel>
+                    <Select
+                      labelId="definedType-label"
+                      id="definedType"
+                      disabled={props.disabled}
+                      // disabled={props.attribute.FromSupers.length > 0} 
+                      value={selectedDefinedType}
+                      onChange={e => {handleDefinedTypeChange(e, props)}}
+                      fullWidth
+                      labelWidth={100}
+                    >
+                      <MenuItem value="new">+ Create New Type</MenuItem>
+                      {props.types.map((type, i) => {
+                        return (<MenuItem key={i} value={type._id}>{type.Name}</MenuItem>);
+                      })}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              ) : props.attribute.ListType === "Options" ?
+              (
+                <Grid item>
+                  <ChipInput
+                    variant="outlined"
+                    disabled={props.disabled}
+                    // disabled={props.attribute.FromSupers.length > 0}
+                    defaultValue={props.attribute.Options}
+                    onChange={chips => handleOptionsChange(chips, props)}
+                  />
+                </Grid>
+              ) : ""
+            }
+          </Grid>
+        ) : (
+          ""
+        )}
+      </Grid>
+      <Grid item xs={3}>
+        { props.disabled ? 
+          `From Type: ${fromType.Name}`
+        : 
+          <Tooltip title={`Delete Attribute`}>
+            <Fab size="small"
+              color="primary"
+              // disabled={props.disabled}
+              // disabled={props.attribute.FromSupers.length > 0}
+              onClick={_ => props.onDelete(props.attribute)}
+            >
+              <Delete />
+            </Fab>
+          </Tooltip>
+        }
       </Grid>
     </Grid>
   );

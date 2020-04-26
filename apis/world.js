@@ -371,7 +371,7 @@ router
             }
             else {
               db.upsertAttribute(respond, req.body.worldID, req.body.attributes[pos]);
-            }
+            } 
           }
 
           db.upsertAttribute(respond, req.body.worldID, req.body.attributes[pos]);

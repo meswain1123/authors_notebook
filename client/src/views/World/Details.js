@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { 
   selectWorld, setTypes, setThings, setWorlds, 
   setPublicWorlds, updatePublicWorldForCollab,
-  setAttributes
+  setAttributes, updateAttributes
 } from "../../redux/actions/index";
 import API from "../../api";
 import Index from "./Index";
@@ -41,7 +41,8 @@ function mapDispatchToProps(dispatch) {
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
     updatePublicWorldForCollab: world => dispatch(updatePublicWorldForCollab(world)),
-    setAttributes: attributes => dispatch(setAttributes(attributes))
+    setAttributes: attributes => dispatch(setAttributes(attributes)),
+    updateAttributes: attributes => dispatch(updateAttributes(attributes))
   };
 }
 class Page extends Component {
@@ -72,6 +73,7 @@ class Page extends Component {
       if (res !== undefined && res.error === undefined) {
         // Add Supers to each type
         const types = res.types;
+        const updateAttributes = [];
         types.forEach(t=> {
           t.Supers = [];
           t.SuperIDs.forEach(sID=> {
@@ -80,6 +82,8 @@ class Page extends Component {
           t.AttributesArr = [];
           t.Attributes.forEach(a => {
             const attr = this.props.attributesByID[a.attrID];
+            attr.TypeIDs.push(t._id);
+            updateAttributes.push(attr);
             t.AttributesArr.push({
               index: t.AttributesArr.length,
               Name: attr.Name,
@@ -87,7 +91,8 @@ class Page extends Component {
               Options: attr.Options,
               DefinedType: attr.DefinedType,
               ListType: attr.ListType,
-              attrID: a.attrID
+              attrID: a.attrID,
+              TypeIDs: a.TypeIDs
             });
           });
           const defHash = {};
@@ -98,6 +103,7 @@ class Page extends Component {
           }
           t.DefaultsHash = defHash;
         });
+        this.props.updateAttributes(updateAttributes);
         this.props.setTypes(types);
         this.getThings();
       }

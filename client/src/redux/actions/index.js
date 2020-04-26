@@ -11,6 +11,7 @@ import {
   SELECT_WORLD,
   SET_ATTRIBUTES,
   ADD_ATTRIBUTES,
+  UPDATE_ATTRIBUTES,
   SET_TYPES,
   ADD_TYPE,
   SET_THINGS,
@@ -22,9 +23,13 @@ import {
   LOAD_FROM_STORAGE,
   TOGGLE_MENU,
   SET_FOLLOWING_WORLDS,
-  SET_WIDTH
+  SET_WIDTH,
+  UPDATE_INDEX_EXPANDED_PANEL
 } from "../constants/actionTypes";
 
+export function updateIndexExpandedPanel(payload) {
+  return { type: UPDATE_INDEX_EXPANDED_PANEL, payload };
+}
 export function setAPI(payload) {
   return { type: SET_API, payload };
 }
@@ -60,6 +65,9 @@ export function setAttributes(payload) {
 }
 export function addAttributes(payload) {
   return { type: ADD_ATTRIBUTES, payload };
+}
+export function updateAttributes(payload) {
+  return { type: UPDATE_ATTRIBUTES, payload };
 }
 export function setTypes(payload) {
   return { type: SET_TYPES, payload };

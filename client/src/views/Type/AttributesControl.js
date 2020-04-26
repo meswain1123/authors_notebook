@@ -23,12 +23,6 @@ import AttributeControl from "./AttributeControl";
 import AttributeDefaultControl from "./AttributeDefaultControl";
 import API from "../../api";
 
-const Label = styled("label")`
-  padding: 0 0 4px;
-  line-height: 1.5;
-  display: block;
-`;
-
 // It will let you add and remove attributes.
 // Each needs to have a unique name as part of validation.
 // Each also needs to have a valid type.
@@ -79,17 +73,6 @@ class Control extends Component {
 
   newAttribute = () => {
     const type = this.props.selectedType;
-    // type.AttributesArr.push({
-    //   index: type.AttributesArr.length,
-    //   _id: null,
-    //   Name: "",
-    //   AttributeType: "Text",
-    //   Options: [],
-    //   DefinedType: "",
-    //   ListType: "",
-    //   FromSupers: [],
-    //   AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
-    // });
     type.AttributesArr.push({
       index: type.AttributesArr.length,
       attrID: `null_${uuid()}`,
@@ -97,9 +80,7 @@ class Control extends Component {
       AttributeType: "Text",
       Options: [],
       DefinedType: "",
-      ListType: "",
-      // FromSuper: null,
-      // AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"]
+      ListType: ""
     });
     this.props.updateSelectedType(type);
   };
@@ -147,24 +128,6 @@ class Control extends Component {
   };
 
   blurAttribute = e => {
-  };
-
-  deleteAttributeOld = value => {
-    const type = this.props.selectedType;
-    const attributesArr = [];
-    type.AttributesArr.forEach(t => {
-      if (t.index !== value.index) {
-        if (t.index > value.index)
-          t.index--;
-        attributesArr.push(t);
-      }
-    });
-    type.AttributesArr = [];
-    this.props.updateSelectedType(type);
-    setTimeout(() => {
-      type.AttributesArr = attributesArr;
-      this.props.updateSelectedType(type);
-    }, 500);
   };
 
   deleteAttribute = value => {
@@ -306,6 +269,7 @@ class Control extends Component {
       .then(res => {
         if (res.typeID !== undefined) {
           type._id = res.typeID;
+          type.Supers = [];
           // Adds to props 
           this.props.addType(type);
           // Calls respond back to Attribute to set the type
@@ -357,6 +321,7 @@ class Control extends Component {
         if (res.thingID !== undefined) {
           thing._id = res.thingID;
           thing.Types = types;
+          thing.AttributesArr = [];
           // Adds to props 
           this.props.addThing(thing);
           // Calls respond back to Attribute to set the thing
@@ -385,6 +350,7 @@ class Control extends Component {
         superType = superType[0];
         superType.AttributesArr.forEach(attribute => {
           if (inheritedAttributes.filter(a=>a.attrID === attribute.attrID).length === 0) {
+            attribute.FromTypeID = superType._id;
             inheritedAttributes.push(attribute);
           }
         });
@@ -393,25 +359,7 @@ class Control extends Component {
     return (
       <Grid item xs={12} container spacing={0} direction="column">
         <Grid item>
-          <Label>Attributes</Label>
-        </Grid>
-        <Grid item>
           <List>
-            <ListItem>
-              <Grid container spacing={0} direction="row">
-                <Grid item xs={6}>
-                  <Button disabled={this.state.defaultsMode} variant="contained" color="primary" onClick={this.newAttribute}>
-                    <Add />
-                    <ListItemText primary={"Create New"} />
-                  </Button>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button variant="contained" color="primary" onClick={e => { this.setState({defaultsMode: !this.state.defaultsMode}) }}>
-                    <ListItemText primary={ this.state.defaultsMode ? "Set Attribute Types" : "Set Defaults"} />
-                  </Button>
-                </Grid>
-              </Grid>
-            </ListItem>
             { this.props.selectedType !== null && this.props.selectedType !== undefined &&
               inheritedAttributes.map((attribute, i) => {
                 let def = this.props.selectedType.DefaultsHash[attribute.attrID];
@@ -419,7 +367,7 @@ class Control extends Component {
                   def = { attrID: attribute.attrID, DefaultValue: "", DefaultListValues: [] };
                 return (
                   <ListItem key={i}>
-                    { this.state.defaultsMode ? 
+                    { this.props.defaultsMode ? 
                       <AttributeDefaultControl
                         typeID={this.props.selectedType._id}
                         attribute={attribute}
@@ -454,7 +402,7 @@ class Control extends Component {
                 
                 return (
                   <ListItem key={i}>
-                    { this.state.defaultsMode ? 
+                    { this.props.defaultsMode ? 
                       <AttributeDefaultControl
                         typeID={this.props.selectedType._id}
                         attribute={attribute}

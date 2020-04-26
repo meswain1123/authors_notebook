@@ -109,7 +109,8 @@ class Page extends Component {
               ListType: attr.ListType,
               attrID: a.attrID,
               Value: a.Value,
-              ListValues: a.ListValues
+              ListValues: a.ListValues,
+              TypeIDs: attr.TypeIDs
             });
           });
           this.setState({
@@ -233,6 +234,11 @@ class Page extends Component {
                                     : attribute.AttributeType === "List" ?
                                       attribute.ListValues.map(
                                         (listValue, i) => {
+                                          let thing = this.props.things.filter(t=>t._id === listValue);
+                                          if (thing.length > 0)
+                                            thing = thing[0];
+                                          else 
+                                            thing = null;
                                           return (
                                           <span key={i}>
                                             {
@@ -243,7 +249,9 @@ class Page extends Component {
                                                   color="primary"
                                                   onClick={ _ => {this.setState({redirectTo:`/thing/details/${listValue}`})}}
                                                 >
-                                                  <ListItemText primary={this.props.things.filter(t=>t._id === listValue)[0].Name}/>
+                                                  { thing === null ? `${listValue}` : 
+                                                    <ListItemText primary={this.props.things.filter(t=>t._id === listValue)[0].Name}/>
+                                                  }
                                                 </Button> 
                                                 &nbsp;
                                               </span>

@@ -1,4 +1,5 @@
 import {
+  UPDATE_INDEX_EXPANDED_PANEL,
   SET_API,
   ADD_ARTICLE,
   LOGIN,
@@ -17,6 +18,7 @@ import {
   // UPDATE_ATTRIBUTES_ARR,
   SET_ATTRIBUTES,
   ADD_ATTRIBUTES,
+  UPDATE_ATTRIBUTES,
   UPDATE_SELECTED_TYPE,
   UPDATE_THING,
   UPDATE_SELECTED_THING,
@@ -27,6 +29,7 @@ import {
 } from "../constants/actionTypes";
 
 const initialState = {
+  indexExpandedPanel: false,
   api: null,
   articles: [],
   user: null,
@@ -49,7 +52,11 @@ const initialState = {
   width: 0
 };
 function rootReducer(state = initialState, action) {
-  if (action.type === LOAD_FROM_STORAGE) {
+  if (action.type === UPDATE_INDEX_EXPANDED_PANEL) {
+    return Object.assign({}, state, {
+      indexExpandedPanel: action.payload
+    });
+  } else if (action.type === LOAD_FROM_STORAGE) {
     const user = JSON.parse(sessionStorage.getItem("user"));
     const worlds = JSON.parse(sessionStorage.getItem("worlds"));
     const publicWorlds = JSON.parse(sessionStorage.getItem("publicWorlds"));
@@ -258,6 +265,24 @@ function rootReducer(state = initialState, action) {
   } else if (action.type === SET_ATTRIBUTES) {
     const attributesByID = {};
     const attributesByName = {};
+    action.payload.forEach(attribute => {
+      attribute.TypeIDs = [];
+      attributesByID[attribute._id] = attribute;
+      attributesByName[attribute.Name] = attribute;
+    });
+    
+    // sessionStorage.setItem("attributes", JSON.stringify(action.payload));
+    sessionStorage.setItem("attributesByID", JSON.stringify(attributesByID));
+    sessionStorage.setItem("attributesByName", JSON.stringify(attributesByName));
+
+    return Object.assign({}, state, {
+      // attributes: action.payload,
+      attributesByID: attributesByID,
+      attributesByName: attributesByName
+    });
+  } else if (action.type === UPDATE_ATTRIBUTES) {
+    const attributesByID = state.attributesByID;
+    const attributesByName = state.attributesByName;
     action.payload.forEach(attribute => {
       attributesByID[attribute._id] = attribute;
       attributesByName[attribute.Name] = attribute;
