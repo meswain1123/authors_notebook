@@ -6,7 +6,7 @@ import {
   setPublicWorlds, updatePublicWorldForCollab,
   setAttributes, updateAttributes
 } from "../../redux/actions/index";
-import API from "../../api";
+import API from "../../smartAPI";
 import Index from "./Index";
 import Edit from "@material-ui/icons/Edit";
 import Delete from "@material-ui/icons/Delete";
@@ -151,8 +151,10 @@ class Page extends Component {
   load = (id) => {
     setTimeout(() => {
       this.props.selectWorld(id);
-      this.api.selectWorld(id).then(res => {
-        this.getAttributes();
+      this.api.getWorld(id).then(res => {
+        this.props.setAttributes(res.attributes);
+        this.props.setTypes(res.types);
+        this.props.setThings(res.things);
       });
     }, 500);
   }

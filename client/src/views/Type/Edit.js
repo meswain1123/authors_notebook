@@ -16,9 +16,11 @@ import {
   addType,
   updateType,
   addAttributes,
-  setAttributes
+  setAttributes,
+  setTypes,
+  setThings
 } from "../../redux/actions/index";
-import API from "../../api";
+import API from "../../smartAPI";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -44,7 +46,9 @@ function mapDispatchToProps(dispatch) {
     addType: type => dispatch(addType(type)),
     updateType: type => dispatch(updateType(type)),
     addAttributes: attrs => dispatch(addAttributes(attrs)),
-    setAttributes: attrs => dispatch(setAttributes(attrs))
+    setAttributes: attrs => dispatch(setAttributes(attrs)),
+    setTypes: types => dispatch(setTypes(types)),
+    setThings: things => dispatch(setThings(things))
   };
 }
 class Page extends Component {
@@ -69,7 +73,8 @@ class Page extends Component {
       addMore: false,
       resetting: false,
       browseAttributes: false,
-      browseAttributesSelected: ""
+      browseAttributesSelected: "",
+      browseTypesSelected: ""
     };
     this.api = API.getInstance();
   }
@@ -249,63 +254,56 @@ class Page extends Component {
         });
       });
 
-      this.api.getAttributesForWorld(this.props.selectedWorldID).then(res2 => {
-        if (res2 !== undefined && res2.error === undefined) {
-          // We store the attributes in two hashes, by name and by id
-          this.props.setAttributes(res2.attributes);
+      const type = {
+        _id: this.state._id,
+        Name: this.state.Name.trim(),
+        Description: this.state.Description,
+        SuperIDs: superIDs,
+        // AttributesArr: this.props.selectedType.AttributesArr,
+        Attributes: typeAttributes,
+        Defaults: [],
+        worldID: this.props.selectedWorld._id,
+        Major: this.state.Major,
+        ReferenceIDs: [],
+        DefaultReferenceIDs: []
+      };
+      // this.props.selectedType.AttributesArr.filter(a=>a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")).forEach(a=>{
+      //   if (!type.ReferenceIDs.includes(a.DefinedType)) {
+      //     type.ReferenceIDs.push(a.DefinedType);
+      //   }
+      // });
+      this.props.selectedType.AttributesArr.filter(a=>a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")).forEach(a=>{
+        if (!type.ReferenceIDs.includes(a.DefinedType)) {
+          type.ReferenceIDs.push(a.DefinedType);
         }
-          
-        const type = {
-          _id: this.state._id,
-          Name: this.state.Name,
-          Description: this.state.Description,
-          SuperIDs: superIDs,
-          // AttributesArr: this.props.selectedType.AttributesArr,
-          Attributes: typeAttributes,
-          Defaults: [],
-          worldID: this.props.selectedWorld._id,
-          Major: this.state.Major,
-          ReferenceIDs: [],
-          DefaultReferenceIDs: []
-        };
-        // this.props.selectedType.AttributesArr.filter(a=>a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")).forEach(a=>{
-        //   if (!type.ReferenceIDs.includes(a.DefinedType)) {
-        //     type.ReferenceIDs.push(a.DefinedType);
-        //   }
-        // });
-        this.props.selectedType.AttributesArr.filter(a=>a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")).forEach(a=>{
+      });
+      this.props.selectedType.Supers.forEach(s=> {
+        s.AttributesArr.filter(a=>a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")).forEach(a=>{
           if (!type.ReferenceIDs.includes(a.DefinedType)) {
             type.ReferenceIDs.push(a.DefinedType);
           }
         });
-        this.props.selectedType.Supers.forEach(s=> {
-          s.AttributesArr.filter(a=>a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")).forEach(a=>{
-            if (!type.ReferenceIDs.includes(a.DefinedType)) {
-              type.ReferenceIDs.push(a.DefinedType);
-            }
-          });
+      });
+      Object.keys(this.props.selectedType.DefaultsHash).forEach(attrID => {
+        const def = this.props.selectedType.DefaultsHash[attrID];
+        type.Defaults.push({
+          attrID, 
+          FromTypeID: def.FromTypeID, 
+          DefaultValue: def.DefaultValue, 
+          DefaultListValues: def.DefaultListValues 
         });
-        Object.keys(this.props.selectedType.DefaultsHash).forEach(attrID => {
-          const def = this.props.selectedType.DefaultsHash[attrID];
-          type.Defaults.push({
-            attrID, 
-            FromTypeID: def.FromTypeID, 
-            DefaultValue: def.DefaultValue, 
-            DefaultListValues: def.DefaultListValues 
-          });
-        });
-    
-        if (type._id === null) {
-          this.api
-            .createType(type)
-            .then(res => {
-              if (res.typeID !== undefined) {
-                type._id = res.typeID;
-                type.Supers = [];
-                type.SuperIDs.forEach(sID=> {
-                  type.Supers = type.Supers.concat(this.props.types.filter(t2=>t2._id === sID));
-                });
-                this.props.addType(type);
+      });
+  
+      if (type._id === null) {
+        this.api
+          .createType(type)
+          .then(res => {
+            if (res.typeID !== undefined) {
+              this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
+                this.props.setAttributes(res2.attributes);
+                this.props.setTypes(res2.types);
+                this.props.setThings(res2.things);
+
                 if (this.state.addMore) {
                   this.props.updateSelectedType({
                     _id: null,
@@ -342,45 +340,26 @@ class Page extends Component {
                     redirectTo: `/world/details/${this.props.selectedWorld._id}`
                   });
                 }
-              }
-              else if (res.error !== undefined) {
-                this.setState({
-                  waiting: false, 
-                  message: res.error 
-                });
-              }
-            })
-            .catch(err => console.log(err));
-        } else {
-          this.api
-            .updateType(type)
-            .then(res => {
-              if (res.error === undefined) {
-                type.Supers = [];
-                type.SuperIDs.forEach(sID=> {
-                  type.Supers = type.Supers.concat(this.props.types.filter(t2=>t2._id === sID));
-                });
-                type.AttributesArr = [];
-                type.Attributes.forEach(a => {
-                  const attr = this.props.attributesByID[a.attrID];
-                  type.AttributesArr.push({
-                    index: type.AttributesArr.length,
-                    Name: attr.Name,
-                    AttributeType: attr.AttributeType,
-                    Options: attr.Options,
-                    DefinedType: attr.DefinedType,
-                    ListType: attr.ListType,
-                    attrID: a.attrID
-                  });
-                });
-                const defHash = {};
-                if (type.Defaults !== undefined) {
-                  type.Defaults.forEach(def => {
-                    defHash[def.attrID] = def;
-                  });
-                }
-                type.DefaultsHash = defHash;
-                this.props.updateType(type);
+              });
+            }
+            else if (res.error !== undefined) {
+              this.setState({
+                waiting: false, 
+                message: res.error 
+              });
+            }
+          })
+          .catch(err => console.log(err));
+      } else {
+        this.api
+          .updateType(type)
+          .then(res => {
+            if (res.error === undefined) {
+              this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
+                this.props.setAttributes(res2.attributes);
+                this.props.setTypes(res2.types);
+                this.props.setThings(res2.things);
+
                 if (this.state.addMore) {
                   this.props.updateSelectedType({
                     _id: null,
@@ -392,6 +371,7 @@ class Page extends Component {
                     Major: false
                   });
                   this.setState({
+                    _id: null,
                     Name: "",
                     Description: "",
                     Supers: [],
@@ -404,11 +384,11 @@ class Page extends Component {
                     },
                     formValid: false,
                     message: "",
+                    redirectTo: null,
                     waiting: false,
                     addMore: false,
-                    resetting: true, 
-                    redirectTo: `/type/create`
-                  });
+                    resetting: true
+                  }, this.resetForm);
                 }
                 else {
                   this.setState({
@@ -416,17 +396,17 @@ class Page extends Component {
                     redirectTo: `/world/details/${this.props.selectedWorld._id}`
                   });
                 }
-              }
-              else {
-                this.setState({
-                  waiting: false, 
-                  message: res.error 
-                });
-              }
-            })
-            .catch(err => console.log(err));
-        }
-      });
+              });
+            }
+            else {
+              this.setState({
+                waiting: false, 
+                message: res.error 
+              });
+            }
+          })
+          .catch(err => console.log(err));
+      }
     });
   };
 
@@ -449,6 +429,14 @@ class Page extends Component {
         type.SuperIDs.push(s._id);
       }
     });
+    // We need to go through all the attributes on type, 
+    // and make sure that none of them are also on a super type
+    let duplicateAttributes = [];
+    selectedList.forEach(t => {
+      duplicateAttributes = duplicateAttributes.concat(type.AttributesArr.filter(a => a.TypeIDs.includes(t._id)));
+    });
+    type.AttributesArr = type.AttributesArr.filter(a => duplicateAttributes.filter(d => d.attrID === a.attrID).length === 0);
+    
     type.Supers = selectedList;
     this.props.updateSelectedType(type);
     this.setState({ Supers: selectedList });
@@ -463,50 +451,66 @@ class Page extends Component {
       AttributeType: "Text",
       Options: [],
       DefinedType: "",
-      ListType: ""
+      ListType: "",
+      TypeIDs: []
     });
     this.props.updateSelectedType(type);
   }
 
   addSelectedAttribute = () => {
-    const type = this.props.selectedType;
     const attr = this.props.attributesByID[this.state.browseAttributesSelected];
-    let attrType = this.props.types.filter(t => attr.TypeIDs.includes(t._id));
-    if (attrType.length > 0) {
-      attrType = attrType[0];
     
-      type.SuperIDs.push(attrType._id);
-      const selectedList = type.Supers;
-      selectedList.push(attrType);
+    const type = this.props.selectedType;
+    type.AttributesArr.push({
+      index: type.AttributesArr.length,
+      attrID: attr._id,
+      Name: attr.Name,
+      AttributeType: attr.AttributeType,
+      Options: attr.Options,
+      DefinedType: attr.DefinedType,
+      ListType: attr.ListType,
+      TypeIDs: attr.TypeIDs
+    });
+    this.props.updateSelectedType(type);
+    this.setState({ 
+      browseAttributesSelected: "",
+      browseTypesSelected: "" 
+    });
+  }
 
-      attrType.Supers.forEach(s => {
-        if (selectedList.filter(s2 => s2._id === s._id).length === 0) {
-          selectedList.push(s);
-          type.SuperIDs.push(s._id);
-        }
-      });
-      type.Supers = [];
+  addBrowsedType = (typeID) => {
+    const type = this.props.selectedType;
+    let attrType = this.props.types.filter(t => t._id === typeID)[0];
+    
+    type.SuperIDs.push(attrType._id);
+    const selectedList = type.Supers;
+    selectedList.push(attrType);
+
+    attrType.Supers.forEach(s => {
+      if (selectedList.filter(s2 => s2._id === s._id).length === 0) {
+        selectedList.push(s);
+        type.SuperIDs.push(s._id);
+      }
+    });
+    // We need to go through all the attributes on type, 
+    // and make sure that none of them are also on a super type
+    let duplicateAttributes = [];
+    selectedList.forEach(t => {
+      duplicateAttributes = duplicateAttributes.concat(type.AttributesArr.filter(a => a.TypeIDs.includes(t._id)));
+    });
+    type.AttributesArr = type.AttributesArr.filter(a => duplicateAttributes.filter(d => d.attrID === a.attrID).length === 0);
+    
+    type.Supers = [];
+    this.props.updateSelectedType(type);
+    this.setState({ Supers: [] });
+    setTimeout(() => {
+      type.Supers = selectedList;
       this.props.updateSelectedType(type);
-      this.setState({ Supers: [] });
-      setTimeout(() => {
-        type.Supers = selectedList;
-        this.props.updateSelectedType(type);
-        this.setState({ browseAttributesSelected: "", Supers: selectedList });
-      }, 500);
-    }
-    else {
-      const type = this.props.selectedType;
-      type.AttributesArr.push({
-        index: type.AttributesArr.length,
-        attrID: attr._id,
-        Name: attr.Name,
-        AttributeType: attr.AttributeType,
-        Options: attr.Options,
-        DefinedType: attr.DefinedType,
-        ListType: attr.ListType
-      });
-      this.props.updateSelectedType(type);
-    }
+      this.setState({ 
+        browseAttributesSelected: "", 
+        browseTypesSelected: "", 
+        Supers: selectedList });
+    }, 500);
   }
   
   removeSuper = (selectedList, removedItem) => {
@@ -528,7 +532,10 @@ class Page extends Component {
     type.Supers = supers;
     type.SuperIDs = superIDs;
     this.props.updateSelectedType(type);
-    this.setState({ Supers: supers });
+    this.setState({ Supers: supers, loaded: false });
+    setTimeout(() => {
+      this.setState({ loaded: true });
+    }, 500);
   }
 
   load = (id) => {
@@ -543,62 +550,46 @@ class Page extends Component {
 
   finishLoading = () => {
     const id = this.state._id;
-    if (id !== null) {
-      this.api.getType(this.props.selectedWorldID, id).then(res => {
-        if (res.error === undefined) {
+    this.api.getWorld(this.props.selectedWorldID).then(res => {
+      this.props.setAttributes(res.attributes);
+      this.props.setTypes(res.types);
+      this.props.setThings(res.things);
+      if (id !== null) {
+        let type = res.types.filter(t => t._id === id);
+        if (type.length > 0) {
+          type = type[0];
           const supers = this.props.types.filter(type =>
-            res.SuperIDs.includes(type._id)
+            type.SuperIDs.includes(type._id)
           );
-          res.Supers = supers;
-          res.AttributesArr = [];
-          res.Attributes.forEach(a => {
-            const attr = this.props.attributesByID[a.attrID];
-            res.AttributesArr.push({
-              index: res.AttributesArr.length,
-              Name: attr.Name,
-              AttributeType: attr.AttributeType,
-              Options: attr.Options,
-              DefinedType: attr.DefinedType,
-              ListType: attr.ListType,
-              attrID: a.attrID
-            });
-          });
-          const defHash = {};
-          if (res.Defaults !== undefined) {
-            res.Defaults.forEach(def => {
-              defHash[def.attrID] = def;
-            });
-          }
-          res.DefaultsHash = defHash;
-
-          this.props.updateSelectedType(res);
+          
+          this.props.updateSelectedType(type);
           this.setState({
-            Name: res.Name,
-            Description: res.Description,
+            Name: type.Name,
+            Description: type.Description,
             _id: id,
             Supers: supers,
-            Major: res.Major,
+            Major: type.Major,
             loaded: true
           });
         }
         else {
-          this.setState({ message: res.error, loaded: true });
+          this.setState({ message: "Invalid ID", loaded: true });
         }
-      });
-    } else {
-      this.props.updateSelectedType({
-        _id: null,
-        Name: "",
-        Description: "",
-        Supers: [],
-        SuperIDs: [],
-        AttributesArr: [],
-        Attributes: [],
-        Major: false,
-        DefaultsHash: {}
-      });
-      this.setState({ loaded: true });
-    }
+      } else {
+        this.props.updateSelectedType({
+          _id: null,
+          Name: "",
+          Description: "",
+          Supers: [],
+          SuperIDs: [],
+          AttributesArr: [],
+          Attributes: [],
+          Major: false,
+          DefaultsHash: {}
+        });
+        this.setState({ loaded: true });
+      }
+    });
   }
 
   render() {
@@ -623,10 +614,13 @@ class Page extends Component {
           : this.props.types.filter(type => type._id !== this.state._id);
       
       let additionalAttributes = [];
+      let selectedAttributeTypes = [];
+      let selectedAttributeName = "";
       if (this.state.browseAttributes) {
         Object.keys(this.props.attributesByID).forEach(id => {
           const attr = this.props.attributesByID[id];
-          if (!attr.TypeIDs.includes(this.props.selectedType._id)) {
+          if (!attr.TypeIDs.includes(this.props.selectedType._id) && 
+            this.props.selectedType.AttributesArr.filter(a => a.attrID === attr._id).length === 0) { // This second condition will make newly added attributes not show up.
             let found = false;
             for (let i = 0; i < this.state.Supers.length; i++) {
               if (attr.TypeIDs.includes(this.state.Supers[i]._id)) {
@@ -635,15 +629,18 @@ class Page extends Component {
               }
             }
             if (!found) {
-              const attrTypes = this.props.types.filter(t => attr.TypeIDs.includes(t._id));
               additionalAttributes.push({
                 _id: attr._id,
-                Name: attr.Name,
-                Type: attrTypes.length > 0 ? attrTypes[0] : null
+                Name: attr.Name
               });
             }
           }
         });
+
+        if (this.state.browseAttributesSelected !== "") {
+          selectedAttributeName = this.props.attributesByID[this.state.browseAttributesSelected].Name;
+          selectedAttributeTypes = this.props.types.filter(t => this.props.attributesByID[this.state.browseAttributesSelected].TypeIDs.includes(t._id));
+        }
       }
       return (
         <Grid item xs={12} container spacing={1} direction="column">
@@ -767,7 +764,7 @@ class Page extends Component {
                   <Grid item xs={12} sm={6}>
                     <FormControl variant="outlined" fullWidth>
                       <InputLabel htmlFor="browseForAttributes" id="browseForAttributes-label">
-                        Browse Types by Attribute
+                        Browse Attributes
                       </InputLabel>
                       <Select
                         labelId="browseForAttributes-label"
@@ -777,13 +774,13 @@ class Page extends Component {
                           this.setState({ browseAttributesSelected: e.target.value });
                         }}
                         fullWidth
-                        labelWidth={200}
+                        labelWidth={130}
                       >
                         {
                           additionalAttributes.map((attr, i) => {
                             return (
                               <MenuItem key={i} value={attr._id}>
-                                {attr.Name} ({ attr.Type !== null ? attr.Type.Name : "None" })
+                                {attr.Name}
                               </MenuItem>
                             );
                           })
@@ -798,9 +795,66 @@ class Page extends Component {
                       onClick={e => {this.addSelectedAttribute();}}
                       type="submit"
                     >
-                      Add { this.state.browseAttributesSelected === "" || additionalAttributes.filter(attr => attr._id === this.state.browseAttributesSelected && attr.Type !== null).length > 0 ? "Type" : "Attribute" }
+                      Add Attribute
                     </Button>
                   </Grid>
+                  { selectedAttributeTypes.length === 1 ?
+                    <Grid style={{color: "red"}} item xs={12} container spacing={1} direction="row">
+                      <Grid item xs={12}>
+                        This Attribute is also found on the Type '{selectedAttributeTypes[0].Name}'.  You may want to add '{selectedAttributeTypes[0].Name}' as a Super Type instead of adding the Attribute.
+                      </Grid>                      
+                      <Grid item xs={12} sm={6}>
+                        <Button
+                          variant="contained" color="primary"
+                          onClick={e => {this.addBrowsedType(selectedAttributeTypes[0]._id);}}
+                          type="submit"
+                        >
+                          Add {selectedAttributeTypes[0].Name}
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  : selectedAttributeTypes.length > 1 &&
+                    <Grid style={{color: "red"}} item xs={12} container spacing={1} direction="row">
+                      <Grid item xs={12}>
+                        This Attribute is also found on other Types.  You may want to add one as a Super Type instead of adding the Attribute.
+                      </Grid>                      
+                      <Grid item xs={12} sm={6}>
+                        <FormControl variant="outlined" fullWidth>
+                          <InputLabel htmlFor="browseTypesWithAttribute" id="browseTypesWithAttribute-label">
+                            Browse Types with {selectedAttributeName}
+                          </InputLabel>
+                          <Select
+                            labelId="browseTypesWithAttribute-label"
+                            id="browseTypesWithAttribute"
+                            value={this.state.browseTypesSelected}
+                            onChange={e => {
+                              this.setState({ browseTypesSelected: e.target.value });
+                            }}
+                            fullWidth
+                            labelWidth={140 + selectedAttributeName.length * 9}
+                          >
+                            { selectedAttributeTypes.map((type, i) => {
+                              return (
+                                <MenuItem key={i} value={type._id}>
+                                  {type.Name}
+                                </MenuItem>
+                              );
+                            })}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Button
+                          variant="contained" color="primary"
+                          disabled={ this.state.browseTypesSelected === "" }
+                          onClick={e => {this.addBrowsedType(this.state.browseTypesSelected);}}
+                          type="submit"
+                        >
+                          Add Type
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  }
                 </Grid>
               }
               <Grid item>

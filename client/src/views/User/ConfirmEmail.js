@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import API from '../../api';
+import API from '../../smartAPI';
 
 
 class Page extends Component {

@@ -69,9 +69,7 @@ export default function AttributeControl(props) {
   const selectedDefinedType =
     props.attribute.DefinedType === undefined || props.attribute.DefinedType === "" ? "" : props.attribute.DefinedType;
 
-  let fromType = props.types.filter(t=>t._id === props.attribute.FromTypeID);
-  if (fromType.length > 0)
-    fromType = fromType[0];
+  let fromTypes = props.attribute.FromTypeIDs === undefined ? [] : props.types.filter(t=> props.attribute.FromTypeIDs.includes(t._id));
 
   return (
     <Grid container spacing={1} direction="row">
@@ -229,8 +227,15 @@ export default function AttributeControl(props) {
         )}
       </Grid>
       <Grid item xs={3}>
-        { props.disabled ? 
-          `From Type: ${fromType.Name}`
+        { fromTypes.length === 1 ? 
+          `From Type: ${fromTypes[0].Name}`
+        : fromTypes.length > 1 ?
+          <span>
+            From Types: 
+            { fromTypes.map((type, i) => {
+              return (<span key={i}>{i > 0 && ", "}{type.Name}</span>)
+            })}
+          </span>
         : 
           <Tooltip title={`Delete Attribute`}>
             <Fab size="small"

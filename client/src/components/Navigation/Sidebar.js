@@ -26,7 +26,7 @@ import {
   setPublicWorlds,
   setFollowingWorlds
 } from "../../redux/actions/index";
-import API from "../../api";
+import API from "../../smartAPI";
 
 const mapStateToProps = state => {
   return {
@@ -55,7 +55,7 @@ class Bar extends Component {
   }
 
   componentDidMount() {
-    this.api.getPublicWorlds().then(res => {
+    this.api.getPublicWorlds(true).then(res => {
       this.props.setPublicWorlds(res.worlds);
     });
     // These kinds of things can also be done in render,

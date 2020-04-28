@@ -58,8 +58,8 @@ function rootReducer(state = initialState, action) {
     });
   } else if (action.type === LOAD_FROM_STORAGE) {
     const user = JSON.parse(sessionStorage.getItem("user"));
-    const worlds = JSON.parse(sessionStorage.getItem("worlds"));
-    const publicWorlds = JSON.parse(sessionStorage.getItem("publicWorlds"));
+    // const worlds = JSON.parse(sessionStorage.getItem("worlds"));
+    // const publicWorlds = JSON.parse(sessionStorage.getItem("publicWorlds"));
     const selectedWorld = JSON.parse(sessionStorage.getItem("selectedWorld"));
     const selectedWorldID = sessionStorage.getItem("selectedWorldID");
     const types = JSON.parse(sessionStorage.getItem("types"));
@@ -71,8 +71,8 @@ function rootReducer(state = initialState, action) {
     
     return Object.assign({}, state, {
       user: user,
-      worlds: worlds === null ? [] : worlds,
-      publicWorlds: publicWorlds === null ? [] : publicWorlds,
+      // worlds: worlds === null ? [] : worlds,
+      // publicWorlds: publicWorlds === null ? [] : publicWorlds,
       selectedWorld,
       selectedWorldID,
       types: types === null ? [] : types,
@@ -104,7 +104,7 @@ function rootReducer(state = initialState, action) {
     });
   } else if (action.type === SET_WORLDS) {
     if (action.payload.error === undefined){
-      sessionStorage.setItem("worlds", JSON.stringify(action.payload));
+      // sessionStorage.setItem("worlds", JSON.stringify(action.payload));
       if (state.selectedWorldID !== null && state.selectedWorld === null) {
         const worldArr = action.payload.filter(
           world => world._id === state.selectedWorldID
@@ -141,7 +141,7 @@ function rootReducer(state = initialState, action) {
     }
   } else if (action.type === SET_PUBLIC_WORLDS) {
     if (action.payload.error === undefined){
-      sessionStorage.setItem("publicWorlds", JSON.stringify(action.payload));
+      // sessionStorage.setItem("publicWorlds", JSON.stringify(action.payload));
       if (state.selectedWorldID !== null && state.selectedWorld === null) {
         const worldArr = action.payload.filter(
           world => world._id === state.selectedWorldID
@@ -174,15 +174,15 @@ function rootReducer(state = initialState, action) {
     if (action.payload.Public) {
       const worlds = state.worlds.concat(action.payload);
       const publicWorlds = state.publicWorlds.concat(action.payload);
-      sessionStorage.setItem("worlds", JSON.stringify(worlds));
-      sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
+      // sessionStorage.setItem("worlds", JSON.stringify(worlds));
+      // sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
       return Object.assign({}, state, {
         worlds,
         publicWorlds
       });
     } else {
       const worlds = state.worlds.concat(action.payload);
-      sessionStorage.setItem("worlds", JSON.stringify(worlds));
+      // sessionStorage.setItem("worlds", JSON.stringify(worlds));
       return Object.assign({}, state, {
         worlds: state.worlds.concat(action.payload)
       });
@@ -196,7 +196,7 @@ function rootReducer(state = initialState, action) {
     world.Public = action.payload.Public;
     world.AcceptingCollaborators = action.payload.AcceptingCollaborators;
     world.Collaborators = action.payload.Collaborators;
-    sessionStorage.setItem("worlds", JSON.stringify(worlds));
+    // sessionStorage.setItem("worlds", JSON.stringify(worlds));
     if (world.Public) {
       if (wasPublic) {
         // It was already public so we just need to update the name
@@ -207,7 +207,7 @@ function rootReducer(state = initialState, action) {
         // It's been changed to public, so we need to add it
         publicWorlds = publicWorlds.concat(world);
       }
-      sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
+      // sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
       return Object.assign({}, state, {
         worlds,
         publicWorlds
@@ -216,7 +216,7 @@ function rootReducer(state = initialState, action) {
       if (wasPublic) {
         // It used to be public, so we need to remove it
         publicWorlds = publicWorlds.filter(t => t._id !== world._id);
-        sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
+        // sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
         return Object.assign({}, state, {
           worlds,
           publicWorlds
@@ -233,7 +233,7 @@ function rootReducer(state = initialState, action) {
     let publicWorlds = [...state.publicWorlds];
     const world = publicWorlds.filter(t => t._id === action.payload._id)[0];
     world.Collaborators = action.payload.Collaborators;
-    sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
+    // sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
     return Object.assign({}, state, {
       publicWorlds
     });
@@ -266,7 +266,6 @@ function rootReducer(state = initialState, action) {
     const attributesByID = {};
     const attributesByName = {};
     action.payload.forEach(attribute => {
-      attribute.TypeIDs = [];
       attributesByID[attribute._id] = attribute;
       attributesByName[attribute.Name] = attribute;
     });

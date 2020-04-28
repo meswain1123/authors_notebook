@@ -7,7 +7,9 @@ import {
   updateThing,
   updateType,
   addType,
-  setAttributes
+  setAttributes,
+  setTypes,
+  setThings
 } from "../../redux/actions/index";
 import { 
   Button, FormControl, 
@@ -23,8 +25,9 @@ import { ArrowBack, Add, Search } from "@material-ui/icons";
 import AttributesControl from "./AttributesControl";
 import { Multiselect } from 'multiselect-react-dropdown';
 import { Helmet } from 'react-helmet';
-import API from "../../api";
+import API from "../../smartAPI";
 import NewTypeModal from "../../components/Modals/NewTypeModal";
+import TextBox from "../../components/Inputs/TextBox";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -52,7 +55,9 @@ function mapDispatchToProps(dispatch) {
     updateThing: thing => dispatch(updateThing(thing)),
     updateType: type => dispatch(updateType(type)),
     addType: type => dispatch(addType(type)),
-    setAttributes: attributes => dispatch(setAttributes(attributes))
+    setAttributes: attributes => dispatch(setAttributes(attributes)),
+    setTypes: types => dispatch(setTypes(types)),
+    setThings: things => dispatch(setThings(things))
   };
 }
 class Page extends Component {
@@ -280,7 +285,7 @@ class Page extends Component {
     let message = "";
     switch (fieldName) {
       case "Name":
-        value = this.state[fieldName];
+        value = this.state[fieldName].trim();
         valid = value.match(/^[a-zA-Z0-9 ]*$/i) !== null;
         if (!valid)
           message = "Only Letters, Numbers, and Spaces allowed in Thing Names";
@@ -296,7 +301,7 @@ class Page extends Component {
         }
         break;
       case "infoAttributeName":
-        value = this.state.infoAttribute.Name;
+        value = this.state.infoAttribute.Name.trim();
         valid = value.match(/^[a-zA-Z0-9 ]*$/i) !== null;
         if (!valid)
           message = "Only Letters, Numbers, and Spaces allowed in Attribute Names";
@@ -407,41 +412,47 @@ class Page extends Component {
         .createThing(thing)
         .then(res => {
           if (res.error === undefined){
-            thing._id = res.thingID;
-            thing.Types = this.state.Types;
-            thing.AttributesArr = this.props.selectedThing.AttributesArr;
-            this.props.addThing(thing);
-            if (this.state.addMore) {
-              this.props.updateSelectedThing({
-                _id: null,
-                Name: "",
-                Description: "",
-                Types: [],
-                Attributes: [],
-                AttributesArr: []
-              });
-              this.setState({
-                _id: null,
-                Name: "",
-                Description: "",
-                Types: [],
-                Attributes: [],
-                fieldValidation: {
-                  Name: { valid: true, message: "" },
-                  Attributes: { valid: true, message: "" }
-                },
-                formValid: false,
-                message: "",
-                waiting: false,
-                resetting: true
-              }, this.resetForm);
-            }
-            else {
-              this.setState({
-                waiting: false,
-                redirectTo: `/world/details/${this.props.selectedWorld._id}`
-              });
-            }
+            // thing._id = res.thingID;
+            // thing.Types = this.state.Types;
+            // thing.AttributesArr = this.props.selectedThing.AttributesArr;
+            // this.props.addThing(thing);
+            this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
+              this.props.setAttributes(res2.attributes);
+              this.props.setTypes(res2.types);
+              this.props.setThings(res2.things);
+
+              if (this.state.addMore) {
+                this.props.updateSelectedThing({
+                  _id: null,
+                  Name: "",
+                  Description: "",
+                  Types: [],
+                  Attributes: [],
+                  AttributesArr: []
+                });
+                this.setState({
+                  _id: null,
+                  Name: "",
+                  Description: "",
+                  Types: [],
+                  Attributes: [],
+                  fieldValidation: {
+                    Name: { valid: true, message: "" },
+                    Attributes: { valid: true, message: "" }
+                  },
+                  formValid: false,
+                  message: "",
+                  waiting: false,
+                  resetting: true
+                }, this.resetForm);
+              }
+              else {
+                this.setState({
+                  waiting: false,
+                  redirectTo: `/world/details/${this.props.selectedWorld._id}`
+                });
+              }
+            });
           }
           else {
             this.setState({message: res.error});
@@ -452,40 +463,44 @@ class Page extends Component {
       this.api
         .updateThing(thing)
         .then(res => {
-          if (res.error === undefined){
-            thing.Types = this.state.Types;
-            this.props.updateThing(thing);
-            if (this.state.addMore) {
-              this.props.updateSelectedThing({
-                _id: null,
-                Name: "",
-                Description: "",
-                Types: [],
-                Attributes: [],
-                AttributesArr: []
-              });
-              this.setState({
-                Name: "",
-                Description: "",
-                Types: [],
-                Attributes: [],
-                fieldValidation: {
-                  Name: { valid: true, message: "" },
-                  Attributes: { valid: true, message: "" }
-                },
-                formValid: false,
-                message: "",
-                waiting: false,
-                addMore: false,
-                resetting: true
-              }, this.resetForm);
-            }
-            else {
-              this.setState({
-                waiting: false,
-                redirectTo: `/world/details/${this.props.selectedWorld._id}`
-              });
-            }
+          if (res.error === undefined) {
+            this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
+              this.props.setAttributes(res2.attributes);
+              this.props.setTypes(res2.types);
+              this.props.setThings(res2.things);
+              
+              if (this.state.addMore) {
+                this.props.updateSelectedThing({
+                  _id: null,
+                  Name: "",
+                  Description: "",
+                  Types: [],
+                  Attributes: [],
+                  AttributesArr: []
+                });
+                this.setState({
+                  Name: "",
+                  Description: "",
+                  Types: [],
+                  Attributes: [],
+                  fieldValidation: {
+                    Name: { valid: true, message: "" },
+                    Attributes: { valid: true, message: "" }
+                  },
+                  formValid: false,
+                  message: "",
+                  waiting: false,
+                  addMore: false,
+                  resetting: true
+                }, this.resetForm);
+              }
+              else {
+                this.setState({
+                  waiting: false,
+                  redirectTo: `/world/details/${this.props.selectedWorld._id}`
+                });
+              }
+            });
           }
           else {
             this.setState({message: res.error});
@@ -507,21 +522,23 @@ class Page extends Component {
 
   addType = (selectedList, selectedItem) => {
     const thing = this.props.selectedThing;
-    const newTypes = [selectedItem];
+    const newTypes = {};
+    newTypes[selectedItem._id] = selectedItem;
     selectedItem.Supers.forEach(s=>{
       if (selectedList.filter(t=>t._id === s._id).length === 0) {
         let superType = this.props.types.filter(t=>t._id === s._id);
         if (superType.length > 0 && selectedList.filter(t=>t._id === superType[0]._id).length === 0){
           selectedList.push(superType[0]);
-          newTypes.push(superType[0]);
+          newTypes[superType[0]._id] = superType[0];
         }
       }
       if (this.state.Types.filter(t=>t._id === s._id).length === 0){
-        newTypes.push(s);
+        newTypes[s._id] = s;
       }
     });
     let newAttributes = [];
-    newTypes.forEach(type=> {
+    Object.keys(newTypes).forEach(typeID => {
+      const type = newTypes[typeID];
       type.Attributes.forEach(a => {
         const attribute = {...a};
         let existing = thing.Attributes.filter(a=>a.attrID === attribute.attrID);
@@ -539,15 +556,25 @@ class Page extends Component {
         }
       });
     });
-    newTypes.forEach(type=> {
+    Object.keys(newTypes).forEach(typeID => {
+      const type = newTypes[typeID];
       newAttributes.forEach(attribute => {
         if (type.DefaultsHash === undefined || type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
           attribute.Value = "";
           attribute.ListValues = [];
         }
         else {
-          attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
-          attribute.ListValues = type.DefaultsHash[attribute.attrID].DefaultListValues;
+          if (attribute.Value === undefined) {
+            attribute.Value = "";
+            attribute.ListValues = [];
+          }
+          if (attribute.Value === "") {
+            attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
+          }
+          type.DefaultsHash[attribute.attrID].DefaultListValues.forEach(listValue => {
+            if (!attribute.ListValues.includes(listValue))
+              attribute.ListValues.push(listValue);
+          });
         }
       })
     });
@@ -700,11 +727,11 @@ class Page extends Component {
     this.api.upsertAttributes(this.props.selectedWorldID, attributes).then(res => {
       if (res.error === undefined) {
         // res.attributes is a hash with the name as key and id as value
-        this.api.getAttributesForWorld(this.props.selectedWorldID).then(res2 => {
-          if (res2 !== undefined && res2.error === undefined) {
-            // We store the attributes in two hashes, by name and by id
-            this.props.setAttributes(res2.attributes);
-          }
+        this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
+          this.props.setAttributes(res2.attributes);
+          this.props.setTypes(res2.types);
+          this.props.setThings(res2.things);
+          
           const attribute = this.state.infoAttribute;
           if (this.state.newTypeForAttribute !== "") {
             attribute.TypeIDs.push(this.state.newTypeForAttribute);
@@ -898,101 +925,112 @@ class Page extends Component {
   }
 
   finishLoading = () => {
-    if (this.state._id !== null) {
-      // We're editing an existing Thing
-      this.api.getThing(this.props.selectedWorldID, this.state._id).then(res => {
-        const things = this.props.things.filter(
-          thing => res._id !== thing._id
-        );
-        let Types = [];
-        res.TypeIDs.forEach(tID=> {
-          Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
-        });
-        let newAttributes = [];
-        Types.forEach(type=> {
-          for (let i = 0; i < type.Attributes.length; i++) {
-            const attribute = {...type.Attributes[i]};
-            let existing = res.Attributes.filter(a=>a.attrID === attribute.attrID);
-            if (existing.length === 0) {
-              attribute.FromTypeIDs = [type._id];
-              attribute.index = res.Attributes.length + newAttributes.length;
-              newAttributes.push(attribute);
-            }
-            else {
-              existing = existing[0];
-              if (existing.FromTypeIDs === undefined || existing.FromTypeIDs === null)
-                existing.FromTypeIDs = [];
-              existing.FromTypeIDs.push(type._id);
-            }
-          }
-        });
-        Types.forEach(type=> {
-          newAttributes.forEach(attribute => {
-            if (type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
-              attribute.Value = "";
-              attribute.ListValues = [];
-            }
-            else {
-              attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
-              attribute.ListValues = type.DefaultsHash[attribute.attrID].DefaultListValues;
-            }
-          })
-        });
-        let attributes = [...res.Attributes, ...newAttributes];
-        res.Attributes = attributes;
-        res.AttributesArr = [];
-        res.Attributes.forEach(a => {
-          const attr = this.props.attributesByID[a.attrID];
-          res.AttributesArr.push({
-            index: res.AttributesArr.length,
-            Name: attr.Name,
-            AttributeType: attr.AttributeType,
-            Options: attr.Options,
-            DefinedType: attr.DefinedType,
-            ListType: attr.ListType,
-            attrID: a.attrID,
-            Value: a.Value,
-            ListValues: a.ListValues,
-            FromTypeIDs: a.FromTypeIDs,
-            TypeIDs: attr.TypeIDs
-          });
-        });
-        this.props.updateSelectedThing(res);
-        this.setState({
-          Name: res.Name,
-          Description: res.Description,
-          Things: things,
-          Types: Types,
-          loaded: true
-        });
-      });
-    } else {
-      let { id } = this.props.match.params;
-      if (id !== undefined && id.includes("type_id_")) {
-        // We're creating it from a type rather than from blank
-        const typeID = id.substring(8);
-        let type = this.props.types.filter(t=> t._id === typeID);
-        if (type.length > 0) {
-          type = type[0];
-          this.createThingFromType(type);
+    this.api.getWorld(this.props.selectedWorldID).then(res => {
+      this.props.setAttributes(res.attributes);
+      this.props.setTypes(res.types);
+      this.props.setThings(res.things);
+      
+      if (this.state._id !== null) {
+        // We're editing an existing Thing
+        let thing = res.things.filter(t => t._id === this.state._id);
+        if (thing.length === 0) {
+          this.setState({ message: "Invalid ID" });
         }
         else {
-          this.setState({ message: "Invalid Type", loaded: true });
+          thing = thing[0];
+          const things = this.props.things.filter(
+            t => t._id !== thing._id
+          );
+          let Types = [];
+          thing.TypeIDs.forEach(tID=> {
+            Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
+          });
+          let newAttributes = [];
+          Types.forEach(type=> {
+            for (let i = 0; i < type.Attributes.length; i++) {
+              const attribute = {...type.Attributes[i]};
+              let existing = thing.Attributes.filter(a=>a.attrID === attribute.attrID);
+              if (existing.length === 0) {
+                attribute.FromTypeIDs = [type._id];
+                attribute.index = thing.Attributes.length + newAttributes.length;
+                newAttributes.push(attribute);
+              }
+              else {
+                existing = existing[0];
+                if (existing.FromTypeIDs === undefined || existing.FromTypeIDs === null)
+                  existing.FromTypeIDs = [];
+                existing.FromTypeIDs.push(type._id);
+              }
+            }
+          });
+          Types.forEach(type=> {
+            newAttributes.forEach(attribute => {
+              if (type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
+                attribute.Value = "";
+                attribute.ListValues = [];
+              }
+              else {
+                attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
+                attribute.ListValues = type.DefaultsHash[attribute.attrID].DefaultListValues;
+              }
+            })
+          });
+          let attributes = [...thing.Attributes, ...newAttributes];
+          thing.Attributes = attributes;
+          thing.AttributesArr = [];
+          thing.Attributes.forEach(a => {
+            const attr = this.props.attributesByID[a.attrID];
+            thing.AttributesArr.push({
+              index: thing.AttributesArr.length,
+              Name: attr.Name,
+              AttributeType: attr.AttributeType,
+              Options: attr.Options,
+              DefinedType: attr.DefinedType,
+              ListType: attr.ListType,
+              attrID: a.attrID,
+              Value: a.Value,
+              ListValues: a.ListValues,
+              FromTypeIDs: a.FromTypeIDs,
+              TypeIDs: attr.TypeIDs
+            });
+          });
+          this.props.updateSelectedThing(thing);
+          this.setState({
+            Name: thing.Name,
+            Description: thing.Description,
+            Things: things,
+            Types: Types,
+            loaded: true
+          });
+        }
+      } else {
+        let { id } = this.props.match.params;
+        if (id !== undefined && id.includes("type_id_")) {
+          // We're creating it from a type rather than from blank
+          const typeID = id.substring(8);
+          let type = this.props.types.filter(t=> t._id === typeID);
+          if (type.length > 0) {
+            type = type[0];
+            this.createThingFromType(type);
+          }
+          else {
+            this.setState({ message: "Invalid Type", loaded: true });
+          }
+        }
+        else {
+          // We're creating a new thing from blank.
+          this.props.updateSelectedThing({
+            _id: null,
+            Name: "",
+            Description: "",
+            Types: [],
+            Attributes: [],
+            AttributesArr: []
+          });
+          this.setState({ loaded: true });
         }
       }
-      else {
-        // We're creating a new thing from blank.
-        this.props.updateSelectedThing({
-          _id: null,
-          Name: "",
-          Description: "",
-          Types: [],
-          Attributes: [],
-          AttributesArr: []
-        });
-        this.setState({ loaded: true });
-      }
-    }
+    });
   }
 
   render() {
@@ -1434,40 +1472,27 @@ class Page extends Component {
                 </Grid>
               </Grid>
               <Grid item>
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel htmlFor="name">Name</InputLabel>
-                  <OutlinedInput
-                    id="name"
-                    name="Name"
-                    type="text"
-                    autoComplete="Off"
-                    error={!this.state.fieldValidation.Name.valid}
-                    value={this.state.Name}
-                    onChange={this.handleUserInput}
-                    onBlur={this.inputBlur}
-                    labelWidth={43}
-                    fullWidth
-                  />
-                  <FormHelperText>
-                    {this.state.fieldValidation.Name.message}
-                  </FormHelperText>
-                </FormControl>
+                { this.state.loaded &&  
+                  <TextBox 
+                    Value={this.state.Name} 
+                    fieldName="Name" 
+                    message={this.state.fieldValidation.Name.message}
+                    onBlur={name => {
+                      this.setState({ Name: name }, this.validateForm);
+                    }}
+                    labelWidth={43}/>
+                }
               </Grid>
               <Grid item>
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel htmlFor="description">Description</InputLabel>
-                  <OutlinedInput
-                    id="description"
-                    name="Description"
-                    type="text"
-                    multiline={true}
-                    value={this.state.Description}
-                    onChange={this.handleUserInput}
-                    onBlur={this.inputBlur}
-                    labelWidth={82}
-                    fullWidth
-                  />
-                </FormControl>
+                { this.state.loaded &&  
+                  <TextBox 
+                    Value={this.state.Description} 
+                    fieldName="Description" 
+                    onBlur={desc => {
+                      this.setState({ Description: desc });
+                    }}
+                    labelWidth={82}/>
+                }
               </Grid>
               <Grid item>
                 { !this.state.resetting &&
@@ -1517,7 +1542,6 @@ class Page extends Component {
                         <Search />
                       </Fab>
                     </Tooltip>
-                  
                   </span>
                 </Grid>
                 { this.state.browseAttributes && 

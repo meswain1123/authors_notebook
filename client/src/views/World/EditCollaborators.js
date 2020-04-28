@@ -13,7 +13,7 @@ import { Button, Checkbox, FormControl, FormControlLabel,
 } from "@material-ui/core";
 import { Add, ArrowBack, FileCopyOutlined, Delete } from "@material-ui/icons";
 import { Helmet } from 'react-helmet';
-import API from "../../api";
+import API from "../../smartAPI";
 
 /* 
   This component will take the main portion of the page and is used for

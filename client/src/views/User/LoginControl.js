@@ -15,7 +15,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { userLogin, setWorlds, setFollowingWorlds } from "../../redux/actions/index";
 import Link from "@material-ui/core/Link";
 import Cookies from "universal-cookie";
-import API from '../../api';
+import API from '../../smartAPI';
 
 
 const mapStateToProps = state => {

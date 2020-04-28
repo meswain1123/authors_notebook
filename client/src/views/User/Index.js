@@ -4,7 +4,7 @@ import './App.css';
 import {
     fetchData, 
     postData,
-  } from './api';
+  } from './smartAPI';
   import { 
     Button, 
     FormGroup, 

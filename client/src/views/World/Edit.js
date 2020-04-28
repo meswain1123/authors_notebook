@@ -11,7 +11,7 @@ import { Button, Checkbox, FormControl, FormControlLabel,
 } from "@material-ui/core";
 import { ArrowBack } from "@material-ui/icons";
 import { Helmet } from 'react-helmet';
-import API from "../../api";
+import API from "../../smartAPI";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -69,6 +69,11 @@ class Page extends Component {
           });
           this.api.selectWorld(id);
           this.props.selectWorld(id);
+          this.api.getWorld(id).then(res => {
+            this.props.setAttributes(res.attributes);
+            this.props.setTypes(res.types);
+            this.props.setThings(res.things);
+          });
         }
       } else {
         this.api.selectWorld(null);

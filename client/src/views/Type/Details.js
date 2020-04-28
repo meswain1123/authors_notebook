@@ -6,12 +6,13 @@ import {
   addType,
   updateType,
   setTypes,
-  setAttributes
+  setAttributes,
+  setThings
 } from "../../redux/actions/index";
 import { Edit, Delete, Add, ArrowBack } from "@material-ui/icons";
 import { Fab, Modal, Grid, Button, Tooltip, List, ListItem, ListItemText } from "@material-ui/core";
 import { Helmet } from 'react-helmet';
-import API from "../../api";
+import API from "../../smartAPI";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -49,7 +50,8 @@ function mapDispatchToProps(dispatch) {
     addType: type => dispatch(addType(type)),
     updateType: type => dispatch(updateType(type)),
     setTypes: types => dispatch(setTypes(types)),
-    setAttributes: attributes => dispatch(setAttributes(attributes))
+    setAttributes: attributes => dispatch(setAttributes(attributes)),
+    setThings: things => dispatch(setThings(things))
   };
 }
 class Page extends Component {
@@ -57,14 +59,8 @@ class Page extends Component {
     super(props);
     this.state = {
       _id: null,
-      Name: "",
-      Description: "",
-      Supers: [],
-      Major: false,
-      Attributes: [],
       fieldValidation: {
         Name: { valid: true, message: "" },
-        AttributesArr: { valid: true, message: "" }
       },
       formValid: false,
       message: "",
@@ -109,44 +105,34 @@ class Page extends Component {
 
   finishLoading = () => {
     const id = this.state._id;
-    if (id !== undefined) { // When I move to storing more in session, this is the kind of place where I'll check.
-      this.api.getType(this.props.selectedWorldID, id).then(res => {
-        if (res.error === undefined) {
-          res.Supers = [];
-          res.SuperIDs.forEach(sID=> {
-            res.Supers = res.Supers.concat(this.props.types.filter(t2=>t2._id === sID));
-          });
-          res.AttributesArr = [];
-          res.Attributes.forEach(a => {
-            const attr = this.props.attributesByID[a.attrID];
-            res.AttributesArr.push({
-              index: res.AttributesArr.length,
-              Name: attr.Name,
-              AttributeType: attr.AttributeType,
-              Options: attr.Options,
-              DefinedType: attr.DefinedType,
-              ListType: attr.ListType,
-              attrID: a.attrID
-            });
-          });
-          const defHash = {};
-          if (res.Defaults !== undefined) {
-            res.Defaults.forEach(def => {
-              defHash[def.attrID] = def;
-            });
+    if (id !== undefined) {
+      this.api.getWorld(this.props.selectedWorldID).then(res => {
+        this.props.setAttributes(res.attributes);
+        this.props.setTypes(res.types);
+        this.props.setThings(res.things);
+
+        if (id !== null) {
+          let type = res.types.filter(t => t._id === id);
+          if (type.length > 0) {
+            type = type[0];
+
+            this.props.updateSelectedType(type);
           }
-          res.DefaultsHash = defHash;
-          this.setState({
-            Name: res.Name,
-            Description: res.Description,
-            _id: id,
-            Supers: res.Supers,
-            Major: res.Major
+          else {
+            this.setState({ message: "Invalid ID", loaded: true });
+          }
+        } else {
+          this.props.updateSelectedType({
+            _id: null,
+            Name: "",
+            Description: "",
+            Supers: [],
+            SuperIDs: [],
+            AttributesArr: [],
+            Attributes: [],
+            Major: false,
+            DefaultsHash: {}
           });
-          this.props.updateSelectedType(res);
-        }
-        else {
-          console.log(res.error);
         }
       });
     } else {
@@ -206,10 +192,10 @@ class Page extends Component {
                   </Tooltip>
                 </Grid>
                 <Grid item xs={5}>
-                  <h2>{this.state.Name}</h2>
+                  <h2>{this.props.selectedType.Name}</h2>
                 </Grid>
                 <Grid item sm={3} xs={6}>
-                  <h3>{this.state.Major ? "Major Type" : ""}</h3>
+                  <h3>{this.props.selectedType.Major ? "Major Type" : ""}</h3>
                 </Grid>
                 <Grid item sm={3} xs={12}>
                   <List>
@@ -218,7 +204,7 @@ class Page extends Component {
                       (this.props.selectedWorld.Owner === this.props.user._id || 
                         this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length > 0)) &&
                       <ListItem>
-                        <Tooltip title={`Create New ${this.state.Name}`}>
+                        <Tooltip title={`Create New ${this.props.selectedType.Name}`}>
                           <Fab size="small"
                             color="primary"
                             onClick={ _ => {this.setState({redirectTo:`/thing/create/type_id_${this.state._id}`})}}
@@ -233,7 +219,7 @@ class Page extends Component {
                       (this.props.selectedWorld.Owner === this.props.user._id || 
                         this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length > 0)) &&
                       <ListItem>
-                        <Tooltip title={`Edit ${this.state.Name}`}>
+                        <Tooltip title={`Edit ${this.props.selectedType.Name}`}>
                           <Fab size="small"
                             color="primary"
                             onClick={ _ => {this.setState({redirectTo:`/type/edit/${this.state._id}`})}}
@@ -248,7 +234,7 @@ class Page extends Component {
                       (this.props.selectedWorld.Owner === this.props.user._id || 
                         this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length > 0)) &&
                       <ListItem>
-                        <Tooltip title={`Delete ${this.state.Name}`}>
+                        <Tooltip title={`Delete ${this.props.selectedType.Name}`}>
                           <Fab size="small"
                             color="primary"
                             onClick={e => {this.setState({modalOpen: true})}}
@@ -263,7 +249,7 @@ class Page extends Component {
               </Grid>
               <Grid item container spacing={0} direction="row">
                 <Grid item sm={9} xs={12} container spacing={0} direction="column">
-                  <Grid item>{this.state.Description}</Grid>
+                  <Grid item>{this.props.selectedType.Description}</Grid>
                   <Grid item>
                     Attributes
                     <List>
@@ -544,13 +530,13 @@ class Page extends Component {
                   </Grid>
                 </Grid>
                 <Grid item sm={3} xs={12} container spacing={0} direction="column">
-                  {this.state.Supers.length === 0 && (
+                  {this.props.selectedType.Supers.length === 0 && (
                     <Grid item>
                       <List>
                         <ListItem>
                           <ListItemText primary={"Super Types"} />
                         </ListItem>
-                        {this.state.Supers.map((superType, i) => {
+                        {this.props.selectedType.Supers.map((superType, i) => {
                           return (
                             <ListItem key={i}>
                               <Button fullWidth
@@ -643,7 +629,7 @@ class Page extends Component {
                 <div style={this.getModalStyle()} className="paper">
                   <Grid container spacing={1} direction="column">
                     <Grid item>
-                      Are you sure you want to delete {this.state.Name}?
+                      Are you sure you want to delete {this.props.selectedType.Name}?
                     </Grid>
                     <Grid item>
                       (All references to it will be left alone and may not work correctly)

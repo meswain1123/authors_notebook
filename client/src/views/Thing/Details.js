@@ -11,9 +11,11 @@ import {
   updateSelectedThing,
   addThing,
   updateThing,
+  setAttributes,
+  setTypes,
   setThings
 } from "../../redux/actions/index";
-import API from "../../api";
+import API from "../../smartAPI";
 
 const mapStateToProps = state => {
   const thing = state.app.selectedThing;
@@ -33,6 +35,8 @@ function mapDispatchToProps(dispatch) {
     updateSelectedThing: thing => dispatch(updateSelectedThing(thing)),
     addThing: thing => dispatch(addThing(thing)),
     updateThing: thing => dispatch(updateThing(thing)),
+    setAttributes: attrs => dispatch(setAttributes(attrs)),
+    setTypes: types => dispatch(setTypes(types)),
     setThings: things => dispatch(setThings(things))
   };
 }
@@ -73,9 +77,16 @@ class Page extends Component {
 
   delete = e => {
     this.api.deleteThing(this.props.selectedWorldID, this.state._id).then(res=>{
-      const things = this.props.things.filter(t=>t._id!==this.state._id);
-      this.props.setThings(things);
-      this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})
+      this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
+        this.props.setAttributes(res2.attributes);
+        this.props.setTypes(res2.types);
+        this.props.setThings(res2.things);
+
+        this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`});
+      });
+      // const things = this.props.things.filter(t=>t._id!==this.state._id);
+      // this.props.setThings(things);
+      // this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})
     });
   }
 
@@ -90,18 +101,23 @@ class Page extends Component {
 
   finishLoading = () => {
     const id = this.state._id;
-    if (id !== undefined) {
-      this.api.getThing(this.props.selectedWorldID, id).then(res => {
-        if (res.error === undefined) {
-          let Types = [];
-          res.TypeIDs.forEach(tID=> {
-            Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
-          });
-          res.AttributesArr = [];
-          res.Attributes.forEach(a => {
+    this.api.getWorld(this.props.selectedWorldID).then(res => {
+      this.props.setAttributes(res.attributes);
+      this.props.setTypes(res.types);
+      this.props.setThings(res.things);
+      
+      if (id !== undefined) {
+        let thing = res.things.filter(t => t._id === id);
+        if (thing.length === 0) {
+          this.setState({ message: "Invalid Thing ID" });
+        }
+        else {
+          thing = thing[0];
+          thing.AttributesArr = [];
+          thing.Attributes.forEach(a => {
             const attr = this.props.attributesByID[a.attrID];
-            res.AttributesArr.push({
-              index: res.AttributesArr.length,
+            thing.AttributesArr.push({
+              index: thing.AttributesArr.length,
               Name: attr.Name,
               AttributeType: attr.AttributeType,
               Options: attr.Options,
@@ -114,27 +130,24 @@ class Page extends Component {
             });
           });
           this.setState({
-            Name: res.Name,
-            Description: res.Description,
+            Name: thing.Name,
+            Description: thing.Description,
             _id: id,
-            Types: Types
+            Types: thing.Types
           });
-          this.props.updateSelectedThing(res);
         }
-        else {
-          console.log(res.error);
-        }
-      });
-    } else {
-      this.props.updateSelectedThing({
-        _id: null,
-        Name: "",
-        Description: "",
-        Types: [],
-        Attributes: [],
-        AttributesArr: []
-      });
-    }
+        this.props.updateSelectedThing(thing);
+      } else {
+        this.props.updateSelectedThing({
+          _id: null,
+          Name: "",
+          Description: "",
+          Types: [],
+          Attributes: [],
+          AttributesArr: []
+        });
+      }
+    });
   }
 
   render() {

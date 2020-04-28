@@ -24,7 +24,7 @@ import {
   setFollowingWorlds,
   toggleMenu
 } from "../../redux/actions/index";
-import API from "../../api";
+import API from "../../smartAPI";
 
 const mapStateToProps = state => {
   return {

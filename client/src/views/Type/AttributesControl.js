@@ -21,7 +21,7 @@ import {
 } from "../../redux/actions/index";
 import AttributeControl from "./AttributeControl";
 import AttributeDefaultControl from "./AttributeDefaultControl";
-import API from "../../api";
+import API from "../../smartAPI";
 
 // It will let you add and remove attributes.
 // Each needs to have a unique name as part of validation.
@@ -87,19 +87,6 @@ class Control extends Component {
 
   changeAttribute = value => {
     const type = this.props.selectedType;
-    // type.AttributesArr[value.index] = {
-    //   index: value.index,
-    //   _id: value._id,
-    //   Name: value.Name,
-    //   Attribute: value.AttributeType,
-    //   Options: value.Options,
-    //   DefinedType: value.DefinedType,
-    //   ListType: value.ListType,
-    //   FromSupers: value.FromSupers,
-    //   AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"],
-    //   DefaultValue: value.DefaultValue,
-    //   DefaultListValues: value.DefaultListValues
-    // };
     type.AttributesArr[value.index] = {
       index: value.index,
       attrID: value.attrID,
@@ -108,10 +95,6 @@ class Control extends Component {
       Options: value.Options,
       DefinedType: value.DefinedType,
       ListType: value.ListType,
-      // FromSuper: value.FromSuper,
-      // AttributeTypes: ["Text", "Number", "True/False", "Options", "Type", "List"],
-      // DefaultValue: value.DefaultValue,
-      // DefaultListValues: value.DefaultListValues
     };
     this.props.updateSelectedType(type);
   };
@@ -122,7 +105,7 @@ class Control extends Component {
       attrID: value.attrID,
       DefaultValue: value.DefaultValue,
       DefaultListValues: value.DefaultListValues,
-      FromTypeID: value.FromTypeID
+      FromTypeIDs: value.FromTypeIDs
     };
     this.props.updateSelectedType(type);
   };
@@ -349,9 +332,14 @@ class Control extends Component {
       if (superType.length > 0) {
         superType = superType[0];
         superType.AttributesArr.forEach(attribute => {
-          if (inheritedAttributes.filter(a=>a.attrID === attribute.attrID).length === 0) {
-            attribute.FromTypeID = superType._id;
+          let inheritedAttribute = inheritedAttributes.filter(a=>a.attrID === attribute.attrID);
+          if (inheritedAttribute.length === 0) {
+            attribute.FromTypeIDs = [superType._id];
             inheritedAttributes.push(attribute);
+          }
+          else {
+            inheritedAttribute = inheritedAttribute[0];
+            inheritedAttribute.FromTypeIDs.push(superType._id);
           }
         });
       }

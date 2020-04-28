@@ -8,7 +8,7 @@ import LoginControl from '../User/LoginControl';
 import {
   setWorlds
 } from "../../redux/actions/index";
-import API from '../../api';
+import API from '../../smartAPI';
 
 
 const mapStateToProps = state => {

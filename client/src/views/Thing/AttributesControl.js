@@ -10,7 +10,7 @@ import {
   updateSelectedThing, addThing 
 } from "../../redux/actions/index";
 import AttributeControl from "./AttributeControl";
-import API from "../../api";
+import API from "../../smartAPI";
 
 const mapStateToProps = state => {
   return {

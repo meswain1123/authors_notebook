@@ -168,10 +168,24 @@ class APIClass {
   };
 
   // World
-  getWorldsForUser = async () => {
+  getWorldsForUser = async (refresh = false) => {
+    if (refresh) {
+      return this.getWorldsForUserFromAPI();
+    }
+    else {
+      const data = sessionStorage.getItem("worlds");
+      if (data !== null) {
+        return JSON.parse(data);
+      }
+      else {
+        return this.getWorldsForUserFromAPI();
+      }
+    }
+  };
+  getWorldsForUserFromAPI = async () => {
     if (this.real) {
       const response = await this.fetchData(`/api/world/getWorldsForUser`);
-      return this.processResponse(response);
+      return this.processResponse(response, "worlds");
     } else {
       return [
         { _id: -1, OwnerID: -1, Name: "Alice in Wonderland", Public: true }
@@ -179,14 +193,97 @@ class APIClass {
     }
   };
 
-  getPublicWorlds = async () => {
+  getPublicWorlds = async (refresh = false) => {
+    if (refresh) {
+      return this.getPublicWorldsFromAPI();
+    }
+    else {
+      const data = sessionStorage.getItem("publicWorlds");
+      if (data !== null) {
+        return JSON.parse(data);
+      }
+      else {
+        return this.getPublicWorldsFromAPI();
+      }
+    }
+  };
+  getPublicWorldsFromAPI = async () => {
     if (this.real) {
       const response = await this.fetchData("/api/world/getPublicWorlds");
-      return this.processResponse(response);
+      return this.processResponse(response, "publicWorlds");
     } else {
       return [
         { _id: -1, OwnerID: -1, Name: "Alice in Wonderland", Public: true }
       ];
+    }
+  };
+
+  getWorld = async (worldID, refresh = false) => {
+    try {
+      let attributes = await this.getAttributesForWorld(worldID, refresh);
+      attributes = attributes.attributes;
+      let types = await this.getTypesForWorld(worldID, refresh);
+      types = types.types;
+      let things = await this.getThingsForWorld(worldID, refresh);
+      things = things.things;
+
+      // Now connect them all as is appropriate.
+      const attributesByID = {};
+      const attributesByName = {};
+      attributes.forEach(attribute => {
+        attribute.TypeIDs = [];
+        attributesByID[attribute._id] = attribute;
+        attributesByName[attribute.Name] = attribute;
+      });
+      types.forEach(t=> {
+        t.Supers = [];
+        t.SuperIDs.forEach(sID=> {
+          t.Supers = t.Supers.concat(types.filter(t2=>t2._id === sID));
+        });
+        t.AttributesArr = [];
+        t.Attributes.forEach(a => {
+          const attr = attributesByID[a.attrID];
+          if (attr === undefined) {
+          }
+          else {
+            attr.TypeIDs.push(t._id);
+            t.AttributesArr.push({
+              index: t.AttributesArr.length,
+              Name: attr.Name.trim(),
+              AttributeType: attr.AttributeType,
+              Options: attr.Options,
+              DefinedType: attr.DefinedType,
+              ListType: attr.ListType,
+              attrID: a.attrID,
+              TypeIDs: attr.TypeIDs
+            });
+          }
+        });
+        const defHash = {};
+        if (t.Defaults !== undefined) {
+          t.Defaults.forEach(def => {
+            defHash[def.attrID] = def;
+          });
+        }
+        t.DefaultsHash = defHash;
+      });
+      things.forEach(t=> {
+        t.Types = [];
+        t.TypeIDs.forEach(tID=> {
+          t.Types = t.Types.concat(types.filter(t2=>t2._id === tID));
+        });
+      });
+      return {
+        attributes,
+        attributesByID,
+        attributesByName,
+        types,
+        things
+      };
+    }
+    catch (error) {
+      console.log(error);
+      return { error };
     }
   };
 
@@ -308,12 +405,26 @@ class APIClass {
   };
 
   // Attribute
-  getAttributesForWorld = async (worldID) => {
+  getAttributesForWorld = async (worldID, refresh = false) => {
+    if (refresh) {
+      return this.getAttributesForWorldFromAPI(worldID);
+    }
+    else {
+      const data = sessionStorage.getItem(`attributes_${worldID}`);
+      if (data !== null) {
+        return JSON.parse(data);
+      }
+      else {
+        return this.getAttributesForWorldFromAPI(worldID);
+      }
+    }
+  };
+  getAttributesForWorldFromAPI = async (worldID) => {
     if (this.real) {
       const response = await this.fetchData(
         `/api/world/getAttributesForWorld/${worldID}`
       );
-      return this.processResponse(response);
+      return this.processResponse(response, `attributes_${worldID}`);
     } else {
       return [{ _id: -1, worldID: -1, Name: "Character" }];
     }
@@ -373,12 +484,26 @@ class APIClass {
     }
   };
   // Type
-  getTypesForWorld = async (worldID) => {
+  getTypesForWorld = async (worldID, refresh = false) => {
+    if (refresh) {
+      return this.getTypesForWorldFromAPI(worldID);
+    }
+    else {
+      const data = sessionStorage.getItem(`types_${worldID}`);
+      if (data !== null) {
+        return JSON.parse(data);
+      }
+      else {
+        return this.getTypesForWorldFromAPI(worldID);
+      }
+    }
+  };
+  getTypesForWorldFromAPI = async (worldID) => {
     if (this.real) {
       const response = await this.fetchData(
         `/api/world/getTypesForWorld/${worldID}`
       );
-      return this.processResponse(response);
+      return this.processResponse(response, `types_${worldID}`);
     } else {
       return [{ _id: -1, worldID: -1, Name: "Character" }];
     }
@@ -430,12 +555,26 @@ class APIClass {
   };
 
   // Thing
-  getThingsForWorld = async (worldID) => {
+  getThingsForWorld = async (worldID, refresh = false) => {
+    if (refresh) {
+      return this.getThingsForWorldFromAPI(worldID);
+    }
+    else {
+      const data = sessionStorage.getItem(`things_${worldID}`);
+      if (data !== null) {
+        return JSON.parse(data);
+      }
+      else {
+        return this.getThingsForWorldFromAPI(worldID);
+      }
+    }
+  };
+  getThingsForWorldFromAPI = async (worldID) => {
     if (this.real) {
       const response = await this.fetchData(
         `/api/world/getThingsForWorld/${worldID}`
       );
-      return this.processResponse(response);
+      return this.processResponse(response, `things_${worldID}`);
     } else {
       return [{ _id: -1, worldID: -1, Name: "Alice" }];
     }
@@ -483,6 +622,7 @@ class APIClass {
     }
   };
 
+  // Core API Calls
   fetchData = async (path, options = {}) => {
     return await fetch(`${path}`, {
       mode: "cors",
@@ -565,10 +705,15 @@ class APIClass {
       .catch(this.logErrorReason);
   };
 
-  processResponse = async response => {
+  processResponse = async (response, sessionName = null) => {
     const body = await response.json();
     if (response.status !== 200) throw Error(body.message);
-    else return body;
+    else {
+      if (sessionName !== null) {
+        sessionStorage.setItem(sessionName, JSON.stringify(body));
+      }
+      return body;
+    };
   };
 }
 

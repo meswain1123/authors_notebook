@@ -9,7 +9,7 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import API from '../../api';
+import API from '../../smartAPI';
 
 
 class Page extends Component {
