@@ -76,14 +76,23 @@ class Page extends Component {
   }
 
   delete = e => {
-    this.api.deleteThing(this.props.selectedWorldID, this.state._id).then(res=>{
-      this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
-        this.props.setAttributes(res2.attributes);
-        this.props.setTypes(res2.types);
-        this.props.setThings(res2.things);
+    this.setState({ waiting: true }, this.finishDelete);
+  }
 
-        this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`});
-      });
+  finishDelete = e => {
+    this.api.deleteThing(this.props.selectedWorldID, this.state._id).then(res=>{
+      if (res.error === undefined) {
+        this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
+          this.props.setAttributes(res2.attributes);
+          this.props.setTypes(res2.types);
+          this.props.setThings(res2.things);
+
+          this.setState({ waiting: false, redirectTo: `/world/details/${this.props.selectedWorldID}`});
+        });
+      }
+      else {
+        this.setState({ waiting: false, message: res.error });
+      }
       // const things = this.props.things.filter(t=>t._id!==this.state._id);
       // this.props.setThings(things);
       // this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})

@@ -5,7 +5,7 @@ import uuid from 'react-uuid';
 import { ArrowBack, Add, Search } from "@material-ui/icons";
 import { 
   Grid, Button, Checkbox, FormControl, FormControlLabel,
-  OutlinedInput, InputLabel, FormHelperText, Tooltip, Fab,
+  InputLabel, Tooltip, Fab,
   Select, MenuItem 
 } from "@material-ui/core";
 import { Helmet } from 'react-helmet';
@@ -18,9 +18,11 @@ import {
   addAttributes,
   setAttributes,
   setTypes,
-  setThings
+  setThings,
+  notFromLogin
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
+import TextBox from "../../components/Inputs/TextBox";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -37,7 +39,8 @@ const mapStateToProps = state => {
     types: state.app.types,
     user: state.app.user,
     attributesByID: state.app.attributesByID,
-    attributesByName: state.app.attributesByName
+    attributesByName: state.app.attributesByName,
+    fromLogin: state.app.fromLogin
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -48,7 +51,8 @@ function mapDispatchToProps(dispatch) {
     addAttributes: attrs => dispatch(addAttributes(attrs)),
     setAttributes: attrs => dispatch(setAttributes(attrs)),
     setTypes: types => dispatch(setTypes(types)),
-    setThings: things => dispatch(setThings(things))
+    setThings: things => dispatch(setThings(things)),
+    notFromLogin: () => dispatch(notFromLogin({}))
   };
 }
 class Page extends Component {
@@ -56,10 +60,10 @@ class Page extends Component {
     super(props);
     this.state = {
       _id: undefined,
-      Name: "",
-      Description: "",
-      Supers: [],
-      Attributes: [],
+      // Name: "",
+      // Description: "",
+      // Supers: [],
+      // Attributes: [],
       Major: false,
       fieldValidation: {
         Name: { valid: true, message: "" },
@@ -98,12 +102,12 @@ class Page extends Component {
     }, 500);
   };
 
-  handleUserInput = e => {
-    const name = e.target.name;
-    const value =
-      e.target.type === "checkbox" ? e.target.checked : e.target.value;
-    this.setState({ [name]: value });
-  };
+  // handleUserInput = e => {
+  //   const name = e.target.name;
+  //   const value =
+  //     e.target.type === "checkbox" ? e.target.checked : e.target.value;
+  //   this.setState({ [name]: value });
+  // };
 
   inputBlur = e => {
     const name = e.target.name;
@@ -125,7 +129,7 @@ class Page extends Component {
     let message = "";
     switch (fieldName) {
       case "Name":
-        value = this.state[fieldName];
+        value = this.props.selectedType[fieldName];
         valid = value.match(/^[a-zA-Z0-9 ]*$/i) !== null;
         if (!valid)
           message = "Only Letters, Numbers, and Spaces allowed in Type Names";
@@ -224,7 +228,7 @@ class Page extends Component {
   };
 
   submitThroughAPI = () => {
-    const superIDs = this.state.Supers.map(s => {
+    const superIDs = this.props.selectedType.Supers.map(s => {
       return s._id;
     });
 
@@ -256,14 +260,14 @@ class Page extends Component {
 
       const type = {
         _id: this.state._id,
-        Name: this.state.Name.trim(),
-        Description: this.state.Description,
+        Name: this.props.selectedType.Name.trim(),
+        Description: this.props.selectedType.Description,
         SuperIDs: superIDs,
         // AttributesArr: this.props.selectedType.AttributesArr,
         Attributes: typeAttributes,
         Defaults: [],
         worldID: this.props.selectedWorld._id,
-        Major: this.state.Major,
+        Major: this.props.selectedType.Major,
         ReferenceIDs: [],
         DefaultReferenceIDs: []
       };
@@ -316,11 +320,11 @@ class Page extends Component {
                   });
                   this.setState({
                     _id: null,
-                    Name: "",
-                    Description: "",
-                    Supers: [],
-                    Attributes: [],
-                    Major: false,
+                    // Name: "",
+                    // Description: "",
+                    // Supers: [],
+                    // Attributes: [],
+                    // Major: false,
                     fieldValidation: {
                       Name: { valid: true, message: "" },
                       AttributesArr: { valid: true, message: "" },
@@ -372,11 +376,11 @@ class Page extends Component {
                   });
                   this.setState({
                     _id: null,
-                    Name: "",
-                    Description: "",
-                    Supers: [],
-                    Attributes: [],
-                    Major: false,
+                    // Name: "",
+                    // Description: "",
+                    // Supers: [],
+                    // Attributes: [],
+                    // Major: false,
                     fieldValidation: {
                       Name: { valid: true, message: "" },
                       AttributesArr: { valid: true, message: "" },
@@ -417,7 +421,10 @@ class Page extends Component {
       supers.push(t);
       supers = supers.concat(t.Supers);
     }
-    this.setState({ Supers: supers });
+    const type = this.props.selectedType;
+    type.Supers = supers;
+    this.props.updateSelectedType(type);
+    // this.setState({ Supers: supers });
   };
 
   addSuper = (selectedList, selectedItem) => {
@@ -439,7 +446,7 @@ class Page extends Component {
     
     type.Supers = selectedList;
     this.props.updateSelectedType(type);
-    this.setState({ Supers: selectedList });
+    // this.setState({ Supers: selectedList });
   }
 
   newAttribute = () => {
@@ -502,14 +509,15 @@ class Page extends Component {
     
     type.Supers = [];
     this.props.updateSelectedType(type);
-    this.setState({ Supers: [] });
+    // this.setState({ Supers: [] });
     setTimeout(() => {
       type.Supers = selectedList;
       this.props.updateSelectedType(type);
       this.setState({ 
         browseAttributesSelected: "", 
         browseTypesSelected: "", 
-        Supers: selectedList });
+        // Supers: selectedList 
+      });
     }, 500);
   }
   
@@ -518,9 +526,9 @@ class Page extends Component {
     let superIDs = [];
     let removeUs = [removedItem._id];
     const type = this.props.selectedType;
-    for (let i = 0; i < this.state.Supers.length; i++) {
+    for (let i = 0; i < type.Supers.length; i++) {
       const checkMe = this.props.types.filter(
-        t => t._id === this.state.Supers[i]._id
+        t => t._id === type.Supers[i]._id
       )[0];
       if (checkMe._id === removedItem._id || checkMe.SuperIDs.includes(removedItem._id))
         removeUs.push(checkMe._id);
@@ -529,11 +537,17 @@ class Page extends Component {
         superIDs.push(checkMe._id);
       }
     }
-    type.Supers = supers;
-    type.SuperIDs = superIDs;
+    type.Supers = []; // supers;
+    type.SuperIDs = []; // superIDs;
     this.props.updateSelectedType(type);
-    this.setState({ Supers: supers, loaded: false });
+    this.setState({ 
+      // Supers: supers, 
+      loaded: false 
+    });
     setTimeout(() => {
+      type.Supers = supers;
+      type.SuperIDs =  superIDs;
+      this.props.updateSelectedType(type);
       this.setState({ loaded: true });
     }, 500);
   }
@@ -550,46 +564,56 @@ class Page extends Component {
 
   finishLoading = () => {
     const id = this.state._id;
-    this.api.getWorld(this.props.selectedWorldID).then(res => {
-      this.props.setAttributes(res.attributes);
-      this.props.setTypes(res.types);
-      this.props.setThings(res.things);
-      if (id !== null) {
-        let type = res.types.filter(t => t._id === id);
-        if (type.length > 0) {
-          type = type[0];
-          const supers = this.props.types.filter(type =>
-            type.SuperIDs.includes(type._id)
-          );
-          
-          this.props.updateSelectedType(type);
-          this.setState({
-            Name: type.Name,
-            Description: type.Description,
-            _id: id,
-            Supers: supers,
-            Major: type.Major,
-            loaded: true
+    if (this.props.fromLogin) {
+      this.props.notFromLogin();
+      this.setState({
+        _id: id,
+        loaded: true,
+        message: ""
+      });
+    }
+    else {
+      this.api.getWorld(this.props.selectedWorldID).then(res => {
+        this.props.setAttributes(res.attributes);
+        this.props.setTypes(res.types);
+        this.props.setThings(res.things);
+        if (id !== null) {
+          let type = res.types.filter(t => t._id === id);
+          if (type.length > 0) {
+            type = type[0];
+            const supers = this.props.types.filter(type =>
+              type.SuperIDs.includes(type._id)
+            );
+            type.Supers = supers;
+            this.props.updateSelectedType(type);
+            this.setState({
+              // Name: type.Name,
+              // Description: type.Description,
+              _id: id,
+              // Supers: supers,
+              // Major: type.Major,
+              loaded: true
+            });
+          }
+          else {
+            this.setState({ message: "Invalid ID", loaded: true });
+          }
+        } else {
+          this.props.updateSelectedType({
+            _id: null,
+            Name: "",
+            Description: "",
+            Supers: [],
+            SuperIDs: [],
+            AttributesArr: [],
+            Attributes: [],
+            Major: false,
+            DefaultsHash: {}
           });
+          this.setState({ loaded: true });
         }
-        else {
-          this.setState({ message: "Invalid ID", loaded: true });
-        }
-      } else {
-        this.props.updateSelectedType({
-          _id: null,
-          Name: "",
-          Description: "",
-          Supers: [],
-          SuperIDs: [],
-          AttributesArr: [],
-          Attributes: [],
-          Major: false,
-          DefaultsHash: {}
-        });
-        this.setState({ loaded: true });
-      }
-    });
+      });
+    }
   }
 
   render() {
@@ -607,6 +631,8 @@ class Page extends Component {
         (this.props.selectedWorld.Owner !== this.props.user._id && 
           this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length === 0))) {
       return <Redirect to="/" />;
+    } else if (this.props.selectedType === null || this.props.selectedType._id !== id) {
+      return <span>Loading...</span>;
     } else {
       const types =
         this.props.types === undefined || this.state._id === null
@@ -622,8 +648,8 @@ class Page extends Component {
           if (!attr.TypeIDs.includes(this.props.selectedType._id) && 
             this.props.selectedType.AttributesArr.filter(a => a.attrID === attr._id).length === 0) { // This second condition will make newly added attributes not show up.
             let found = false;
-            for (let i = 0; i < this.state.Supers.length; i++) {
-              if (attr.TypeIDs.includes(this.state.Supers[i]._id)) {
+            for (let i = 0; i < this.props.selectedType.Supers.length; i++) {
+              if (attr.TypeIDs.includes(this.props.selectedType.Supers[i]._id)) {
                 found = true;
                 break;
               }
@@ -665,7 +691,22 @@ class Page extends Component {
                 </Grid>
               </Grid>
               <Grid item>
-                <FormControl variant="outlined" fullWidth>
+                { this.state.loaded &&  
+                  <TextBox 
+                    Value={this.props.selectedType.Name} 
+                    fieldName="Name" 
+                    message={this.state.fieldValidation.Name.message}
+                    onBlur={name => {
+                      const type = this.props.selectedType;
+                      type.Name = name;
+                      this.props.updateSelectedType(type);
+                      this.validateForm();
+                      // this.setState({ Name: name }, 
+                      //   this.validateForm);
+                    }}
+                    labelWidth={43}/>
+                }
+                {/* <FormControl variant="outlined" fullWidth>
                   <InputLabel htmlFor="name">Name</InputLabel>
                   <OutlinedInput
                     id="name"
@@ -682,10 +723,22 @@ class Page extends Component {
                   <FormHelperText>
                     {this.state.fieldValidation.Name.message}
                   </FormHelperText>
-                </FormControl>
+                </FormControl> */}
               </Grid>
               <Grid item>
-                <FormControl variant="outlined" fullWidth>
+                { this.state.loaded &&  
+                  <TextBox 
+                    Value={this.props.selectedType.Description} 
+                    fieldName="Description" 
+                    onBlur={desc => {
+                      const type = this.props.selectedType;
+                      type.Description = desc;
+                      this.props.updateSelectedType(type);
+                      // this.setState({ Description: desc });
+                    }}
+                    labelWidth={82}/>
+                }
+                {/* <FormControl variant="outlined" fullWidth>
                   <InputLabel htmlFor="description">Description</InputLabel>
                   <OutlinedInput
                     id="description"
@@ -698,14 +751,21 @@ class Page extends Component {
                     labelWidth={82}
                     fullWidth
                   />
-                </FormControl>
+                </FormControl> */}
               </Grid>
               <Grid item>
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={this.state.Major}
-                      onChange={this.handleUserInput}
+                      checked={this.props.selectedType.Major}
+                      onChange={ e => {
+                        const value = e.target.checked;
+                        const type = this.props.selectedType;
+                        type.Major = value;
+                        this.props.updateSelectedType(type);
+                        // this.setState({ [name]: value });
+                        // this.handleUserInput(e);
+                      }}
                       name="Major"
                       color="primary"
                     />
@@ -718,7 +778,7 @@ class Page extends Component {
                   <Multiselect
                     placeholder="Super Types"
                     options={types}
-                    selectedValues={this.state.Supers}
+                    selectedValues={this.props.selectedType.Supers}
                     onSelect={this.addSuper}
                     onRemove={this.removeSuper}
                     displayValue="Name"

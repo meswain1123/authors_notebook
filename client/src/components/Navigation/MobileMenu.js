@@ -22,7 +22,8 @@ import {
   setWorlds,
   setPublicWorlds,
   setFollowingWorlds,
-  toggleMenu
+  toggleMenu,
+  // toggleLogin
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 
@@ -41,7 +42,8 @@ function mapDispatchToProps(dispatch) {
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
     setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs)),
-    toggleMenu: () => dispatch(toggleMenu({}))
+    toggleMenu: () => dispatch(toggleMenu({})),
+    // toggleLogin: () => dispatch(toggleLogin({}))
   };
 }
 class Menu extends Component {

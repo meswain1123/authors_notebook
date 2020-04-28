@@ -22,6 +22,8 @@ import {
   UPDATE_SELECTED_THING,
   LOAD_FROM_STORAGE,
   TOGGLE_MENU,
+  TOGGLE_LOGIN,
+  NOT_FROM_LOGIN,
   SET_FOLLOWING_WORLDS,
   SET_WIDTH,
   UPDATE_INDEX_EXPANDED_PANEL
@@ -98,6 +100,12 @@ export function loadFromStorage(payload) {
 }
 export function toggleMenu(payload) {
   return { type: TOGGLE_MENU, payload };
+}
+export function toggleLogin(payload) {
+  return { type: TOGGLE_LOGIN, payload };
+}
+export function notFromLogin(payload) {
+  return { type: NOT_FROM_LOGIN, payload };
 }
 export function setFollowingWorlds(payload) {
   return { type: SET_FOLLOWING_WORLDS, payload };

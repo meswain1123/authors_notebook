@@ -1,17 +1,17 @@
 import React, { Component } from "react";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-import Icon from "@material-ui/core/Icon";
-import IconButton from "@material-ui/core/IconButton";
+import {
+  AppBar, Toolbar, ListItem, 
+  ListItemText, Icon, IconButton, 
+  // Button
+} from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
-import { NavLink } from "react-router-dom";
+// import { NavLink } from "react-router-dom";
 import { connect } from "react-redux";
 import {
   setWorlds,
   loadFromStorage,
-  toggleMenu
+  toggleMenu,
+  toggleLogin
 } from "../../redux/actions/index";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
@@ -30,7 +30,8 @@ function mapDispatchToProps(dispatch) {
   return {
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     loadFromStorage: () => dispatch(loadFromStorage({})),
-    toggleMenu: () => dispatch(toggleMenu({}))
+    toggleMenu: () => dispatch(toggleMenu({})),
+    toggleLogin: () => dispatch(toggleLogin({}))
   };
 }
 class Bar extends Component {
@@ -74,9 +75,38 @@ class Bar extends Component {
               </ListItem>
             </Grid>
             <Grid item xs>
-              <NavLink
+              {/* <Button
+                // fullWidth
+                variant="contained"
+                color="primary"
+                onClick={_ => {
+                  this.props.toggleLogin();
+                }}
+              > */}
+              <span style={{cursor: "pointer"}} 
+                onClick={_ => {
+                  this.props.toggleLogin();
+                }}
+                className="float-right blue whiteFont">
+                <ListItem className="curvedButton float-right">
+                  <Icon>person</Icon>
+                  <ListItemText
+                    primary={
+                      this.props.user === null ||
+                      this.props.user.username === undefined
+                        ? " Login/Register"
+                        : ` ${this.props.user.username}`
+                    }
+                  />
+                </ListItem>
+              </span>
+              {/* </Button> */}
+              {/* <NavLink
                 className="float-right blue whiteFont"
                 to="/User/Login"
+                // onClick={_ => {
+                //   this.props.toggleLogin();
+                // }}
                 activeClassName="active"
               >
                 <ListItem className="curvedButton float-right">
@@ -90,7 +120,7 @@ class Bar extends Component {
                     }
                   />
                 </ListItem>
-              </NavLink>
+              </NavLink> */}
             </Grid>
           </Grid>
         </Toolbar>

@@ -9,7 +9,8 @@ import {
   addType,
   setAttributes,
   setTypes,
-  setThings
+  setThings,
+  notFromLogin
 } from "../../redux/actions/index";
 import { 
   Button, FormControl, 
@@ -45,7 +46,8 @@ const mapStateToProps = state => {
     types: state.app.types,
     user: state.app.user,
     attributesByID: state.app.attributesByID,
-    attributesByName: state.app.attributesByName
+    attributesByName: state.app.attributesByName,
+    fromLogin: state.app.fromLogin
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -57,7 +59,8 @@ function mapDispatchToProps(dispatch) {
     addType: type => dispatch(addType(type)),
     setAttributes: attributes => dispatch(setAttributes(attributes)),
     setTypes: types => dispatch(setTypes(types)),
-    setThings: things => dispatch(setThings(things))
+    setThings: things => dispatch(setThings(things)),
+    notFromLogin: () => dispatch(notFromLogin({}))
   };
 }
 class Page extends Component {
@@ -65,11 +68,11 @@ class Page extends Component {
     super(props);
     this.state = {
       _id: undefined,
-      Name: "",
-      Description: "",
-      Types: [],
+      // Name: "",
+      // Description: "",
+      // Types: [],
       // AttributesArr: [],
-      Attributes: [],
+      // Attributes: [],
       fieldValidation: {
         Name: { valid: true, message: "" },
         // AttributesArr: { valid: true, message: "" },
@@ -163,8 +166,13 @@ class Page extends Component {
         TypeIDs: attr.TypeIDs
       });
     });
+    thing.Types = types;
     this.props.updateSelectedThing(thing);
-    this.setState({ _id: null, Types: types, loaded: true }); //, errors });
+    this.setState({ 
+      _id: null, 
+      // Types: types, 
+      loaded: true 
+    }); //, errors });
   };
 
   resetForm = () => {
@@ -200,12 +208,12 @@ class Page extends Component {
     }
   }
 
-  handleUserInput = e => {
-    const name = e.target.name;
-    const value =
-      e.target.type === "checkbox" ? e.target.checked : e.target.value;
-    this.setState({ [name]: value });
-  };
+  // handleUserInput = e => {
+  //   const name = e.target.name;
+  //   const value =
+  //     e.target.type === "checkbox" ? e.target.checked : e.target.value;
+  //   this.setState({ [name]: value });
+  // };
 
   handleInfoAttrNameChange = e => {
     const infoAttribute = this.state.infoAttribute;
@@ -285,7 +293,7 @@ class Page extends Component {
     let message = "";
     switch (fieldName) {
       case "Name":
-        value = this.state[fieldName].trim();
+        value = this.props.selectedThing[fieldName].trim();
         valid = value.match(/^[a-zA-Z0-9 ]*$/i) !== null;
         if (!valid)
           message = "Only Letters, Numbers, and Spaces allowed in Thing Names";
@@ -374,13 +382,13 @@ class Page extends Component {
   };
 
   submitThroughAPI = () => {
-    const typeIDs = this.state.Types.map(s => {
+    const typeIDs = this.props.selectedThing.Types.map(s => {
       return s._id;
     });
     const thing = {
       _id: this.state._id,
-      Name: this.state.Name.trim(),
-      Description: this.state.Description.trim(),
+      Name: this.props.selectedThing.Name.trim(),
+      Description: this.props.selectedThing.Description.trim(),
       TypeIDs: typeIDs,
       // AttributesArr: this.props.selectedThing.AttributesArr,
       Attributes: [],
@@ -432,10 +440,10 @@ class Page extends Component {
                 });
                 this.setState({
                   _id: null,
-                  Name: "",
-                  Description: "",
-                  Types: [],
-                  Attributes: [],
+                  // Name: "",
+                  // Description: "",
+                  // Types: [],
+                  // Attributes: [],
                   fieldValidation: {
                     Name: { valid: true, message: "" },
                     Attributes: { valid: true, message: "" }
@@ -479,10 +487,10 @@ class Page extends Component {
                   AttributesArr: []
                 });
                 this.setState({
-                  Name: "",
-                  Description: "",
-                  Types: [],
-                  Attributes: [],
+                  // Name: "",
+                  // Description: "",
+                  // Types: [],
+                  // Attributes: [],
                   fieldValidation: {
                     Name: { valid: true, message: "" },
                     Attributes: { valid: true, message: "" }
@@ -517,7 +525,10 @@ class Page extends Component {
       types.push(t);
       types = types.concat(t.Types);
     }
-    this.setState({ Types: types });
+    const thing = this.props.selectedThing;
+    thing.Types = types;
+    this.props.updateSelectedThing(thing);
+    // this.setState({ Types: types });
   };
 
   addType = (selectedList, selectedItem) => {
@@ -532,7 +543,7 @@ class Page extends Component {
           newTypes[superType[0]._id] = superType[0];
         }
       }
-      if (this.state.Types.filter(t=>t._id === s._id).length === 0){
+      if (this.props.selectedThing.Types.filter(t=>t._id === s._id).length === 0){
         newTypes[s._id] = s;
       }
     });
@@ -579,7 +590,8 @@ class Page extends Component {
       })
     });
     let attributes = [...thing.Attributes, ...newAttributes];
-    this.setState({ Types: selectedList });
+    // this.setState({ Types: selectedList });
+    thing.Types = selectedList;
     thing.Attributes = attributes;
     thing.AttributesArr = [];
     const AttributesArr = [];
@@ -608,7 +620,7 @@ class Page extends Component {
   }
 
   addType2 = (type) => {
-    const types = this.state.Types;
+    const types = this.props.selectedThing.Types;
     types.push(type);
     // this.addType(types, type);
 
@@ -622,7 +634,7 @@ class Page extends Component {
           newTypes.push(superType[0]);
         }
       }
-      if (this.state.Types.filter(t=>t._id === s._id).length === 0){
+      if (this.props.selectedThing.Types.filter(t=>t._id === s._id).length === 0){
         newTypes.push(s);
       }
     });
@@ -658,7 +670,11 @@ class Page extends Component {
       })
     });
     let attributes = [...thing.Attributes, ...newAttributes];
-    this.setState({ Types: types, resetting: true });
+    this.setState({ 
+      // Types: types, 
+      resetting: true 
+    });
+    thing.Types = types;
     thing.Attributes = attributes;
     thing.AttributesArr = [];
     const AttributesArr = [];
@@ -862,7 +878,7 @@ class Page extends Component {
     // to let them know it will also remove sub-types.
     let types = [];
     let removeUs = [];
-    this.state.Types.forEach(checkMe => {
+    this.props.selectedThing.Types.forEach(checkMe => {
       if (checkMe._id === removedItem._id || checkMe.SuperIDs.includes(removedItem._id))
         removeUs.push(checkMe._id);
       else types.push(checkMe);
@@ -877,7 +893,8 @@ class Page extends Component {
       });
       attribute.FromTypeIDs = newFromTypeIDs;
     });
-    this.setState({ Types: types });
+    // this.setState({ Types: types });
+    thing.Types = types;
     thing.Attributes = attributes;
     thing.AttributesArr = [];
     thing.Attributes.forEach(a => {
@@ -901,7 +918,7 @@ class Page extends Component {
 
   renderHeader() {
     let typeStr = "Thing";
-    this.state.Types.forEach(t=>{
+    this.props.selectedThing.Types.forEach(t=>{
       if (t.Major) { 
         if (typeStr === "Thing") {
           typeStr = t.Name;
@@ -930,104 +947,115 @@ class Page extends Component {
       this.props.setTypes(res.types);
       this.props.setThings(res.things);
       
-      if (this.state._id !== null) {
-        // We're editing an existing Thing
-        let thing = res.things.filter(t => t._id === this.state._id);
-        if (thing.length === 0) {
-          this.setState({ message: "Invalid ID" });
-        }
-        else {
-          thing = thing[0];
-          const things = this.props.things.filter(
-            t => t._id !== thing._id
-          );
-          let Types = [];
-          thing.TypeIDs.forEach(tID=> {
-            Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
-          });
-          let newAttributes = [];
-          Types.forEach(type=> {
-            for (let i = 0; i < type.Attributes.length; i++) {
-              const attribute = {...type.Attributes[i]};
-              let existing = thing.Attributes.filter(a=>a.attrID === attribute.attrID);
-              if (existing.length === 0) {
-                attribute.FromTypeIDs = [type._id];
-                attribute.index = thing.Attributes.length + newAttributes.length;
-                newAttributes.push(attribute);
-              }
-              else {
-                existing = existing[0];
-                if (existing.FromTypeIDs === undefined || existing.FromTypeIDs === null)
-                  existing.FromTypeIDs = [];
-                existing.FromTypeIDs.push(type._id);
-              }
-            }
-          });
-          Types.forEach(type=> {
-            newAttributes.forEach(attribute => {
-              if (type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
-                attribute.Value = "";
-                attribute.ListValues = [];
-              }
-              else {
-                attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
-                attribute.ListValues = type.DefaultsHash[attribute.attrID].DefaultListValues;
-              }
-            })
-          });
-          let attributes = [...thing.Attributes, ...newAttributes];
-          thing.Attributes = attributes;
-          thing.AttributesArr = [];
-          thing.Attributes.forEach(a => {
-            const attr = this.props.attributesByID[a.attrID];
-            thing.AttributesArr.push({
-              index: thing.AttributesArr.length,
-              Name: attr.Name,
-              AttributeType: attr.AttributeType,
-              Options: attr.Options,
-              DefinedType: attr.DefinedType,
-              ListType: attr.ListType,
-              attrID: a.attrID,
-              Value: a.Value,
-              ListValues: a.ListValues,
-              FromTypeIDs: a.FromTypeIDs,
-              TypeIDs: attr.TypeIDs
-            });
-          });
-          this.props.updateSelectedThing(thing);
-          this.setState({
-            Name: thing.Name,
-            Description: thing.Description,
-            Things: things,
-            Types: Types,
-            loaded: true
-          });
-        }
-      } else {
-        let { id } = this.props.match.params;
-        if (id !== undefined && id.includes("type_id_")) {
-          // We're creating it from a type rather than from blank
-          const typeID = id.substring(8);
-          let type = this.props.types.filter(t=> t._id === typeID);
-          if (type.length > 0) {
-            type = type[0];
-            this.createThingFromType(type);
+      if (this.props.fromLogin) {
+        this.props.notFromLogin();
+        this.setState({
+          // _id: id,
+          loaded: true,
+          message: ""
+        });
+      }
+      else {
+        if (this.state._id !== null) {
+          // We're editing an existing Thing
+          let thing = res.things.filter(t => t._id === this.state._id);
+          if (thing.length === 0) {
+            this.setState({ message: "Invalid ID" });
           }
           else {
-            this.setState({ message: "Invalid Type", loaded: true });
+            thing = thing[0];
+            // const things = this.props.things.filter(
+            //   t => t._id !== thing._id
+            // );
+            let Types = [];
+            thing.TypeIDs.forEach(tID=> {
+              Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
+            });
+            let newAttributes = [];
+            Types.forEach(type=> {
+              for (let i = 0; i < type.Attributes.length; i++) {
+                const attribute = {...type.Attributes[i]};
+                let existing = thing.Attributes.filter(a=>a.attrID === attribute.attrID);
+                if (existing.length === 0) {
+                  attribute.FromTypeIDs = [type._id];
+                  attribute.index = thing.Attributes.length + newAttributes.length;
+                  newAttributes.push(attribute);
+                }
+                else {
+                  existing = existing[0];
+                  if (existing.FromTypeIDs === undefined || existing.FromTypeIDs === null)
+                    existing.FromTypeIDs = [];
+                  existing.FromTypeIDs.push(type._id);
+                }
+              }
+            });
+            Types.forEach(type=> {
+              newAttributes.forEach(attribute => {
+                if (type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
+                  attribute.Value = "";
+                  attribute.ListValues = [];
+                }
+                else {
+                  attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
+                  attribute.ListValues = type.DefaultsHash[attribute.attrID].DefaultListValues;
+                }
+              })
+            });
+            let attributes = [...thing.Attributes, ...newAttributes];
+            thing.Attributes = attributes;
+            thing.AttributesArr = [];
+            thing.Attributes.forEach(a => {
+              const attr = this.props.attributesByID[a.attrID];
+              thing.AttributesArr.push({
+                index: thing.AttributesArr.length,
+                Name: attr.Name,
+                AttributeType: attr.AttributeType,
+                Options: attr.Options,
+                DefinedType: attr.DefinedType,
+                ListType: attr.ListType,
+                attrID: a.attrID,
+                Value: a.Value,
+                ListValues: a.ListValues,
+                FromTypeIDs: a.FromTypeIDs,
+                TypeIDs: attr.TypeIDs
+              });
+            });
+            thing.Types = Types;
+            this.props.updateSelectedThing(thing);
+            this.setState({
+              // Name: thing.Name,
+              // Description: thing.Description,
+              // Things: things,
+              // Types: Types,
+              loaded: true
+            });
           }
-        }
-        else {
-          // We're creating a new thing from blank.
-          this.props.updateSelectedThing({
-            _id: null,
-            Name: "",
-            Description: "",
-            Types: [],
-            Attributes: [],
-            AttributesArr: []
-          });
-          this.setState({ loaded: true });
+        } else {
+          let { id } = this.props.match.params;
+          if (id !== undefined && id.includes("type_id_")) {
+            // We're creating it from a type rather than from blank
+            const typeID = id.substring(8);
+            let type = this.props.types.filter(t=> t._id === typeID);
+            if (type.length > 0) {
+              type = type[0];
+              this.createThingFromType(type);
+            }
+            else {
+              this.setState({ message: "Invalid Type", loaded: true });
+            }
+          }
+          else {
+            // We're creating a new thing from blank.
+            this.props.updateSelectedThing({
+              _id: null,
+              Name: "",
+              Description: "",
+              Types: [],
+              Attributes: [],
+              AttributesArr: []
+            });
+            this.setState({ loaded: true });
+          }
         }
       }
     });
@@ -1048,6 +1076,8 @@ class Page extends Component {
         (this.props.selectedWorld.Owner !== this.props.user._id && 
           this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length === 0))) {
       return <Redirect to="/" />;
+    } else if (this.props.selectedThing === null || this.props.selectedThing._id !== id) {
+      return <span>Loading...</span>;
     } else if (this.state.infoAttribute !== null) {
       const connectedTypes = this.props.types.filter(t=> this.state.infoAttribute.FromTypeIDs.includes(t._id));
       const otherTypes = this.props.types.filter(t=> !this.state.infoAttribute.FromTypeIDs.includes(t._id) && this.state.infoAttribute.TypeIDs.includes(t._id));
@@ -1474,11 +1504,15 @@ class Page extends Component {
               <Grid item>
                 { this.state.loaded &&  
                   <TextBox 
-                    Value={this.state.Name} 
+                    Value={this.props.selectedThing.Name} 
                     fieldName="Name" 
                     message={this.state.fieldValidation.Name.message}
                     onBlur={name => {
-                      this.setState({ Name: name }, this.validateForm);
+                      const thing = this.props.selectedThing;
+                      thing.Name = name;
+                      this.props.updateSelectedThing(thing);
+                      this.validateForm();
+                      // this.setState({ Name: name }, this.validateForm);
                     }}
                     labelWidth={43}/>
                 }
@@ -1486,10 +1520,13 @@ class Page extends Component {
               <Grid item>
                 { this.state.loaded &&  
                   <TextBox 
-                    Value={this.state.Description} 
+                    Value={this.props.selectedThing.Description} 
                     fieldName="Description" 
                     onBlur={desc => {
-                      this.setState({ Description: desc });
+                      const thing = this.props.selectedThing;
+                      thing.Description = desc;
+                      this.props.updateSelectedThing(thing);
+                      // this.setState({ Description: desc });
                     }}
                     labelWidth={82}/>
                 }
@@ -1499,7 +1536,7 @@ class Page extends Component {
                   <Multiselect
                     placeholder="Types"
                     options={this.props.types}
-                    selectedValues={this.state.Types}
+                    selectedValues={this.props.selectedThing.Types}
                     onSelect={this.addType}
                     onRemove={this.removeType}
                     displayValue="Name"

@@ -24,6 +24,8 @@ import {
   UPDATE_SELECTED_THING,
   LOAD_FROM_STORAGE,
   TOGGLE_MENU,
+  TOGGLE_LOGIN,
+  NOT_FROM_LOGIN,
   SET_FOLLOWING_WORLDS,
   SET_WIDTH
 } from "../constants/actionTypes";
@@ -49,6 +51,8 @@ const initialState = {
   selectedThing: null,
   loadIt: true,
   menuOpen: true,
+  loginOpen: false,
+  fromLogin: false,
   width: 0
 };
 function rootReducer(state = initialState, action) {
@@ -181,7 +185,7 @@ function rootReducer(state = initialState, action) {
         publicWorlds
       });
     } else {
-      const worlds = state.worlds.concat(action.payload);
+      // const worlds = state.worlds.concat(action.payload);
       // sessionStorage.setItem("worlds", JSON.stringify(worlds));
       return Object.assign({}, state, {
         worlds: state.worlds.concat(action.payload)
@@ -380,6 +384,15 @@ function rootReducer(state = initialState, action) {
   } else if (action.type === TOGGLE_MENU) {
     return Object.assign({}, state, {
       menuOpen: !state.menuOpen
+    });
+  } else if (action.type === TOGGLE_LOGIN) {
+    return Object.assign({}, state, {
+      fromLogin: state.loginOpen,
+      loginOpen: !state.loginOpen
+    });
+  } else if (action.type === NOT_FROM_LOGIN) {
+    return Object.assign({}, state, {
+      fromLogin: false
     });
   } else if (action.type === SET_WIDTH) {
     return Object.assign({}, state, {

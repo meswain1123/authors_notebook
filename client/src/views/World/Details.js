@@ -127,13 +127,20 @@ class Page extends Component {
 
   delete = e => {
     this.api.deleteWorld(this.props.selectedWorldID).then(res=>{
-      let worlds = this.props.worlds.filter(t=>t._id!==this.props.selectedWorldID);
-      this.props.setWorlds(worlds);
-      worlds = this.props.publicWorlds.filter(t=>t._id!==this.props.selectedWorldID);
-      this.props.setPublicWorlds(worlds);
-      this.api.selectWorld(null);
-      this.props.selectWorld(null);
-      this.setState({modalOpen: false, redirectTo: `/`});
+      if (res.error === undefined) {
+        this.api.getPublicWorlds(true).then(res2 => {
+          if (res2.worlds !== undefined) this.props.setPublicWorlds(res2.worlds);
+          this.api.getWorldsForUser(true).then(res3 => {
+            if (res3.worlds !== undefined) this.props.setWorlds(res3.worlds);
+            this.api.selectWorld(null);
+            this.props.selectWorld(null);
+            this.setState({modalOpen: false, redirectTo: `/`});
+          });
+        });
+      }
+      else {
+        this.setState({ waiting: false, message: res.error });
+      }
     });
   }
 

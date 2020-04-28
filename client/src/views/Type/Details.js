@@ -87,9 +87,18 @@ class Page extends Component {
 
   delete = e => {
     this.api.deleteType(this.props.selectedWorldID, this.state._id).then(res=>{
-      const types = this.props.types.filter(t=>t._id!==this.state._id);
-      this.props.setTypes(types);
-      this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})
+      if (res.error === undefined) {
+        this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
+          this.props.setAttributes(res2.attributes);
+          this.props.setTypes(res2.types);
+          this.props.setThings(res2.things);
+
+          this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`});
+        });
+      }
+      else {
+        this.setState({ waiting: false, message: res.error });
+      }
     });
   }
 

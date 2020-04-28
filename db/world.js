@@ -476,9 +476,7 @@ function updateAttribute(respond, worldID, attribute) {
 }
 
 function upsertAttribute(respond, worldID, attribute) {
-  // console.log(worldID);
   attribute.worldID = worldID;
-  console.log(attribute);
   const db = client.db(dbName);
   if (attribute._id !== undefined && attribute._id !== null && !attribute._id.includes("null")) {
     attribute._id = ObjectID(attribute._id);
@@ -506,7 +504,6 @@ function upsertAttribute(respond, worldID, attribute) {
     db.collection("attribute").insertOne(
       attribute
     ).then(res => {
-      console.log(res);
       respond(res.insertedId);
     });
   }
@@ -581,38 +578,16 @@ function deleteType(respond, worldID, typeID) {
   db.collection("type").updateMany({ 
     worldID: worldID,
     SuperIDs: { $all: [typeID] }
-  }, { $pull: { SuperIDs: typeID }});
+  }, { $pull: { SuperIDs: typeID }}).then(res => {
+    // console.log(res);
+  });
 
-  // // Remove it from AttributesArr.FromSupers in Types (Old Attributes)
-  // db.collection("type").updateMany({ 
-  //   worldID: worldID,
-  // }, { $pull: { "AttributesArr.$[].FromSupers": typeID }});
-
-  // Remove it from Attributes.FromSupers in Types (New Attributes)
-  db.collection("thing").updateMany(
-    {
-      TypeIDs: { "$in": [typeID]}
-    },
-    { $set: { "Attributes.$[element].FromTypeID" : null },
-      $pull: { TypeIDs: typeID }
-    },
-    {
-      arrayFilters: [ { "element.FromTypeID": typeID } ]
-    }
- );
-
-
-  // Also need to change all links to it in Posts and Descriptions to 
-  // something else, but I'm not sure I like that.  
-  // Maybe I really should just go with an inactive flag.  Then I 
-  // can leave everything alone, and maybe just have all the things that
-  // I would have changed (other than Forum Thread Posts) to be marked
-  // as to do items for the user.
-  // I'll switch to that after I get the other stuff working.
-  
   db.collection("type").deleteOne({
     _id: ObjectID(typeID)
+  }).then(res => {
+    // console.log(res);
   });
+
   respond({ message: `Type ${typeID} deleted!` });
 }
 
