@@ -3,7 +3,8 @@ import {
   SET_API,
   ADD_ARTICLE,
   LOGIN,
-  LOG_OUT,
+  LOGOUT,
+  REDIRECT_TO,
   SET_WORLDS,
   SET_PUBLIC_WORLDS,
   ADD_WORLD,
@@ -35,6 +36,7 @@ const initialState = {
   api: null,
   articles: [],
   user: null,
+  redirectToURL: null,
   loginError: "",
   worlds: [],
   publicWorlds: [],
@@ -61,7 +63,11 @@ function rootReducer(state = initialState, action) {
       indexExpandedPanel: action.payload
     });
   } else if (action.type === LOAD_FROM_STORAGE) {
-    const user = JSON.parse(sessionStorage.getItem("user"));
+    let user = JSON.parse(sessionStorage.getItem("user"));
+    if (user !== undefined && user !== null && user.body !== undefined && user.body.user !== undefined)
+      user = user.body.user;
+    else 
+      user = null;
     // const worlds = JSON.parse(sessionStorage.getItem("worlds"));
     // const publicWorlds = JSON.parse(sessionStorage.getItem("publicWorlds"));
     const selectedWorld = JSON.parse(sessionStorage.getItem("selectedWorld"));
@@ -95,16 +101,20 @@ function rootReducer(state = initialState, action) {
       articles: state.articles.concat(action.payload)
     });
   } else if (action.type === LOGIN) {
-    sessionStorage.setItem("user", JSON.stringify(action.payload));
+    // sessionStorage.setItem("user", JSON.stringify(action.payload));
     sessionStorage.setItem("followingWorlds", JSON.stringify(action.payload.followingWorlds));
     return Object.assign({}, state, {
       user: action.payload, 
       followingWorlds: action.payload.followingWorlds
     });
-  } else if (action.type === LOG_OUT) {
-    sessionStorage.removeItem("user");
+  } else if (action.type === LOGOUT) {
+    // sessionStorage.removeItem("user");
     return Object.assign({}, state, {
       user: null
+    });
+  } else if (action.type === REDIRECT_TO) {
+    return Object.assign({}, state, {
+      redirectToURL: action.payload
     });
   } else if (action.type === SET_WORLDS) {
     if (action.payload.error === undefined){

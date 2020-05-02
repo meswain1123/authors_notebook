@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import {
-  updateWorld, selectWorld
+  updateWorld, selectWorld,
+  notFromLogin
 } from "../../redux/actions/index";
 import { Button, Checkbox, FormControl, FormControlLabel,
   OutlinedInput, InputLabel, FormHelperText, Grid, 
@@ -34,13 +35,15 @@ const mapStateToProps = state => {
     selectedWorld: state.app.selectedWorld,
     selectedWorldID: state.app.selectedWorldID,
     worlds: state.app.worlds,
-    user: state.app.user
+    user: state.app.user,
+    fromLogin: state.app.fromLogin
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
     updateWorld: world => dispatch(updateWorld(world)),
     selectWorld: worldID => dispatch(selectWorld(worldID)),
+    notFromLogin: () => dispatch(notFromLogin({}))
   };
 }
 class Page extends Component {
@@ -269,6 +272,9 @@ class Page extends Component {
   }
 
   render() {
+    if (this.props.fromLogin) {
+      this.props.notFromLogin();
+    }
     if (this.state.allUsers === null) {
       this.api.getAllUsers().then(res => {
         this.setState({allUsers: res});

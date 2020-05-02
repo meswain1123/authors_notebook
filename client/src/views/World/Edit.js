@@ -4,7 +4,8 @@ import { connect } from "react-redux";
 import {
   selectWorld,
   addWorld,
-  updateWorld
+  updateWorld,
+  notFromLogin
 } from "../../redux/actions/index";
 import { Button, Checkbox, FormControl, FormControlLabel,
   OutlinedInput, InputLabel, FormHelperText, Grid, Tooltip, Fab
@@ -25,14 +26,16 @@ const mapStateToProps = state => {
     selectedWorld: state.app.selectedWorld,
     selectedWorldID: state.app.selectedWorldID,
     worlds: state.app.worlds,
-    user: state.app.user
+    user: state.app.user,
+    fromLogin: state.app.fromLogin
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
     selectWorld: worldID => dispatch(selectWorld(worldID)),
     addWorld: world => dispatch(addWorld(world)),
-    updateWorld: world => dispatch(updateWorld(world))
+    updateWorld: world => dispatch(updateWorld(world)),
+    notFromLogin: () => dispatch(notFromLogin({}))
   };
 }
 class Page extends Component {
@@ -211,6 +214,9 @@ class Page extends Component {
   };
 
   render() {
+    if (this.props.fromLogin) {
+      this.props.notFromLogin();
+    }
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {

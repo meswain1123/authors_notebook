@@ -1522,6 +1522,7 @@ class Page extends Component {
                   <TextBox 
                     Value={this.props.selectedThing.Description} 
                     fieldName="Description" 
+                    multiline={true}
                     onBlur={desc => {
                       const thing = this.props.selectedThing;
                       thing.Description = desc;

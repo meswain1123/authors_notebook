@@ -13,7 +13,8 @@ import {
   updateThing,
   setAttributes,
   setTypes,
-  setThings
+  setThings,
+  notFromLogin
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 
@@ -27,7 +28,8 @@ const mapStateToProps = state => {
     types: state.app.types,
     things: state.app.things,
     user: state.app.user,
-    attributesByID: state.app.attributesByID
+    attributesByID: state.app.attributesByID,
+    fromLogin: state.app.fromLogin
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -37,7 +39,8 @@ function mapDispatchToProps(dispatch) {
     updateThing: thing => dispatch(updateThing(thing)),
     setAttributes: attrs => dispatch(setAttributes(attrs)),
     setTypes: types => dispatch(setTypes(types)),
-    setThings: things => dispatch(setThings(things))
+    setThings: things => dispatch(setThings(things)),
+    notFromLogin: () => dispatch(notFromLogin({}))
   };
 }
 class Page extends Component {
@@ -109,6 +112,9 @@ class Page extends Component {
   }
 
   finishLoading = () => {
+    if (this.props.fromLogin) {
+      this.props.notFromLogin();
+    }
     const id = this.state._id;
     this.api.getWorld(this.props.selectedWorldID).then(res => {
       this.props.setAttributes(res.attributes);

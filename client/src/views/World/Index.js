@@ -209,14 +209,14 @@ class Index extends Component {
                   <Grid container spacing={1} direction="column">
                     <Grid item>
                       {this.props.indexExpandedPanel === type._id ? 
-                        <Tooltip title={`Collapse ${type.Name}s`}>
+                        <Tooltip title={`Collapse ${type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName}`}>
                           <Button 
                             onClick={_ => {this.handleChange(type._id)}}>
                             <KeyboardArrowDownIcon/>
                           </Button>
                         </Tooltip>
                         :
-                        <Tooltip title={`Expand ${type.Name}s`}>
+                        <Tooltip title={`Expand ${type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName}`}>
                           <Button 
                             onClick={_ => {this.handleChange(type._id)}}>
                             <KeyboardArrowRightIcon/>
@@ -226,7 +226,7 @@ class Index extends Component {
                       <Tooltip title={`Details for ${type.Name}`}>
                         <Button 
                           onClick={ _ => {this.setState({redirectTo:`/type/details/${type._id}`})}}>
-                          <ListItemText>{type.Name}s ({things.length})</ListItemText>
+                          <ListItemText>{type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName} ({things.length})</ListItemText>
                         </Button>
                       </Tooltip>
                       { createButtons &&

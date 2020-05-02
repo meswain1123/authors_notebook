@@ -1,6 +1,11 @@
 
 import React, { Component } from "react";
+import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
+// import {
+//   // notFromLogin,
+//   redirectTo
+// } from "../redux/actions/index";
 
 // This is a template to use when creating pages.
 // It's recommended not to make your own base component classes,
@@ -9,21 +14,35 @@ import { connect } from "react-redux";
 // new 'page' component.
 
 const mapStateToProps = state => {
-  return { selectedPage: state.app.selectedPage };
+  return { 
+    selectedPage: state.app.selectedPage
+  };
 };
 function mapDispatchToProps(dispatch) {
   return {
   };
 }
 class Page extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      version: "0",
+      redirectTo: null
+    };
+  }
+
   componentDidMount() {
   }
   render() {
-    return (
-      <div className="col-sm-12">
-        Template Page
-      </div>
-    );
+    if (this.state.redirectTo !== null) {
+      return <Redirect to={this.state.redirectTo} />;
+    } else {
+      return (
+        <div className="col-sm-12">
+          Template Page
+        </div>
+      );
+    }
   }
 }
 const TemplatePage = connect(mapStateToProps, mapDispatchToProps)(Page);

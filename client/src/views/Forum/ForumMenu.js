@@ -2,20 +2,28 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
-// import { selectPage } from "../../redux/actions/index";
+import {
+  notFromLogin
+} from "../../redux/actions/index";
 
 const mapStateToProps = state => {
-  return { selectedPage: state.app.selectedPage };
+  return { 
+    selectedPage: state.app.selectedPage,
+    fromLogin: state.app.fromLogin
+  };
 };
 function mapDispatchToProps(dispatch) {
   return {
-    // selectPage: page => dispatch(selectPage(page))
+    notFromLogin: () => dispatch(notFromLogin({}))
   };
 }
 class Page extends Component {
   componentDidMount() {
   }
   render() {
+    if (this.props.fromLogin) {
+      this.props.notFromLogin();
+    }
     if (
       this.props.selectedPage === null ||
       `/${this.props.selectedPage}` === window.location.pathname

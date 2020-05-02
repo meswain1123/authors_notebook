@@ -4,7 +4,8 @@ import { connect } from "react-redux";
 import { 
   selectWorld, setTypes, setThings, setWorlds, 
   setPublicWorlds, updatePublicWorldForCollab,
-  setAttributes, updateAttributes
+  setAttributes, updateAttributes,
+  notFromLogin
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 import Index from "./Index";
@@ -30,7 +31,8 @@ const mapStateToProps = state => {
     types: state.app.types,
     things: state.app.things,
     user: state.app.user,
-    attributesByID: state.app.attributesByID
+    attributesByID: state.app.attributesByID,
+    fromLogin: state.app.fromLogin
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -42,7 +44,8 @@ function mapDispatchToProps(dispatch) {
     setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
     updatePublicWorldForCollab: world => dispatch(updatePublicWorldForCollab(world)),
     setAttributes: attributes => dispatch(setAttributes(attributes)),
-    updateAttributes: attributes => dispatch(updateAttributes(attributes))
+    updateAttributes: attributes => dispatch(updateAttributes(attributes)),
+    notFromLogin: () => dispatch(notFromLogin({}))
   };
 }
 class Page extends Component {
@@ -156,6 +159,9 @@ class Page extends Component {
   }
 
   load = (id) => {
+    if (this.props.fromLogin) {
+      this.props.notFromLogin();
+    }
     setTimeout(() => {
       this.props.selectWorld(id);
       this.api.getWorld(id).then(res => {
@@ -191,6 +197,7 @@ class Page extends Component {
       (this.props.user === null || 
         (this.props.selectedWorld.Owner !== this.props.user._id && 
           this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab").length === 0))) {
+      console.log(this.props.user);
       return <Redirect to="/" />;
     } else {
       return (

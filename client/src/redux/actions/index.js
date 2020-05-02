@@ -2,7 +2,8 @@ import {
   SET_API,
   ADD_ARTICLE,
   LOGIN,
-  LOG_OUT,
+  LOGOUT,
+  REDIRECT_TO,
   SET_WORLDS,
   SET_PUBLIC_WORLDS,
   ADD_WORLD,
@@ -41,8 +42,11 @@ export function addArticle(payload) {
 export function userLogin(payload) {
   return { type: LOGIN, payload };
 }
-export function logOut(payload) {
-  return { type: LOG_OUT, payload };
+export function logout(payload) {
+  return { type: LOGOUT, payload };
+}
+export function redirectTo(payload) {
+  return { type: REDIRECT_TO, payload };
 }
 export function setWorlds(payload) {
   return { type: SET_WORLDS, payload };

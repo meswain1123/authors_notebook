@@ -261,6 +261,7 @@ class Page extends Component {
       const type = {
         _id: this.state._id,
         Name: this.props.selectedType.Name.trim(),
+        PluralName: this.props.selectedType.PluralName === undefined ? "" : this.props.selectedType.PluralName.trim(),
         Description: this.props.selectedType.Description,
         SuperIDs: superIDs,
         // AttributesArr: this.props.selectedType.AttributesArr,
@@ -312,6 +313,7 @@ class Page extends Component {
                   this.props.updateSelectedType({
                     _id: null,
                     Name: "",
+                    PluralName: "",
                     Description: "",
                     Supers: [],
                     AttributesArr: [],
@@ -368,6 +370,7 @@ class Page extends Component {
                   this.props.updateSelectedType({
                     _id: null,
                     Name: "",
+                    PluralName: "",
                     Description: "",
                     Supers: [],
                     AttributesArr: [],
@@ -557,7 +560,8 @@ class Page extends Component {
       this.setState({
         _id: id,
         redirectTo: null,
-        loaded: false
+        loaded: false,
+        message: "Loading..."
       }, this.finishLoading);
     }, 500);
   }
@@ -569,7 +573,7 @@ class Page extends Component {
       this.setState({
         _id: id,
         loaded: true,
-        message: ""
+        // message: ""
       });
     }
     else {
@@ -581,8 +585,9 @@ class Page extends Component {
           let type = res.types.filter(t => t._id === id);
           if (type.length > 0) {
             type = type[0];
-            const supers = this.props.types.filter(type =>
-              type.SuperIDs.includes(type._id)
+
+            const supers = this.props.types.filter(t =>
+              type.SuperIDs.includes(t._id)
             );
             type.Supers = supers;
             this.props.updateSelectedType(type);
@@ -592,16 +597,62 @@ class Page extends Component {
               _id: id,
               // Supers: supers,
               // Major: type.Major,
-              loaded: true
+              loaded: true,
+              message: ""
             });
           }
           else {
-            this.setState({ message: "Invalid ID", loaded: true });
+            this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
+              this.props.setAttributes(res2.attributes);
+              this.props.setTypes(res2.types);
+              this.props.setThings(res2.things);
+              if (id !== null) {
+                let type = res2.types.filter(t => t._id === id);
+                if (type.length > 0) {
+                  type = type[0];
+      
+                  const supers = this.props.types.filter(t =>
+                    type.SuperIDs.includes(t._id)
+                  );
+                  type.Supers = supers;
+                  this.props.updateSelectedType(type);
+                  this.setState({
+                    // Name: type.Name,
+                    // Description: type.Description,
+                    _id: id,
+                    // Supers: supers,
+                    // Major: type.Major,
+                    loaded: true,
+                    message: ""
+                  });
+                }
+                else {
+                  // I had it get here with an ID from Cosmere, when I was supposed to be looking at a Type from Ozzie.
+                  // Need to figure out how it got the wrong ID.
+                  this.setState({ message: `Invalid ID: ${id}`, loaded: true });
+                }
+              } else {
+                this.props.updateSelectedType({
+                  _id: null,
+                  Name: "",
+                  PluralName: "",
+                  Description: "",
+                  Supers: [],
+                  SuperIDs: [],
+                  AttributesArr: [],
+                  Attributes: [],
+                  Major: false,
+                  DefaultsHash: {}
+                });
+                this.setState({ loaded: true });
+              }
+            });
           }
         } else {
           this.props.updateSelectedType({
             _id: null,
             Name: "",
+            PluralName: "",
             Description: "",
             Supers: [],
             SuperIDs: [],
@@ -632,13 +683,12 @@ class Page extends Component {
           this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length === 0))) {
       return <Redirect to="/" />;
     } else if (this.props.selectedType === null || this.props.selectedType._id !== id) {
-      return <span>Loading...</span>;
+      return <span>{this.state.message}</span>;
     } else {
       const types =
         this.props.types === undefined || this.state._id === null
           ? this.props.types
           : this.props.types.filter(type => type._id !== this.state._id);
-      
       let additionalAttributes = [];
       let selectedAttributeTypes = [];
       let selectedAttributeName = "";
@@ -706,30 +756,30 @@ class Page extends Component {
                     }}
                     labelWidth={43}/>
                 }
-                {/* <FormControl variant="outlined" fullWidth>
-                  <InputLabel htmlFor="name">Name</InputLabel>
-                  <OutlinedInput
-                    id="name"
-                    name="Name"
-                    type="text"
-                    autoComplete="Off"
-                    error={!this.state.fieldValidation.Name.valid}
-                    value={this.state.Name}
-                    onChange={this.handleUserInput}
-                    onBlur={this.inputBlur}
-                    labelWidth={43}
-                    fullWidth
-                  />
-                  <FormHelperText>
-                    {this.state.fieldValidation.Name.message}
-                  </FormHelperText>
-                </FormControl> */}
+              </Grid>
+              <Grid item>
+                { this.state.loaded &&  
+                  <TextBox 
+                    Value={this.props.selectedType.PluralName} 
+                    fieldName="PluralName" 
+                    displayName="Plural Name" 
+                    onBlur={name => {
+                      const type = this.props.selectedType;
+                      type.PluralName = name;
+                      this.props.updateSelectedType(type);
+                      this.validateForm();
+                      // this.setState({ Name: name }, 
+                      //   this.validateForm);
+                    }}
+                    labelWidth={85}/>
+                }
               </Grid>
               <Grid item>
                 { this.state.loaded &&  
                   <TextBox 
                     Value={this.props.selectedType.Description} 
                     fieldName="Description" 
+                    multiline={true}
                     onBlur={desc => {
                       const type = this.props.selectedType;
                       type.Description = desc;
@@ -980,7 +1030,7 @@ class Page extends Component {
                   </Button>
                 </div>
               </Grid>
-              <Grid item>{this.state.message}</Grid>
+              <Grid item style={{color:"red"}}>{this.state.message}</Grid>
             </Grid>
           }
         </Grid>

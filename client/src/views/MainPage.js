@@ -1,12 +1,13 @@
 import React, { Component } from "react";
+// import { Redirect } from "react-router-dom";
 import { 
   Route, 
   Switch } from "react-router-dom";
   import { connect } from "react-redux";
 import HomePage from "./Home";
 import ForumMenuPage from "./Forum/ForumMenu";
-import LoginPage from "./User/Login";
-import UserEditPage from "./User/Edit";
+import ProfilePage from "./User/Profile";
+// import UserEditPage from "./User/Edit";
 import WorldDetailsPage from "./World/Details";
 import WorldEditPage from "./World/Edit";
 import CollaboratePage from "./World/Collaborate";
@@ -52,7 +53,7 @@ class Page extends Component {
     return (
       <Grid item xs={12} className="h-100 margined">
         { this.props.loginOpen ?
-          <LoginControl onLogin={user => { 
+          <LoginControl onLogin={_ => { 
             this.props.toggleLogin();
           }}/>
         :
@@ -60,10 +61,10 @@ class Page extends Component {
             {/* <Route exact path="/Template" component={TemplatePage} /> */}
             <Route exact path="/" component={HomePage} />
             <Route exact path="/home" component={HomePage} />
-            <Route exact path="/User/Login" component={LoginPage} />
+            <Route exact path="/User/Profile" component={ProfilePage} />
             <Route exact path="/User/resetPassword/:id" component={ResetPasswordPage} />
             <Route exact path="/User/confirmEmail/:id" component={ConfirmEmailPage} />
-            <Route exact path="/profile" component={UserEditPage} />
+            {/* <Route exact path="/profile" component={UserEditPage} /> */}
             
             {/* <Route exact path="/test/:testtext" component={Test} /> */}
             <Route exact path="/forums" component={ForumMenuPage} />

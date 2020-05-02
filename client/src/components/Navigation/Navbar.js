@@ -11,12 +11,15 @@ import {
   setWorlds,
   loadFromStorage,
   toggleMenu,
-  toggleLogin
+  toggleLogin,
+  logout,
+  redirectTo
 } from "../../redux/actions/index";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import API from "../../smartAPI";
 import MobileMenu from "./MobileMenu";
+import UserMenu from "./UserMenu";
 
 const mapStateToProps = state => {
   return {
@@ -31,22 +34,21 @@ function mapDispatchToProps(dispatch) {
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     loadFromStorage: () => dispatch(loadFromStorage({})),
     toggleMenu: () => dispatch(toggleMenu({})),
-    toggleLogin: () => dispatch(toggleLogin({}))
+    toggleLogin: () => dispatch(toggleLogin({})),
+    logout: () => dispatch(logout({})),
+    redirectTo: page => dispatch(redirectTo(page))
   };
 }
 class Bar extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+    };
     this.api = API.getInstance();
   }
 
   componentDidMount() {
     this.props.loadFromStorage();
-  }
-
-  menuClick = () => {
-    this.props.toggleMenu();
   }
 
   render() {
@@ -58,7 +60,9 @@ class Bar extends Component {
               <IconButton
                 style={{ color: "white" }}
                 aria-label="Menu"
-                onClick={this.menuClick}
+                onClick={_ => {
+                  this.props.toggleMenu();
+                }}
               >
                 <MenuIcon />
               </IconButton>
@@ -75,60 +79,42 @@ class Bar extends Component {
               </ListItem>
             </Grid>
             <Grid item xs>
-              {/* <Button
-                // fullWidth
-                variant="contained"
-                color="primary"
-                onClick={_ => {
-                  this.props.toggleLogin();
-                }}
-              > */}
-              <span style={{cursor: "pointer"}} 
-                onClick={_ => {
-                  this.props.toggleLogin();
-                }}
-                className="float-right blue whiteFont">
-                <ListItem className="curvedButton float-right">
-                  <Icon>person</Icon>
-                  <ListItemText
-                    primary={
-                      this.props.user === null ||
-                      this.props.user.username === undefined
-                        ? " Login/Register"
-                        : ` ${this.props.user.username}`
-                    }
+              { this.props.user === null || this.props.user.username === undefined ? 
+                <span style={{cursor: "pointer"}} 
+                  onClick={_ => {
+                    this.props.toggleLogin();
+                  }}
+                  className="float-right blue whiteFont">
+                  <ListItem className="curvedButton float-right">
+                    <Icon>person</Icon>
+                    <ListItemText primary=" Login/Register"/>
+                  </ListItem>
+                </span>
+              : 
+                <UserMenu 
+                  username={this.props.user.username}
+                  // onProfile={_ => {
+                  //   // console.log("Profile");
+                  //   this.props.redirectTo("/User/Profile");
+                  // }}
+                  onLogout={_ => {
+                    // console.log("Logout");
+                    this.api.logout().then(_ => {
+                      this.props.logout();
+                      // this.setState({ redirectTo: "/" });
+                      // window.location.reload(false);
+                    });
+                  }}
                   />
-                </ListItem>
-              </span>
-              {/* </Button> */}
-              {/* <NavLink
-                className="float-right blue whiteFont"
-                to="/User/Login"
-                // onClick={_ => {
-                //   this.props.toggleLogin();
-                // }}
-                activeClassName="active"
-              >
-                <ListItem className="curvedButton float-right">
-                  <Icon>person</Icon>
-                  <ListItemText
-                    primary={
-                      this.props.user === null ||
-                      this.props.user.username === undefined
-                        ? " Login/Register"
-                        : ` ${this.props.user.username}`
-                    }
-                  />
-                </ListItem>
-              </NavLink> */}
+              }
             </Grid>
           </Grid>
         </Toolbar>
-        {this.props.mobileMenuOpen ? 
+        {this.props.mobileMenuOpen &&
           <Box display={{ xs: 'inline', sm: 'none' }}>
             <MobileMenu />
           </Box>
-        : "" }
+        }
       </AppBar>
     );
   }

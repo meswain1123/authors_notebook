@@ -73,10 +73,10 @@ class APIClass {
     }
   };
 
-  login = async user => {
+  login = async (user) => {
     if (this.real) {
       const response = await this.postData("/api/user/login", user);
-      return this.processResponse(response);
+      return this.processResponse(response, "user");
     } else {
       return {
         _id: "-1",
@@ -84,11 +84,12 @@ class APIClass {
         username: "Liar Liar"
       };
     }
-  };
+  }
 
   logout = async user => {
     if (this.real) {
       await this.postData("/api/user/logout");
+      sessionStorage.removeItem("user");
     }
   };
 
@@ -173,9 +174,9 @@ class APIClass {
       return this.getWorldsForUserFromAPI();
     }
     else {
-      const data = sessionStorage.getItem("worlds");
+      const data = this.getSessionData("worlds");
       if (data !== null) {
-        return JSON.parse(data);
+        return data;
       }
       else {
         return this.getWorldsForUserFromAPI();
@@ -198,9 +199,9 @@ class APIClass {
       return this.getPublicWorldsFromAPI();
     }
     else {
-      const data = sessionStorage.getItem("publicWorlds");
+      const data = this.getSessionData("publicWorlds");
       if (data !== null) {
-        return JSON.parse(data);
+        return data;
       }
       else {
         return this.getPublicWorldsFromAPI();
@@ -410,9 +411,9 @@ class APIClass {
       return this.getAttributesForWorldFromAPI(worldID);
     }
     else {
-      const data = sessionStorage.getItem(`attributes_${worldID}`);
+      const data = this.getSessionData(`attributes_${worldID}`);
       if (data !== null) {
-        return JSON.parse(data);
+        return data;
       }
       else {
         return this.getAttributesForWorldFromAPI(worldID);
@@ -489,9 +490,9 @@ class APIClass {
       return this.getTypesForWorldFromAPI(worldID);
     }
     else {
-      const data = sessionStorage.getItem(`types_${worldID}`);
+      const data = this.getSessionData(`types_${worldID}`);
       if (data !== null) {
-        return JSON.parse(data);
+        return data;
       }
       else {
         return this.getTypesForWorldFromAPI(worldID);
@@ -560,9 +561,9 @@ class APIClass {
       return this.getThingsForWorldFromAPI(worldID);
     }
     else {
-      const data = sessionStorage.getItem(`things_${worldID}`);
+      const data = this.getSessionData(`things_${worldID}`);
       if (data !== null) {
-        return JSON.parse(data);
+        return data;
       }
       else {
         return this.getThingsForWorldFromAPI(worldID);
@@ -705,15 +706,36 @@ class APIClass {
       .catch(this.logErrorReason);
   };
 
-  processResponse = async (response, sessionName = null) => {
+  processResponse = async (response, sessionName = null, noExpiry = false) => {
     const body = await response.json();
     if (response.status !== 200) throw Error(body.message);
     else {
       if (sessionName !== null) {
-        sessionStorage.setItem(sessionName, JSON.stringify(body));
+        let expiresAt = new Date();
+        if (noExpiry) 
+          expiresAt = "never";
+        else 
+          expiresAt.setHours(expiresAt.getHours() + 1);
+        const sessionObj = {
+          expiresAt,
+          body
+        };
+        sessionStorage.setItem(sessionName, JSON.stringify(sessionObj));
       }
       return body;
     };
+  };
+
+  getSessionData = (sessionName) => {
+    const sessionStr = sessionStorage.getItem(sessionName);
+    if (sessionStr !== null) {
+      const sessionObj = JSON.parse(sessionStr);
+      if (sessionObj.expiresAt !== undefined && 
+        (sessionObj.expiresAt === "never" || sessionObj.expiresAt > new Date())) {
+        return sessionObj.body;
+      }
+    }
+    return null;
   };
 }
 

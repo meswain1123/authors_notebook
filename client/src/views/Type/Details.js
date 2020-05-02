@@ -7,7 +7,9 @@ import {
   updateType,
   setTypes,
   setAttributes,
-  setThings
+  setThings,
+  notFromLogin, 
+  // redirectTo
 } from "../../redux/actions/index";
 import { Edit, Delete, Add, ArrowBack } from "@material-ui/icons";
 import { Fab, Modal, Grid, Button, Tooltip, List, ListItem, ListItemText } from "@material-ui/core";
@@ -42,6 +44,7 @@ const mapStateToProps = state => {
     things: state.app.things,
     attributesByID: state.app.attributesByID,
     attributesByName: state.app.attributesByName,
+    fromLogin: state.app.fromLogin,
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -51,7 +54,8 @@ function mapDispatchToProps(dispatch) {
     updateType: type => dispatch(updateType(type)),
     setTypes: types => dispatch(setTypes(types)),
     setAttributes: attributes => dispatch(setAttributes(attributes)),
-    setThings: things => dispatch(setThings(things))
+    setThings: things => dispatch(setThings(things)),
+    notFromLogin: () => dispatch(notFromLogin({}))
   };
 }
 class Page extends Component {
@@ -113,6 +117,9 @@ class Page extends Component {
   }
 
   finishLoading = () => {
+    if (this.props.fromLogin) {
+      this.props.notFromLogin();
+    }
     const id = this.state._id;
     if (id !== undefined) {
       this.api.getWorld(this.props.selectedWorldID).then(res => {
