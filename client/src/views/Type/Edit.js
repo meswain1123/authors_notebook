@@ -573,7 +573,7 @@ class Page extends Component {
       this.setState({
         _id: id,
         loaded: true,
-        // message: ""
+        message: ""
       });
     }
     else {
@@ -629,7 +629,10 @@ class Page extends Component {
                 else {
                   // I had it get here with an ID from Cosmere, when I was supposed to be looking at a Type from Ozzie.
                   // Need to figure out how it got the wrong ID.
-                  this.setState({ message: `Invalid ID: ${id}`, loaded: true });
+                  this.setState({ 
+                    message: `Invalid ID: ${id}`, 
+                    loaded: true 
+                  });
                 }
               } else {
                 this.props.updateSelectedType({
@@ -644,7 +647,10 @@ class Page extends Component {
                   Major: false,
                   DefaultsHash: {}
                 });
-                this.setState({ loaded: true });
+                this.setState({ 
+                  message: "", 
+                  loaded: true 
+                });
               }
             });
           }
@@ -661,7 +667,10 @@ class Page extends Component {
             Major: false,
             DefaultsHash: {}
           });
-          this.setState({ loaded: true });
+          this.setState({ 
+            message: "",
+            loaded: true 
+          });
         }
       });
     }
