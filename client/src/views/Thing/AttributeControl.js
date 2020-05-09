@@ -26,15 +26,17 @@ const handleDefinedTypeChange = (e, props, respond) => {
   // const attr = props.attribute;
   // attr["DefinedType"] = e.target.value;
   if (e.target.value === "new") {
-    function respond2(newThing) {
-      // attr["DefinedType"] = newType._id;
-      // props.onChange(attr);
-      respond(newThing._id);
-    }
-    props.onNewThing(
-      respond2,
-      props.types.filter(t => t._id === props.attribute.DefinedType)[0]
-    );
+    // function respond2(newThing) {
+    //   // attr["DefinedType"] = newType._id;
+    //   // props.onChange(attr);
+    //   respond(newThing._id);
+    // }
+    // props.onNewThing(
+    //   // respond2,
+    //   props.types.filter(t => t._id === props.attribute.DefinedType)[0]
+    // );
+    const attr = props.attribute;
+    props.onNewThing(attr);
   } else {
     // props.onChange(attr);
     respond(e.target.value);
@@ -55,15 +57,21 @@ const removeOption = (selectedList, props) => {
 };
 const addType = (selectedItem, props) => {
   if (selectedItem._id === "new") {
-    function respond2(newThing) {
+    // function respond2(newThing) {
+    //   const attr = props.attribute;
+    //   attr.ListValues.push(newThing._id);
+    //   props.onChange(attr);
+    // }
+    
+    setTimeout(() => {
       const attr = props.attribute;
-      attr.ListValues.push(newThing._id);
-      props.onChange(attr);
-    }
-    props.onNewThing(
-      respond2,
-      props.types.filter(t => t._id === props.attribute.DefinedType)[0]
-    );
+      props.onNewThing(attr);
+    }, 500);
+    // props.onNewThing(
+    //   // respond2,
+    //   // props.types.filter(t => t._id === props.attribute.DefinedType)[0]
+    //   props.attribute
+    // );
   } else {
     const attr = props.attribute;
     attr.ListValues.push(selectedItem._id);

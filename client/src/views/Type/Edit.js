@@ -758,15 +758,12 @@ class Page extends Component {
         defaultsMode={this.state.defaultsMode} 
         addNewType={attribute => {
           this.setState({ 
-            // onTypeModalAdd: respond,
             typeModalOpen: true,
             putTypeOnAttribute: attribute
           });
         }}
-        addNewThing={(attribute) => {
-          console.log(attribute);
+        addNewThing={attribute => {
           this.setState({ 
-            // onThingModalAdd: respond,
             thingModalOpen: true,
             newThingType: this.props.types.filter(t => t._id === attribute.DefinedType)[0],
             putThingOnAttribute: attribute
@@ -803,7 +800,6 @@ class Page extends Component {
     } else if (this.state.typeModalOpen) {
       return (
         <NewTypeModal 
-          // open={this.state.typeModalOpen} 
           types={this.props.types}
           selectedWorldID={this.props.selectedWorldID}
           onCancel={_ => {
@@ -816,8 +812,6 @@ class Page extends Component {
           }}
           onSave={newType => {
             const type = this.props.selectedType;
-            // console.log(type);
-            // console.log(this.state.putTypeOnAttribute);
             const attr = type.AttributesArr.filter(a => a.attrID === this.state.putTypeOnAttribute.attrID)[0];
             attr.DefinedType = newType._id;
             this.props.updateSelectedType(type);
@@ -831,7 +825,6 @@ class Page extends Component {
     } else if (this.state.thingModalOpen) {
       return (
         <NewThingModal 
-          // open={this.state.typeModalOpen} 
           things={this.props.things}
           newThingType={this.state.newThingType}
           selectedWorldID={this.props.selectedWorldID}
@@ -847,14 +840,12 @@ class Page extends Component {
             this.setState({
               thingModalOpen: false
             }, _ => {
-              // this.state.onThingModalAdd(thing);
               // Need to put it on putThingOnAttribute
               const type = this.props.selectedType;
               const attr = type.AttributesArr.filter(a => a.attrID === this.state.putThingOnAttribute.attrID)[0];
               let def = this.props.selectedType.DefaultsHash[attr.attrID];
               if (def === undefined)
                 def = { attrID: attr.attrID, DefaultValue: "", DefaultListValues: [] };
-              // console.log(def);
               if (attr.AttributeType === "Type") {
                 def.DefaultValue = thing._id;
               }

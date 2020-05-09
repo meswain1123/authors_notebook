@@ -29,6 +29,7 @@ import { Multiselect } from 'multiselect-react-dropdown';
 import { Helmet } from 'react-helmet';
 import API from "../../smartAPI";
 import NewTypeModal from "../../components/Modals/NewTypeModal";
+import NewThingModal from "../../components/Modals/NewThingModal";
 import TextBox from "../../components/Inputs/TextBox";
 
 /* 
@@ -94,7 +95,10 @@ class Page extends Component {
       newTypeForAttribute: "",
       browseAttributes: false,
       browseAttributesFilter: "",
-      browseAttributesSelected: ""
+      browseAttributesSelected: "",
+      thingModalOpen: false,
+      newThingType: null,
+      putThingOnAttribute: null
     };
     this.api = API.getInstance();
   }
@@ -1086,6 +1090,23 @@ class Page extends Component {
       return <Redirect to="/" />;
     } else if (this.props.selectedThing === null || this.props.selectedThing._id !== id) {
       return <span>Loading...</span>;
+    } else if (this.state.typeModalOpen) {
+      return (
+        <NewTypeModal 
+          types={this.props.types}
+          selectedWorldID={this.props.selectedWorldID}
+          onCancel={_ => {
+            this.setState({typeModalOpen: false});
+          }}
+          addType={type => {
+            this.props.addType(type);
+          }}
+          onSave={type => {
+            this.setState({typeModalOpen: false, newTypeForAttribute: type._id});
+          }}
+          api={this.api}
+        />
+      );
     } else if (this.state.infoAttribute !== null) {
       const connectedTypes = this.props.types.filter(t=> this.state.infoAttribute.FromTypeIDs.includes(t._id));
       const otherTypes = this.props.types.filter(t=> !this.state.infoAttribute.FromTypeIDs.includes(t._id) && this.state.infoAttribute.TypeIDs.includes(t._id));
@@ -1281,21 +1302,6 @@ class Page extends Component {
                   </Button>
                 </Grid>
               </Grid>
-              <NewTypeModal 
-                open={this.state.typeModalOpen} 
-                types={this.props.types}
-                selectedWorldID={this.props.selectedWorldID}
-                onCancel={_ => {
-                  this.setState({typeModalOpen: false});
-                }}
-                addType={type => {
-                  this.props.addType(type);
-                }}
-                onSave={type => {
-                  this.setState({typeModalOpen: false, newTypeForAttribute: type._id});
-                }}
-                api={this.api}
-              />
             </Grid>
           );
         }
@@ -1478,6 +1484,40 @@ class Page extends Component {
           </Grid>
         );
       }
+    } else if (this.state.thingModalOpen) {
+      return (
+        <NewThingModal 
+          things={this.props.things}
+          newThingType={this.state.newThingType}
+          selectedWorldID={this.props.selectedWorldID}
+          onCancel={_ => {
+            this.setState({
+              thingModalOpen: false
+            });
+          }}
+          addThing={thing => {
+            this.props.addThing(thing);
+          }}
+          onSave={newThing => {
+            this.setState({
+              thingModalOpen: false
+            }, _ => {
+              // Need to put it on putThingOnAttribute
+              const thing = this.props.selectedThing;
+              const attr = thing.AttributesArr.filter(a => a.attrID === this.state.putThingOnAttribute.attrID)[0];
+              if (attr.AttributeType === "Type") {
+                attr.Value = newThing._id;
+              }
+              else {
+                // The only way it can be here is if it's List and ListType is Type
+                attr.ListValues.push(newThing._id);
+              }
+              this.props.updateSelectedThing(thing);
+            });
+          }}
+          api={this.api}
+        />
+      );
     } else {
       let additionalAttributes = [];
       if (this.state.browseAttributes) {
@@ -1626,7 +1666,17 @@ class Page extends Component {
                   </Grid>
                 }
                 { !this.state.resetting && this.state.loaded &&
-                  <AttributesControl onInfo={e => {this.setState({ infoAttribute: e})}} />
+                  <AttributesControl 
+                    addNewThing={attribute => {
+                      this.setState({ 
+                        thingModalOpen: true,
+                        newThingType: this.props.types.filter(t => t._id === attribute.DefinedType)[0],
+                        putThingOnAttribute: attribute
+                      });
+                    }} 
+                    onInfo={e => {
+                      this.setState({ infoAttribute: e});
+                    }} />
                 }
                 <FormHelperText>
                   {this.state.fieldValidation.Attributes.message}

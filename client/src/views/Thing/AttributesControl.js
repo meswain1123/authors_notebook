@@ -87,9 +87,13 @@ class Control extends Component {
   optionsChange = (e, props) => {
   }
 
-  addNewThing = (respond, type) => {
-    // Opens a Modal where they enter a name.
-    this.setState({modalOpen: true, modalSubmit: respond, newThingType: type});
+  // addNewThing = (respond, type) => {
+  //   // Opens a Modal where they enter a name.
+  //   this.setState({modalOpen: true, modalSubmit: respond, newThingType: type});
+  // }
+
+  addNewThing = (attribute) => {
+    this.props.addNewThing(attribute);
   }
 
   infoModal = (attribute) => {
