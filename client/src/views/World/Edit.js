@@ -5,7 +5,11 @@ import {
   selectWorld,
   addWorld,
   updateWorld,
-  notFromLogin
+  notFromLogin,
+  toggleLogin,
+  setAttributes,
+  setTypes,
+  setThings
 } from "../../redux/actions/index";
 import { Button, Checkbox, FormControl, FormControlLabel,
   OutlinedInput, InputLabel, FormHelperText, Grid, Tooltip, Fab
@@ -35,7 +39,11 @@ function mapDispatchToProps(dispatch) {
     selectWorld: worldID => dispatch(selectWorld(worldID)),
     addWorld: world => dispatch(addWorld(world)),
     updateWorld: world => dispatch(updateWorld(world)),
-    notFromLogin: () => dispatch(notFromLogin({}))
+    notFromLogin: () => dispatch(notFromLogin({})),
+    toggleLogin: () => dispatch(toggleLogin({})),
+    setAttributes: attributes => dispatch(setAttributes(attributes)),
+    setTypes: types => dispatch(setTypes(types)),
+    setThings: things => dispatch(setThings(things))
   };
 }
 class Page extends Component {
@@ -51,38 +59,13 @@ class Page extends Component {
       },
       formValid: false,
       message: "",
-      redirectTo: null
+      redirectTo: null,
+      loaded: true
     };
     this.api = API.getInstance();
   }
 
   componentDidMount() {
-    setTimeout(() => {
-      const { id } = this.props.match.params;
-      if (id !== undefined) {
-        const { id } = this.props.match.params;
-        let world = this.props.worlds.filter(w => w._id === id);
-        if (world.length > 0) {
-          world = world[0];
-          this.setState({
-            Name: world.Name,
-            Public: world.Public,
-            AcceptingCollaborators: world.AcceptingCollaborators === undefined || world.AcceptingCollaborators === null ? false : world.AcceptingCollaborators,
-            _id: id
-          });
-          this.api.selectWorld(id);
-          this.props.selectWorld(id);
-          this.api.getWorld(id).then(res => {
-            this.props.setAttributes(res.attributes);
-            this.props.setTypes(res.types);
-            this.props.setThings(res.things);
-          });
-        }
-      } else {
-        this.api.selectWorld(null);
-        this.props.selectWorld(null);
-      }
-    }, 500);
   }
 
   handleUserInput = e => {
@@ -90,7 +73,7 @@ class Page extends Component {
     const value =
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
     this.setState({ [name]: value });
-  };
+  }
 
   inputBlur = e => {
     const name = e.target.name;
@@ -104,7 +87,7 @@ class Page extends Component {
       fieldValidation[name].message = validation.message;
       this.setState({ fieldValidation: fieldValidation });
     }
-  };
+  }
 
   a11yProps = (index) => {
     return {
@@ -142,7 +125,7 @@ class Page extends Component {
     }
     const response = { valid: valid, message: message };
     return response;
-  };
+  }
 
   validateForm = respond => {
     const nameValid = this.validateField("Name");
@@ -156,7 +139,7 @@ class Page extends Component {
       },
       respond
     );
-  };
+  }
 
   onSubmit = () => {
     function respond() {
@@ -166,7 +149,7 @@ class Page extends Component {
     }
 
     this.validateForm(respond);
-  };
+  }
 
   submitThroughAPI = () => {
     const world = {
@@ -211,15 +194,67 @@ class Page extends Component {
         })
         .catch(err => console.log(err));
     }
-  };
+  }
+
+  load = (id) => {
+    setTimeout(() => {
+      this.setState({
+        _id: id,
+        redirectTo: null,
+        loaded: false
+      }, this.finishLoading);
+    }, 500);
+  }
+
+  finishLoading = () => {
+    if (this.state._id === null) {
+      this.setState({
+        Name: "",
+        Public: false,
+        loaded: true
+      });
+    }
+    else {
+      this.api.selectWorld(this.state._id).then(res => {
+        this.props.selectWorld(this.state._id);
+        this.api.getWorld(this.props.selectedWorldID).then(res => {
+          this.props.setAttributes(res.attributes);
+          this.props.setTypes(res.types);
+          this.props.setThings(res.things);
+
+          this.setState({
+            Name: this.props.selectedWorld.Name,
+            Public: this.props.selectedWorld.Public,
+            loaded: true
+          });
+        });
+      });
+    }
+  }
 
   render() {
     if (this.props.fromLogin) {
       this.props.notFromLogin();
     }
-    if (this.state.redirectTo !== null) {
+    let { id } = this.props.match.params;
+    if (id === undefined)
+      id = null;
+    if (this.state._id !== id) {
+      this.load(id);
+      return (<span>Loading...</span>);
+    } else if (!this.state.loaded) {
+      return (<span>Loading...</span>);
+    } else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
-    } else if (this.props.selectedWorld !== null && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
+    } else if (this.props.selectedWorld !== null && 
+      !this.props.selectedWorld.Public && 
+      this.props.user === null) {
+      setTimeout(() => {
+        this.props.toggleLogin();
+      }, 500);
+      return <span>Requires Login</span>;
+    } else if (this.props.selectedWorld !== null && 
+      this.props.selectedWorld.Owner !== this.props.user._id) {
       return <Redirect to="/" />;
     } else {
       return (

@@ -148,14 +148,24 @@ class Control extends Component {
     };
   }
 
-  addNewType = (respond) => {
+  addNewType = (attribute) => {
     // Opens a Modal where they enter a name.
-    this.setState({typeModalOpen: true, modalSubmit: respond});
+    // this.setState({ 
+    //   typeModalOpen: true, 
+    //   modalSubmit: respond,
+    //   // Name: "" 
+    // });
+    this.props.addNewType(attribute);
   }
 
-  addNewThing = (respond, type) => {
+  addNewThing = (attribute) => {
     // Opens a Modal where they enter a name.
-    this.setState({thingModalOpen: true, modalSubmit: respond, newThingType: type});
+    // this.setState({ 
+    //   thingModalOpen: true, 
+    //   modalSubmit: respond, 
+    //   newThingType: type 
+    // });
+    this.props.addNewThing(attribute);
   }
 
   handleUserInput = e => {
@@ -259,7 +269,8 @@ class Control extends Component {
           this.state.modalSubmit(type);
           this.setState({
             waiting: false, 
-            typeModalOpen: false
+            typeModalOpen: false,
+            Name: ""
           });
         }
         else if (res.error !== undefined) {
@@ -311,7 +322,8 @@ class Control extends Component {
           this.state.modalSubmit(thing);
           this.setState({
             waiting: false, 
-            thingModalOpen: false
+            thingModalOpen: false,
+            Name: ""
           });
         }
         else if (res.error !== undefined) {
@@ -418,11 +430,16 @@ class Control extends Component {
             }
           </List>
         </Grid>
-        <Modal
+        {/* <Modal
           aria-labelledby="new-type-modal"
           aria-describedby="new-type-modal-description"
           open={this.state.typeModalOpen}
-          onClose={e => {this.setState({typeModalOpen: false})}}
+          onClose={_ => {
+            this.setState({
+              typeModalOpen: false,
+              Name: ""
+            });
+          }}
         >
           <div style={this.getModalStyle()} className="paper">
             <Grid container spacing={1} direction="column">
@@ -468,7 +485,12 @@ class Control extends Component {
                   <Button
                     fullWidth
                     variant="contained"
-                    onClick={e => {this.setState({typeModalOpen: false})}}
+                    onClick={_ => {
+                      this.setState({
+                        typeModalOpen: false,
+                        Name: ""
+                      });
+                    }}
                   >
                     Cancel
                   </Button>
@@ -481,7 +503,12 @@ class Control extends Component {
           aria-labelledby="new-thing-modal"
           aria-describedby="new-thing-modal-description"
           open={this.state.thingModalOpen}
-          onClose={e => {this.setState({thingModalOpen: false})}}
+          onClose={_ => {
+            this.setState({
+              thingModalOpen: false,
+              Name: ""
+            });
+          }}
         >
           <div style={this.getModalStyle()} className="paper">
             <Grid container spacing={1} direction="column">
@@ -527,7 +554,12 @@ class Control extends Component {
                   <Button
                     fullWidth
                     variant="contained"
-                    onClick={e => {this.setState({thingModalOpen: false})}}
+                    onClick={e => {
+                      this.setState({
+                        thingModalOpen: false,
+                        Name: ""
+                      });
+                    }}
                   >
                     Cancel
                   </Button>
@@ -535,7 +567,7 @@ class Control extends Component {
               </Grid>
             </Grid>
           </div>
-        </Modal>
+        </Modal> */}
       </Grid>
     );
   }

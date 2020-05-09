@@ -3,7 +3,8 @@ import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import {
   updateWorld, selectWorld,
-  notFromLogin
+  notFromLogin,
+  toggleLogin
 } from "../../redux/actions/index";
 import { Button, Checkbox, FormControl, FormControlLabel,
   OutlinedInput, InputLabel, FormHelperText, Grid, 
@@ -43,7 +44,8 @@ function mapDispatchToProps(dispatch) {
   return {
     updateWorld: world => dispatch(updateWorld(world)),
     selectWorld: worldID => dispatch(selectWorld(worldID)),
-    notFromLogin: () => dispatch(notFromLogin({}))
+    notFromLogin: () => dispatch(notFromLogin({})),
+    toggleLogin: () => dispatch(toggleLogin({}))
   };
 }
 class Page extends Component {
@@ -279,11 +281,18 @@ class Page extends Component {
       this.api.getAllUsers().then(res => {
         this.setState({allUsers: res});
       });
-      return (<div></div>);
+      return (<div>Loading...</div>);
     }
     else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
-    } else if (this.props.selectedWorld !== null && (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
+    } else if (this.props.selectedWorld !== null && 
+      this.props.user === null) {
+      setTimeout(() => {
+        this.props.toggleLogin();
+      }, 500);
+      return <span>Requires Login</span>;
+    } else if (this.props.selectedWorld !== null && 
+      this.props.selectedWorld.Owner !== this.props.user._id) {
       return <Redirect to="/" />;
     } else {
       const collabs = this.state.Collaborators.filter(c=>c.type==="collab");

@@ -21,11 +21,12 @@ const handleDefinedTypeChange = (e, props) => {
   const attr = props.attribute;
   attr["DefinedType"] = e.target.value;
   if (e.target.value === "new") {
-    function respond(newType) {
-      attr["DefinedType"] = newType._id;
-      props.onChange(attr);
-    }
-    props.onNewType(respond);
+    // function respond(newType) {
+    //   attr["DefinedType"] = newType._id;
+    //   props.onChange(attr);
+    // }
+    // props.onNewType(respond);
+    props.onNewType(attr);
   }
   else 
     props.onChange(attr);

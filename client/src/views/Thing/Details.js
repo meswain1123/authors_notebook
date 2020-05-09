@@ -14,7 +14,8 @@ import {
   setAttributes,
   setTypes,
   setThings,
-  notFromLogin
+  notFromLogin,
+  toggleLogin
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 
@@ -40,7 +41,8 @@ function mapDispatchToProps(dispatch) {
     setAttributes: attrs => dispatch(setAttributes(attrs)),
     setTypes: types => dispatch(setTypes(types)),
     setThings: things => dispatch(setThings(things)),
-    notFromLogin: () => dispatch(notFromLogin({}))
+    notFromLogin: () => dispatch(notFromLogin({})),
+    toggleLogin: () => dispatch(toggleLogin({}))
   };
 }
 class Page extends Component {
@@ -174,9 +176,15 @@ class Page extends Component {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && 
       !this.props.selectedWorld.Public && 
-      (this.props.user === null || 
-        (this.props.selectedWorld.Owner !== this.props.user._id && 
-          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab").length === 0))) {
+      this.props.user === null) {
+      setTimeout(() => {
+        this.props.toggleLogin();
+      }, 500);
+      return <span>Requires Login</span>;
+    } else if (this.props.selectedWorld !== null && 
+      !this.props.selectedWorld.Public && 
+      (this.props.selectedWorld.Owner !== this.props.user._id && 
+        this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab").length === 0)) {
       return <Redirect to="/" />;
     } else {
       const references = this.props.things.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));

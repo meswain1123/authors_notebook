@@ -6,11 +6,14 @@ import { ArrowBack, Add, Search } from "@material-ui/icons";
 import { 
   Grid, Button, Checkbox, FormControl, FormControlLabel,
   InputLabel, Tooltip, Fab,
-  Select, MenuItem 
+  Select, MenuItem,
+  // List, ListItem
 } from "@material-ui/core";
 import { Helmet } from 'react-helmet';
 import { Multiselect } from 'multiselect-react-dropdown';
 import AttributesControl from "./AttributesControl";
+// import AttributeControl from "./AttributeControl";
+// import AttributeDefaultControl from "./AttributeDefaultControl";
 import {
   updateSelectedType,
   addType,
@@ -19,10 +22,14 @@ import {
   setAttributes,
   setTypes,
   setThings,
-  notFromLogin
+  notFromLogin,
+  addThing,
+  toggleLogin
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 import TextBox from "../../components/Inputs/TextBox";
+import NewTypeModal from "../../components/Modals/NewTypeModal";
+import NewThingModal from "../../components/Modals/NewThingModal";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -37,6 +44,7 @@ const mapStateToProps = state => {
     selectedWorld: state.app.selectedWorld,
     selectedWorldID: state.app.selectedWorldID,
     types: state.app.types,
+    things: state.app.things,
     user: state.app.user,
     attributesByID: state.app.attributesByID,
     attributesByName: state.app.attributesByName,
@@ -52,7 +60,9 @@ function mapDispatchToProps(dispatch) {
     setAttributes: attrs => dispatch(setAttributes(attrs)),
     setTypes: types => dispatch(setTypes(types)),
     setThings: things => dispatch(setThings(things)),
-    notFromLogin: () => dispatch(notFromLogin({}))
+    notFromLogin: () => dispatch(notFromLogin({})),
+    addThing: thing => dispatch(addThing(thing)),
+    toggleLogin: () => dispatch(toggleLogin({}))
   };
 }
 class Page extends Component {
@@ -78,7 +88,8 @@ class Page extends Component {
       resetting: false,
       browseAttributes: false,
       browseAttributesSelected: "",
-      browseTypesSelected: ""
+      browseTypesSelected: "",
+      newThingType: {}
     };
     this.api = API.getInstance();
   }
@@ -290,6 +301,8 @@ class Page extends Component {
         });
       });
       Object.keys(this.props.selectedType.DefaultsHash).forEach(attrID => {
+        // There's the situation which can happen here where a default thing gets deleted (not removed as default).
+        // I really should filter it out, but it's not hurting anything for now, so I'm going to leave it.
         const def = this.props.selectedType.DefaultsHash[attrID];
         type.Defaults.push({
           attrID, 
@@ -676,23 +689,185 @@ class Page extends Component {
     }
   }
 
+  changeDefault = value => {
+    const type = this.props.selectedType;
+    type.DefaultsHash[value.attrID] = {
+      attrID: value.attrID,
+      DefaultValue: value.DefaultValue,
+      DefaultListValues: value.DefaultListValues,
+      FromTypeIDs: value.FromTypeIDs
+    };
+    this.props.updateSelectedType(type);
+  }
+
+  newAttribute = () => {
+    const type = this.props.selectedType;
+    type.AttributesArr.push({
+      index: type.AttributesArr.length,
+      attrID: `null_${uuid()}`,
+      Name: "",
+      AttributeType: "Text",
+      Options: [],
+      DefinedType: "",
+      ListType: ""
+    });
+    this.props.updateSelectedType(type);
+  }
+
+  changeAttribute = value => {
+    const type = this.props.selectedType;
+    type.AttributesArr[value.index] = {
+      index: value.index,
+      attrID: value.attrID,
+      Name: value.Name,
+      AttributeType: value.AttributeType,
+      Options: value.Options,
+      DefinedType: value.DefinedType,
+      ListType: value.ListType,
+    };
+    this.props.updateSelectedType(type);
+  }
+
+  deleteAttribute = value => {
+    const type = this.props.selectedType;
+    const attributes = [];
+    type.AttributesArr.forEach(t => {
+      if (t.index !== value.index) {
+        if (t.index > value.index)
+          t.index--;
+        attributes.push(t);
+      }
+    });
+    type.AttributesArr = [];
+    let defaults = {...type.DefaultsHash};
+    if (defaults[value.attrID] !== undefined) {
+      delete defaults[value.attrID];
+    }
+    type.DefaultsHash = {};
+    this.props.updateSelectedType(type);
+    setTimeout(() => {
+      type.AttributesArr = attributes;
+      type.DefaultsHash = defaults;
+      this.props.updateSelectedType(type);
+    }, 500);
+  }
+
+  renderAttributes = () => {
+    return (
+      <AttributesControl 
+        defaultsMode={this.state.defaultsMode} 
+        addNewType={attribute => {
+          this.setState({ 
+            // onTypeModalAdd: respond,
+            typeModalOpen: true,
+            putTypeOnAttribute: attribute
+          });
+        }}
+        addNewThing={(attribute) => {
+          console.log(attribute);
+          this.setState({ 
+            // onThingModalAdd: respond,
+            thingModalOpen: true,
+            newThingType: this.props.types.filter(t => t._id === attribute.DefinedType)[0],
+            putThingOnAttribute: attribute
+          });
+        }}
+      />
+    );
+  }
+
   render() {
     let { id } = this.props.match.params;
     if (id === undefined)
       id = null;
     if (this.state._id !== id) {
       this.load(id);
+      return (<span>Loading...</span>);
     }
-    if (this.state.redirectTo !== null) {
+    else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && 
       !this.props.selectedWorld.Public && 
-      (this.props.user === null || 
-        (this.props.selectedWorld.Owner !== this.props.user._id && 
-          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length === 0))) {
+      this.props.user === null) {
+      setTimeout(() => {
+        this.props.toggleLogin();
+      }, 500);
+      return <span>Requires Login</span>;
+    } else if (this.props.selectedWorld !== null && 
+      !this.props.selectedWorld.Public && 
+      (this.props.selectedWorld.Owner !== this.props.user._id && 
+          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length === 0)) {
       return <Redirect to="/" />;
     } else if (this.props.selectedType === null || this.props.selectedType._id !== id) {
       return <span>{this.state.message}</span>;
+    } else if (this.state.typeModalOpen) {
+      return (
+        <NewTypeModal 
+          // open={this.state.typeModalOpen} 
+          types={this.props.types}
+          selectedWorldID={this.props.selectedWorldID}
+          onCancel={_ => {
+            this.setState({
+              typeModalOpen: false
+            });
+          }}
+          addType={type => {
+            this.props.addType(type);
+          }}
+          onSave={newType => {
+            const type = this.props.selectedType;
+            // console.log(type);
+            // console.log(this.state.putTypeOnAttribute);
+            const attr = type.AttributesArr.filter(a => a.attrID === this.state.putTypeOnAttribute.attrID)[0];
+            attr.DefinedType = newType._id;
+            this.props.updateSelectedType(type);
+            this.setState({
+              typeModalOpen: false
+            });
+          }}
+          api={this.api}
+        />
+      );
+    } else if (this.state.thingModalOpen) {
+      return (
+        <NewThingModal 
+          // open={this.state.typeModalOpen} 
+          things={this.props.things}
+          newThingType={this.state.newThingType}
+          selectedWorldID={this.props.selectedWorldID}
+          onCancel={_ => {
+            this.setState({
+              thingModalOpen: false
+            });
+          }}
+          addThing={thing => {
+            this.props.addThing(thing);
+          }}
+          onSave={thing => {
+            this.setState({
+              thingModalOpen: false
+            }, _ => {
+              // this.state.onThingModalAdd(thing);
+              // Need to put it on putThingOnAttribute
+              const type = this.props.selectedType;
+              const attr = type.AttributesArr.filter(a => a.attrID === this.state.putThingOnAttribute.attrID)[0];
+              let def = this.props.selectedType.DefaultsHash[attr.attrID];
+              if (def === undefined)
+                def = { attrID: attr.attrID, DefaultValue: "", DefaultListValues: [] };
+              // console.log(def);
+              if (attr.AttributeType === "Type") {
+                def.DefaultValue = thing._id;
+              }
+              else {
+                // The only way it can be here is if it's List and ListType is Type
+                def.DefaultListValues.push(thing._id);
+              }
+              this.props.updateSelectedType(type);
+            });
+          }}
+          api={this.api}
+        />
+      );
     } else {
       const types =
         this.props.types === undefined || this.state._id === null
@@ -793,24 +968,9 @@ class Page extends Component {
                       const type = this.props.selectedType;
                       type.Description = desc;
                       this.props.updateSelectedType(type);
-                      // this.setState({ Description: desc });
                     }}
                     labelWidth={82}/>
                 }
-                {/* <FormControl variant="outlined" fullWidth>
-                  <InputLabel htmlFor="description">Description</InputLabel>
-                  <OutlinedInput
-                    id="description"
-                    name="Description"
-                    type="text"
-                    multiline={true}
-                    value={this.state.Description}
-                    onChange={this.handleUserInput}
-                    onBlur={this.inputBlur}
-                    labelWidth={82}
-                    fullWidth
-                  />
-                </FormControl> */}
               </Grid>
               <Grid item>
                 <FormControlLabel
@@ -848,27 +1008,31 @@ class Page extends Component {
                 <Grid item xs={6}>
                   <span>Attributes&nbsp;
                     <Tooltip 
-                      title={`Add New Attribute`} 
-                      disabled={this.state.defaultsMode}>
-                      <Fab size="small"
-                        color="primary"
-                        onClick={ _ => { this.newAttribute()}}
-                      >
-                        <Add />
-                      </Fab>
+                      title={`Add New Attribute`}>
+                      <span>
+                        <Fab size="small"
+                          color="primary"
+                          disabled={this.state.defaultsMode}
+                          onClick={ _ => { this.newAttribute()}}
+                        >
+                          <Add />
+                        </Fab>
+                      </span>
                     </Tooltip>
                     <Tooltip 
-                      title={`Browse Additional Attributes`} 
-                      disabled={this.state.defaultsMode}>
-                      <Fab
-                        size="small"
-                        color="primary"
-                        onClick={e => {
-                          this.setState({ browseAttributes: !this.state.browseAttributes });
-                        }}
-                      >
-                        <Search />
-                      </Fab>
+                      title={`Browse Additional Attributes`}>
+                      <span>
+                        <Fab
+                          size="small"
+                          color="primary" 
+                          disabled={this.state.defaultsMode}
+                          onClick={e => {
+                            this.setState({ browseAttributes: !this.state.browseAttributes });
+                          }}
+                        >
+                          <Search />
+                        </Fab>
+                      </span>
                     </Tooltip>
                   </span>
                 </Grid>
@@ -978,7 +1142,7 @@ class Page extends Component {
               }
               <Grid item>
                 { this.state.loaded &&
-                  <AttributesControl defaultsMode={this.state.defaultsMode} />
+                  this.renderAttributes()
                 }
               </Grid>
               <Grid item>

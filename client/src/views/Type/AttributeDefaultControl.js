@@ -21,22 +21,27 @@ const handleTextListChange = (e, props) => {
   def.DefaultListValues = e;
   props.onChange(def);
 };
-const handleDefinedTypeChange = (e, props, respond) => {
-  // const attr = props.attribute;
-  // attr["DefinedType"] = e.target.value;
+const handleDefinedTypeChange = (e, props) => {
+  const attr = props.attribute;
   if (e.target.value === "new") {
-    function respond2(newThing) {
-      // attr["DefinedType"] = newType._id;
-      // props.onChange(attr);
-      respond(newThing._id);
-    }
+    // function respond2(newThing) {
+    //   // attr["DefinedType"] = newType._id;
+    //   // props.onChange(attr);
+    //   const def = props.def;
+    //   def.DefaultValue = newThing._id;
+    //   props.onChange(def);
+    //   respond(newThing._id);
+    // }
+    // const attr = props.attribute;
     props.onNewThing(
-      respond2,
-      props.types.filter(t => t._id === props.attribute.DefinedType)[0]
+      // respond2,
+      attr,
+      // props.types.filter(t => t._id === props.attribute.DefinedType)[0]
     );
   } else {
-    // props.onChange(attr);
-    respond(e.target.value);
+    attr["DefaultValue"] = e.target.value;
+    props.onChange(attr);
+    // respond(e.target.value);
   }
 };
 const addOption = (selectedItem, props) => {
@@ -52,17 +57,27 @@ const removeOption = (selectedList, props) => {
   });
   props.onChange(def);
 };
-const addType = (selectedItem, props) => {
+const addThingOfType = (selectedItem, props) => {
   if (selectedItem._id === "new") {
-    function respond2(newThing) {
-      const def = props.def;
-      def.DefaultListValues.push(newThing._id);
-      props.onChange(def);
-    }
-    props.onNewThing(
-      respond2,
-      props.types.filter(t => t._id === props.attribute.DefinedType)[0]
-    );
+    // function respond2(newThing) {
+    //   const def = props.def;
+    //   def.DefaultListValues.push(newThing._id);
+    //   props.onChange(def);
+    // }
+    // props.onNewThing(
+    //   respond2,
+      
+    // );
+    // function respond(newThing) {
+    //   const def = props.def;
+    //   def.DefaultListValues.push(newThing._id);
+    //   props.onChange(def);
+    // }
+    setTimeout(() => {
+      const attr = props.attribute;
+      // const thingType = props.types.filter(t => t._id === props.attribute.DefinedType)[0];
+      props.onNewThing(attr);// , thingType);
+    }, 500);
   } else {
     const def = props.def;
     def.DefaultListValues.push(selectedItem._id);
@@ -83,6 +98,9 @@ export default function AttributeDefaultControl(props) {
   const [value, changeValue] = useState(props.def.DefaultValue);
   const attributeType = props.attribute.AttributeType === "" ? "Text" : props.attribute.AttributeType;
   
+  const selectedTypeValue = attributeType !== "Type" ? "" :
+    (props.def.DefaultValue === undefined || props.def.DefaultValue === "" ? "" : props.def.DefaultValue);
+  
   const listOptions = [];
   const listOptionValues = [];
   if (attributeType === "List" && props.attribute.ListType === "Options") {
@@ -95,6 +113,7 @@ export default function AttributeDefaultControl(props) {
   } else if (attributeType === "List" && props.attribute.ListType === "Type") {
     const definedType = props.types.filter(t => t._id === props.attribute.DefinedType)[0];
     listOptions.push({ Name: `+ Create New ${definedType.Name}`, _id: "new" });
+    console.log(props.things);
     props.things
       .filter(t => t.TypeIDs.includes(props.attribute.DefinedType))
       .forEach(t => {
@@ -205,15 +224,15 @@ export default function AttributeDefaultControl(props) {
             <Select
               labelId="type-select-label"
               id="type-select"
-              value={value}
+              value={selectedTypeValue}
               onChange={e => {
-                handleDefinedTypeChange(e, props, changeValue);
+                handleDefinedTypeChange(e, props);
               }}
-              onBlur={e => {
-                const def = props.def;
-                def.DefaultValue = value;
-                props.onChange(def);
-              }}
+              // onBlur={e => {
+              //   const def = props.def;
+              //   def.DefaultValue = value;
+              //   props.onChange(def);
+              // }}
               fullWidth
               labelWidth={props.attribute.Name.length * 9 + 100}
             >
@@ -260,7 +279,8 @@ export default function AttributeDefaultControl(props) {
                 options={listOptions}
                 selectedValues={listOptionValues}
                 onSelect={(_, selectedItem) => {
-                  addType(selectedItem, props);
+                  console.log('before');
+                  addThingOfType(selectedItem, props);
                 }}
                 onRemove={(selectedList, _) => {
                   removeType(selectedList, props);

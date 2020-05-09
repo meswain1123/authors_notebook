@@ -4,7 +4,8 @@ import { connect } from "react-redux";
 // import uuid from 'react-uuid';
 // import { ArrowBack, Add, Search } from "@material-ui/icons";
 import { 
-  Grid, Button, 
+  Grid, 
+  //Button, 
   // Checkbox, FormControl, FormControlLabel,
   // InputLabel, Tooltip, Fab,
   // Select, MenuItem 
@@ -22,7 +23,7 @@ import {
   notFromLogin
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
-import TextBox from "../../components/Inputs/TextBox";
+// import TextBox from "../../components/Inputs/TextBox";
 
 /* 
   This component will take the main portion of the page and is used for

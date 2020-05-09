@@ -5,7 +5,8 @@ import {
   selectWorld, setTypes, setThings, setWorlds, 
   setPublicWorlds, updatePublicWorldForCollab,
   setAttributes, updateAttributes,
-  notFromLogin
+  notFromLogin,
+  toggleLogin
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 import Index from "./Index";
@@ -45,7 +46,8 @@ function mapDispatchToProps(dispatch) {
     updatePublicWorldForCollab: world => dispatch(updatePublicWorldForCollab(world)),
     setAttributes: attributes => dispatch(setAttributes(attributes)),
     updateAttributes: attributes => dispatch(updateAttributes(attributes)),
-    notFromLogin: () => dispatch(notFromLogin({}))
+    notFromLogin: () => dispatch(notFromLogin({})),
+    toggleLogin: () => dispatch(toggleLogin({}))
   };
 }
 class Page extends Component {
@@ -194,10 +196,15 @@ class Page extends Component {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && 
       !this.props.selectedWorld.Public && 
-      (this.props.user === null || 
-        (this.props.selectedWorld.Owner !== this.props.user._id && 
-          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab").length === 0))) {
-      console.log(this.props.user);
+      this.props.user === null) {
+      setTimeout(() => {
+        this.props.toggleLogin();
+      }, 500);
+      return <span>Requires Login</span>;
+    } else if (this.props.selectedWorld !== null && 
+      !this.props.selectedWorld.Public && 
+      (this.props.selectedWorld.Owner !== this.props.user._id && 
+        this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab").length === 0)) {
       return <Redirect to="/" />;
     } else {
       return (

@@ -10,7 +10,8 @@ import {
   setAttributes,
   setTypes,
   setThings,
-  notFromLogin
+  notFromLogin,
+  toggleLogin
 } from "../../redux/actions/index";
 import { 
   Button, FormControl, 
@@ -60,7 +61,8 @@ function mapDispatchToProps(dispatch) {
     setAttributes: attributes => dispatch(setAttributes(attributes)),
     setTypes: types => dispatch(setTypes(types)),
     setThings: things => dispatch(setThings(things)),
-    notFromLogin: () => dispatch(notFromLogin({}))
+    notFromLogin: () => dispatch(notFromLogin({})),
+    toggleLogin: () => dispatch(toggleLogin({}))
   };
 }
 class Page extends Component {
@@ -1067,14 +1069,20 @@ class Page extends Component {
       id = null;
     if (this.state._id !== id) {
       this.load(id);
-    }
-    if (this.state.redirectTo !== null) {
+      return (<span>Loading...</span>);
+    } else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && 
       !this.props.selectedWorld.Public && 
-      (this.props.user === null || 
-        (this.props.selectedWorld.Owner !== this.props.user._id && 
-          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length === 0))) {
+      this.props.user === null) {
+      setTimeout(() => {
+        this.props.toggleLogin();
+      }, 500);
+      return <span>Requires Login</span>;
+    } else if (this.props.selectedWorld !== null && 
+      !this.props.selectedWorld.Public && 
+      (this.props.selectedWorld.Owner !== this.props.user._id && 
+          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length === 0)) {
       return <Redirect to="/" />;
     } else if (this.props.selectedThing === null || this.props.selectedThing._id !== id) {
       return <span>Loading...</span>;

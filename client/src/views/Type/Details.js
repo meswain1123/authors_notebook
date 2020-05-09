@@ -8,8 +8,8 @@ import {
   setTypes,
   setAttributes,
   setThings,
-  notFromLogin, 
-  // redirectTo
+  notFromLogin,
+  toggleLogin
 } from "../../redux/actions/index";
 import { Edit, Delete, Add, ArrowBack } from "@material-ui/icons";
 import { Fab, Modal, Grid, Button, Tooltip, List, ListItem, ListItemText } from "@material-ui/core";
@@ -55,7 +55,8 @@ function mapDispatchToProps(dispatch) {
     setTypes: types => dispatch(setTypes(types)),
     setAttributes: attributes => dispatch(setAttributes(attributes)),
     setThings: things => dispatch(setThings(things)),
-    notFromLogin: () => dispatch(notFromLogin({}))
+    notFromLogin: () => dispatch(notFromLogin({})),
+    toggleLogin: () => dispatch(toggleLogin({}))
   };
 }
 class Page extends Component {
@@ -173,9 +174,15 @@ class Page extends Component {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && 
       !this.props.selectedWorld.Public && 
-      (this.props.user === null || 
-        (this.props.selectedWorld.Owner !== this.props.user._id && 
-          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab").length === 0))) {
+      this.props.user === null) {
+      setTimeout(() => {
+        this.props.toggleLogin();
+      }, 500);
+      return <span>Requires Login</span>;
+    } else if (this.props.selectedWorld !== null && 
+      !this.props.selectedWorld.Public && 
+      (this.props.selectedWorld.Owner !== this.props.user._id && 
+        this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab").length === 0)) {
       return <Redirect to="/" />;
     } else if (this.props.selectedType === undefined || this.props.selectedType === null) {
       return (<span>Loading</span>);
@@ -302,7 +309,7 @@ class Page extends Component {
                                     >
                                       <ListItemText primary={definedType.Name}/>
                                     </Button>
-                                    { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" &&
+                                    { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" && this.props.things.filter(t=> def.DefaultValue === t._id).length > 0 &&
                                       ` (Default: ${this.props.things.filter(t=>t._id === def.DefaultValue)[0].Name})`
                                     }
                                   </span>
@@ -344,22 +351,28 @@ class Page extends Component {
                                         >
                                           <ListItemText primary={definedType.Name}/>
                                         </Button>
-                                        { def !== undefined && def.DefaultListValues !== undefined && def.DefaultListValues.length > 0 &&
+                                        { def !== undefined && def.DefaultListValues !== undefined && def.DefaultListValues.length > 0 && this.props.things.filter(t=> def.DefaultListValues.includes(t._id)).length > 0 &&
                                           <span>
                                             &nbsp;(Defaults:
-                                            {attribute.DefaultListValues.map((defaultValue, j) => {
-                                              return (
-                                                <span key={j}>
-                                                  {j === 0 ? " " : ", "}
-                                                  <Button
-                                                    variant="contained"
-                                                    color="primary"
-                                                    onClick={ _ => {this.setState({redirectTo:`/thing/details/${defaultValue}`})}}
-                                                  >
-                                                    <ListItemText primary={this.props.things.filter(t=>t._id === defaultValue)[0].Name}/>
-                                                  </Button>
-                                                </span>
-                                              );
+                                            {def.DefaultListValues.map((defaultValue, j) => {
+                                              let defaultThing = this.props.things.filter(t=>t._id === defaultValue);
+                                              if (defaultThing.length === 0)
+                                                return (<span key={j}></span>);
+                                              else {
+                                                defaultThing = defaultThing[0];
+                                                return (
+                                                  <span key={j}>
+                                                    {j === 0 ? " " : ", "}
+                                                    <Button
+                                                      variant="contained"
+                                                      color="primary"
+                                                      onClick={ _ => {this.setState({redirectTo:`/thing/details/${defaultValue}`})}}
+                                                    >
+                                                      <ListItemText primary={defaultThing.Name}/>
+                                                    </Button>
+                                                  </span>
+                                                );
+                                              }
                                             })}
                                             )
                                           </span>
@@ -439,7 +452,7 @@ class Page extends Component {
                                       >
                                         <ListItemText primary={definedType.Name}/>
                                       </Button>
-                                      { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" &&
+                                      { def !== undefined && def.DefaultValue !== undefined && def.DefaultValue !== "" && this.props.things.filter(t=> def.DefaultValue === t._id).length > 0 &&
                                         ` (Default: ${this.props.things.filter(t=>t._id === def.DefaultValue)[0].Name})`
                                       }
                                     </span>
@@ -481,22 +494,28 @@ class Page extends Component {
                                           >
                                             <ListItemText primary={definedType.Name}/>
                                           </Button>
-                                          { def !== undefined && def.DefaultListValues !== undefined && def.DefaultListValues.length > 0 &&
+                                          { def !== undefined && def.DefaultListValues !== undefined && def.DefaultListValues.length > 0 && this.props.things.filter(t=> def.DefaultListValues.includes(t._id)).length > 0 &&
                                             <span>
                                               &nbsp;(Defaults:
-                                              {attribute.DefaultListValues.map((defaultValue, j) => {
-                                                return (
-                                                  <span key={j}>
-                                                    {j === 0 ? " " : ", "}
-                                                    <Button
-                                                      variant="contained"
-                                                      color="primary"
-                                                      onClick={ _ => {this.setState({redirectTo:`/thing/details/${defaultValue}`})}}
-                                                    >
-                                                      <ListItemText primary={this.props.things.filter(t=>t._id === defaultValue)[0].Name}/>
-                                                    </Button>
-                                                  </span>
-                                                );
+                                              {def.DefaultListValues.map((defaultValue, j) => {
+                                                let defaultThing = this.props.things.filter(t=>t._id === defaultValue);
+                                                if (defaultThing.length === 0)
+                                                  return (<span key={j}></span>);
+                                                else {
+                                                  defaultThing = defaultThing[0];
+                                                  return (
+                                                    <span key={j}>
+                                                      {j === 0 ? " " : ", "}
+                                                      <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={ _ => {this.setState({redirectTo:`/thing/details/${defaultValue}`})}}
+                                                      >
+                                                        <ListItemText primary={defaultThing.Name}/>
+                                                      </Button>
+                                                    </span>
+                                                  );
+                                                }
                                               })}
                                               )
                                             </span>
@@ -546,7 +565,7 @@ class Page extends Component {
                   </Grid>
                 </Grid>
                 <Grid item sm={3} xs={12} container spacing={0} direction="column">
-                  {this.props.selectedType.Supers.length === 0 && (
+                  {this.props.selectedType.Supers.length > 0 && (
                     <Grid item>
                       <List>
                         <ListItem>
@@ -568,7 +587,7 @@ class Page extends Component {
                       </List>
                     </Grid>
                   )}
-                  {this.props.subTypes.length === 0 && (
+                  {this.props.subTypes.length > 0 && (
                     <Grid item>
                       <List>
                         <ListItem>
@@ -590,7 +609,7 @@ class Page extends Component {
                       </List>
                     </Grid>
                   )}
-                  {references.length !== 0 && (
+                  {references.length > 0 && (
                     <Grid item>
                       <List>
                         <ListItem>
@@ -612,7 +631,7 @@ class Page extends Component {
                       </List>
                     </Grid>
                   )}
-                  {this.props.instances.length === 0 && (
+                  {this.props.instances.length > 0 && (
                     <Grid item>
                       <List>
                         <ListItem>

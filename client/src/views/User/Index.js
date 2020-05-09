@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import './App.css';
 import {
-    fetchData, 
-    postData,
-  } from './smartAPI';
-  import { 
-    Button, 
-    FormGroup, 
-  } from 'react-bootstrap';
+  // fetchData, 
+  postData,
+} from './smartAPI';
+// import { 
+//   Button, 
+//   FormGroup, 
+// } from 'react-bootstrap';
 
 
 /* 
