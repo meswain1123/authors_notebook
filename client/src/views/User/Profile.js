@@ -175,8 +175,6 @@ class Page extends Component {
   }
 
   finishLoading = () => {
-    console.log(this.props);
-
     if (this.props.fromLogin) {
       this.props.notFromLogin();
     }

@@ -18,6 +18,7 @@ import {
   toggleLogin
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
+import ThingTable from "../../components/Displays/ThingTable";
 
 const mapStateToProps = state => {
   const thing = state.app.selectedThing;
@@ -250,66 +251,54 @@ class Page extends Component {
                   <Grid item>
                     Attributes
                     <List>
-                      {this.props.selectedThing === null ||
-                      this.props.selectedThing === undefined
-                        ? ""
-                        : this.props.selectedThing.AttributesArr.map(
-                            (attribute, i) => {
-                              return (
-                                <ListItem key={i}>
-                                  <ListItemText>
-                                    {attribute.Name}:&nbsp;
-                                    {attribute.AttributeType === "Type" && attribute.Value !== "" ?
-                                    <Button
-                                      variant="contained"
-                                      color="primary"
-                                      onClick={ _ => {this.setState({redirectTo:`/thing/details/${attribute.Value}`})}}
-                                    >
-                                      <ListItemText primary={this.props.things.filter(t=>t._id === attribute.Value)[0].Name}/>
-                                    </Button>
-                                    : attribute.AttributeType === "List" ?
-                                      attribute.ListValues.map(
-                                        (listValue, i) => {
-                                          let thing = this.props.things.filter(t=>t._id === listValue);
-                                          if (thing.length > 0)
-                                            thing = thing[0];
-                                          else 
-                                            thing = null;
-                                          return (
+                      { this.props.selectedThing !== null && this.props.selectedThing !== undefined &&
+                        this.props.selectedThing.AttributesArr.map(
+                          (attribute, i) => {
+                            return (
+                              <ListItem key={i}>
+                                <ListItemText>
+                                  { attribute.AttributeType === "Type" && attribute.Value !== "" ?
+                                    <ThingTable 
+                                      attributesByID={this.props.attributesByID} 
+                                      label={attribute.Name} 
+                                      things={this.props.things.filter(t=>t._id === attribute.Value)} 
+                                      allThings={this.props.things}
+                                    />
+                                  : attribute.AttributeType === "List" && attribute.ListType === "Type" ?
+                                    <ThingTable 
+                                      attributesByID={this.props.attributesByID} 
+                                      label={attribute.Name} 
+                                      things={this.props.things.filter(t=>attribute.ListValues.includes(t._id))} 
+                                      allThings={this.props.things}
+                                      buttonClick={thingID => {
+                                        this.setState({redirectTo:`/thing/details/${thingID}`});
+                                      }}
+                                    />
+                                  : attribute.AttributeType === "List" ?
+                                    attribute.ListValues.map(
+                                      (listValue, i) => {
+                                        return(
                                           <span key={i}>
-                                            {
-                                              attribute.ListType === "Type" ?
-                                              <span>
-                                                <Button
-                                                  variant="contained"
-                                                  color="primary"
-                                                  onClick={ _ => {this.setState({redirectTo:`/thing/details/${listValue}`})}}
-                                                >
-                                                  { thing === null ? `${listValue}` : 
-                                                    <ListItemText primary={this.props.things.filter(t=>t._id === listValue)[0].Name}/>
-                                                  }
-                                                </Button> 
-                                                &nbsp;
-                                              </span>
-                                              :
+                                            { 
                                               i > 0 ? `, ${listValue}` : `${listValue}`
                                             }
                                           </span>
-                                          );
-                                        })
-                                    : attribute.Value}
-                                  </ListItemText>
-                                </ListItem>
-                              );
-                            }
-                          )}
+                                        );
+                                      })
+                                  : 
+                                    <span>{attribute.Name}:&nbsp;{attribute.Value}</span>
+                                  }
+                                </ListItemText>
+                              </ListItem>
+                            );
+                          }
+                        )
+                      }
                     </List>
                   </Grid>
                 </Grid>
                 <Grid item sm={3} xs={12} container spacing={0} direction="column">
-                  {this.state.Types.length === 0 ? (
-                    ""
-                  ) : (
+                  { this.state.Types.length > 0 && 
                     <Grid item>
                       <List>
                         <ListItem>
@@ -330,10 +319,8 @@ class Page extends Component {
                         })}
                       </List>
                     </Grid>
-                  )}
-                  {references.length === 0 ? (
-                    ""
-                  ) : (
+                  }
+                  { references.length > 0 &&
                     <Grid item>
                       <List>
                         <ListItem>
@@ -354,7 +341,7 @@ class Page extends Component {
                         })}
                       </List>
                     </Grid>
-                  )}
+                  }
                 </Grid>
               </Grid>
               <Modal

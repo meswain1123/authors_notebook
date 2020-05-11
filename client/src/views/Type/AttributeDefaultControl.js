@@ -113,7 +113,6 @@ export default function AttributeDefaultControl(props) {
   } else if (attributeType === "List" && props.attribute.ListType === "Type") {
     const definedType = props.types.filter(t => t._id === props.attribute.DefinedType)[0];
     listOptions.push({ Name: `+ Create New ${definedType.Name}`, _id: "new" });
-    console.log(props.things);
     props.things
       .filter(t => t.TypeIDs.includes(props.attribute.DefinedType))
       .forEach(t => {
@@ -279,7 +278,6 @@ export default function AttributeDefaultControl(props) {
                 options={listOptions}
                 selectedValues={listOptionValues}
                 onSelect={(_, selectedItem) => {
-                  console.log('before');
                   addThingOfType(selectedItem, props);
                 }}
                 onRemove={(selectedList, _) => {

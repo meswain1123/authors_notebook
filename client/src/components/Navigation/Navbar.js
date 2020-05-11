@@ -93,19 +93,12 @@ class Bar extends Component {
               : 
                 <UserMenu 
                   username={this.props.user.username}
-                  // onProfile={_ => {
-                  //   // console.log("Profile");
-                  //   this.props.redirectTo("/User/Profile");
-                  // }}
                   onLogout={_ => {
-                    // console.log("Logout");
                     this.api.logout().then(_ => {
                       this.props.logout();
-                      // this.setState({ redirectTo: "/" });
-                      // window.location.reload(false);
                     });
                   }}
-                  />
+                />
               }
             </Grid>
           </Grid>
