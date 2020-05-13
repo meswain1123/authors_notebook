@@ -62,7 +62,8 @@ class Page extends Component {
       formValid: false,
       message: "",
       redirectTo: null,
-      modalOpen: false
+      modalOpen: false,
+      majorType: null
     };
     this.api = API.getInstance();
   }
@@ -102,6 +103,21 @@ class Page extends Component {
       // const things = this.props.things.filter(t=>t._id!==this.state._id);
       // this.props.setThings(things);
       // this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})
+    });
+  }
+
+  redirectToNext = () => {
+    // Find the next thing
+    const things = this.state.majorType === null ? this.props.things : this.props.things.filter(t => t.TypeIDs.includes(this.state.majorType._id));
+    let index = 0;
+    while (things[index]._id !== this.props.selectedThing._id)
+      index++;
+    index++;
+    if (index === things.length)
+      index = 0;
+    this.setState({ 
+      waiting: false, 
+      redirectTo: `/thing/edit/${things[index]._id}` 
     });
   }
 
@@ -147,12 +163,36 @@ class Page extends Component {
               TypeIDs: attr.TypeIDs
             });
           });
-          this.setState({
-            Name: thing.Name,
-            Description: thing.Description,
-            _id: id,
-            Types: thing.Types
-          });
+          if (this.state.majorType === null) {
+            let majorType = thing.Types.filter(t=>t.Major);
+            if (majorType.length > 0) {
+              majorType = majorType[0];
+              
+              this.setState({
+                Name: thing.Name,
+                Description: thing.Description,
+                _id: id,
+                Types: thing.Types,
+                majorType
+              });
+            }
+            else {
+              this.setState({
+                Name: thing.Name,
+                Description: thing.Description,
+                _id: id,
+                Types: thing.Types
+              });
+            }
+          }
+          else {
+            this.setState({
+              Name: thing.Name,
+              Description: thing.Description,
+              _id: id,
+              Types: thing.Types
+            });
+          }
         }
         this.props.updateSelectedThing(thing);
       } else {
@@ -241,6 +281,29 @@ class Page extends Component {
                           </Fab>
                         </Tooltip>
                       </ListItem>
+                    }
+                    { this.state.majorType === null ?
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        onClick={_ => {
+                          this.redirectToNext();
+                        }}
+                      >
+                        <ListItemText primary="Next" />
+                      </Button>
+                    :
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        onClick={_ => {
+                          this.redirectToNext();
+                        }}
+                      >
+                        <ListItemText primary={`Next ${this.state.majorType.Name}`}/>
+                      </Button>
                     }
                   </List> 
                 </Grid>

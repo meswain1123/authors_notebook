@@ -18,7 +18,7 @@ import {
   OutlinedInput, InputLabel, 
   FormHelperText, Grid, 
   Fab, Tooltip,
-  List, ListItem,
+  List, ListItem, ListItemText,
   Select, MenuItem,
   // Modal
 } from "@material-ui/core";
@@ -86,7 +86,7 @@ class Page extends Component {
       message: "",
       redirectTo: null,
       waiting: false,
-      addMore: false,
+      addMore: "",
       resetting: false,
       loaded: true,
       errors: [],
@@ -98,7 +98,8 @@ class Page extends Component {
       browseAttributesSelected: "",
       thingModalOpen: false,
       newThingType: null,
-      putThingOnAttribute: null
+      putThingOnAttribute: null,
+      majorType: null
     };
     this.api = API.getInstance();
   }
@@ -177,7 +178,8 @@ class Page extends Component {
     this.setState({ 
       _id: null, 
       // Types: types, 
-      loaded: true 
+      loaded: true,
+      majorType: type
     }); //, errors });
   };
 
@@ -435,7 +437,7 @@ class Page extends Component {
               this.props.setTypes(res2.types);
               this.props.setThings(res2.things);
 
-              if (this.state.addMore) {
+              if (this.state.addMore === "add") {
                 this.props.updateSelectedThing({
                   _id: null,
                   Name: "",
@@ -459,8 +461,9 @@ class Page extends Component {
                   waiting: false,
                   resetting: true
                 }, this.resetForm);
-              }
-              else {
+              } else if (this.state.addMore === "next") {
+                this.redirectToNext();
+              } else {
                 this.setState({
                   waiting: false,
                   redirectTo: `/world/details/${this.props.selectedWorld._id}`
@@ -483,7 +486,7 @@ class Page extends Component {
               this.props.setTypes(res2.types);
               this.props.setThings(res2.things);
               
-              if (this.state.addMore) {
+              if (this.state.addMore === "add") {
                 this.props.updateSelectedThing({
                   _id: null,
                   Name: "",
@@ -507,8 +510,9 @@ class Page extends Component {
                   addMore: false,
                   resetting: true
                 }, this.resetForm);
-              }
-              else {
+              } else if (this.state.addMore === "next") {
+                this.redirectToNext();
+              } else {
                 this.setState({
                   waiting: false,
                   redirectTo: `/world/details/${this.props.selectedWorld._id}`
@@ -922,6 +926,23 @@ class Page extends Component {
     this.props.updateSelectedThing(thing);
   }
 
+  redirectToNext = () => {
+    // Find the next thing
+    const things = this.state.majorType === null ? this.props.things : this.props.things.filter(t => t.TypeIDs.includes(this.state.majorType._id));
+    let index = 0;
+    if (this.props.selectedThing === undefined || this.props.selectedThing._id !== null) {
+      while (things[index]._id !== this.props.selectedThing._id)
+        index++;
+      index++;
+    }
+    if (index === things.length)
+      index = 0;
+    this.setState({ 
+      waiting: false, 
+      redirectTo: `/thing/edit/${things[index]._id}` 
+    });
+  }
+
   renderHeader() {
     let typeStr = "Thing";
     this.props.selectedThing.Types.forEach(t=>{
@@ -1028,13 +1049,27 @@ class Page extends Component {
             });
             thing.Types = Types;
             this.props.updateSelectedThing(thing);
-            this.setState({
-              // Name: thing.Name,
-              // Description: thing.Description,
-              // Things: things,
-              // Types: Types,
-              loaded: true
-            });
+            if (this.state.majorType === null) {
+              let majorType = thing.Types.filter(t=>t.Major);
+              if (majorType.length > 0) {
+                majorType = majorType[0];
+                
+                this.setState({
+                  loaded: true,
+                  majorType
+                });
+              }
+              else {
+                this.setState({
+                  loaded: true
+                });
+              }
+            }
+            else {
+              this.setState({
+                loaded: true
+              });
+            }
           }
         } else {
           let { id } = this.props.match.params;
@@ -1545,8 +1580,35 @@ class Page extends Component {
                     </Fab>
                   </Tooltip>
                 </Grid>
-                <Grid item xs={11}>
+                <Grid item xs={7} sm={9}>
                   {this.renderHeader()}
+                </Grid>
+                <Grid item xs={4} sm={2}>
+                  <ListItem>
+                    { this.state.majorType === null ?
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        onClick={_ => {
+                          this.redirectToNext();
+                        }}
+                      >
+                        <ListItemText primary="Next" />
+                      </Button>
+                    :
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        onClick={_ => {
+                          this.redirectToNext();
+                        }}
+                      >
+                        <ListItemText primary={`Next ${this.state.majorType.Name}`}/>
+                      </Button>
+                    }
+                  </ListItem>
                 </Grid>
               </Grid>
               <Grid item>
@@ -1687,7 +1749,16 @@ class Page extends Component {
                   <Button
                     variant="contained" color="primary"
                     disabled={this.state.waiting}
-                    onClick={e => {this.onSubmit(true);}}
+                    onClick={e => {this.onSubmit("next")}}
+                    type="submit"
+                  >
+                    {this.state.waiting ? "Please Wait" : "Submit and Edit Next"}
+                  </Button>
+                  <Button
+                    variant="contained" color="primary"
+                    style={{marginLeft: "4px"}}
+                    disabled={this.state.waiting}
+                    onClick={e => {this.onSubmit("add")}}
                     type="submit"
                   >
                     {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
@@ -1697,7 +1768,7 @@ class Page extends Component {
                     style={{marginLeft: "4px"}}
                     className="w200"
                     disabled={this.state.waiting}
-                    onClick={e => {this.onSubmit(false);}}
+                    onClick={e => {this.onSubmit("")}}
                     type="submit"
                   >
                     {this.state.waiting ? "Please Wait" : "Submit"}

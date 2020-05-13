@@ -165,6 +165,17 @@ class Page extends Component {
     }
   }
 
+  redirectToNext = () => {
+    // Find the next type
+    let index = 0;
+    while (this.props.types[index]._id !== this.props.selectedType._id)
+      index++;
+    index++;
+    if (index === this.props.types.length)
+      index = 0;
+    this.setState({ redirectTo: `/type/details/${this.props.types[index]._id}` });
+  }
+
   render() {
     const { id } = this.props.match.params;
     if (this.state._id !== id) {
@@ -267,6 +278,18 @@ class Page extends Component {
                         </Tooltip>
                       </ListItem>
                     }
+                    <ListItem>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        onClick={_ => {
+                          this.redirectToNext();
+                        }}
+                      >
+                        <ListItemText primary="Next Type"/>
+                      </Button>
+                    </ListItem>
                   </List>
                 </Grid>
               </Grid>

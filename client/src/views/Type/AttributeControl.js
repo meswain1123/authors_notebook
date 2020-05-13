@@ -14,6 +14,7 @@ import ChipInput from "material-ui-chip-input";
 const handleTypeChange = (e, props) => {
   const attr = props.attribute;
   attr["AttributeType"] = e.target.value;
+  attr["ListType"] = "Text";
   props.onChange(attr);
 };
 
