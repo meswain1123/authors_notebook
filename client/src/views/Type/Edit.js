@@ -24,7 +24,8 @@ import {
   setThings,
   notFromLogin,
   addThing,
-  toggleLogin
+  toggleLogin,
+  logout
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 import TextBox from "../../components/Inputs/TextBox";
@@ -62,7 +63,8 @@ function mapDispatchToProps(dispatch) {
     setThings: things => dispatch(setThings(things)),
     notFromLogin: () => dispatch(notFromLogin({})),
     addThing: thing => dispatch(addThing(thing)),
-    toggleLogin: () => dispatch(toggleLogin({}))
+    toggleLogin: () => dispatch(toggleLogin({})),
+    logout: () => dispatch(logout({}))
   };
 }
 class Page extends Component {
@@ -366,6 +368,8 @@ class Page extends Component {
               this.setState({
                 waiting: false, 
                 message: res.error 
+              }, () => {
+                this.props.logout();
               });
             }
           })
@@ -424,6 +428,8 @@ class Page extends Component {
               this.setState({
                 waiting: false, 
                 message: res.error 
+              }, () => {
+                this.props.logout();
               });
             }
           })
@@ -836,6 +842,9 @@ class Page extends Component {
             });
           }}
           api={this.api}
+          logout={() => {
+            this.props.logout();
+          }}
         />
       );
     } else if (this.state.thingModalOpen) {
@@ -873,6 +882,9 @@ class Page extends Component {
             });
           }}
           api={this.api}
+          logout={() => {
+            this.props.logout();
+          }}
         />
       );
     } else {

@@ -23,6 +23,7 @@ import {
   setPublicWorlds,
   setFollowingWorlds,
   toggleMenu,
+  logout,
   // toggleLogin
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
@@ -44,6 +45,7 @@ function mapDispatchToProps(dispatch) {
     setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs)),
     toggleMenu: () => dispatch(toggleMenu({})),
     // toggleLogin: () => dispatch(toggleLogin({}))
+    logout: () => dispatch(logout({}))
   };
 }
 class Menu extends Component {
@@ -62,7 +64,13 @@ class Menu extends Component {
     });
     if (this.props.user !== null) {
       this.api.getWorldsForUser().then(res => {
-        if (res.worlds !== undefined) this.props.setWorlds(res.worlds);
+        if (res.worlds !== undefined) {
+          this.props.setWorlds(res.worlds);
+        }
+        else {
+          // User's login is no longer valid.
+          this.props.logout();
+        }
       });
     }
   }

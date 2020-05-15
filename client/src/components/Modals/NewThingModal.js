@@ -72,6 +72,7 @@ const saveNewThing = (value, props, changeName, changeMessage, changeWaiting) =>
         // });
         changeMessage(res.error);
         changeWaiting(false);
+        props.logout();
       }
     })
     .catch(err => console.log(err));

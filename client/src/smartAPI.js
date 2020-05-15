@@ -63,7 +63,12 @@ class APIClass {
   getAllUsers = async () => {
     if (this.real) {
       const response = await this.fetchData("/api/user/getAllUsers");
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData("/api/user/getAllUsers");
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return [{
         _id: "-1",
@@ -73,10 +78,17 @@ class APIClass {
     }
   };
 
-  login = async (user) => {
+  login = async (user, stayLoggedIn) => {
     if (this.real) {
+      if (stayLoggedIn) {
+        const sessionObj = {
+          body: user,
+          expiresAt: "never"
+        };
+        sessionStorage.setItem("loginUser", JSON.stringify(sessionObj));
+      }
       const response = await this.postData("/api/user/login", user);
-      return this.processResponse(response, "user");
+      return this.processResponse(response, null, "user", stayLoggedIn);
     } else {
       return {
         _id: "-1",
@@ -186,7 +198,12 @@ class APIClass {
   getWorldsForUserFromAPI = async () => {
     if (this.real) {
       const response = await this.fetchData(`/api/world/getWorldsForUser`);
-      return this.processResponse(response, "worlds");
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData(`/api/world/getWorldsForUser`);
+        return this.processResponse(response, null, "worlds");
+      }
+      return this.processResponse(response, retry, "worlds");
     } else {
       return [
         { _id: -1, OwnerID: -1, Name: "Alice in Wonderland", Public: true }
@@ -211,7 +228,12 @@ class APIClass {
   getPublicWorldsFromAPI = async () => {
     if (this.real) {
       const response = await this.fetchData("/api/world/getPublicWorlds");
-      return this.processResponse(response, "publicWorlds");
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData("/api/world/getPublicWorlds");
+        return this.processResponse(response, null, "publicWorlds");
+      }
+      return this.processResponse(response, retry, "publicWorlds");
     } else {
       return [
         { _id: -1, OwnerID: -1, Name: "Alice in Wonderland", Public: true }
@@ -291,7 +313,12 @@ class APIClass {
   createWorld = async (world) => {
     if (this.real) {
       const response = await this.postData("/api/world/createWorld", { world: world });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.postData("/api/world/createWorld", { world: world });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return -1;
     }
@@ -300,7 +327,12 @@ class APIClass {
   deleteWorld = async (worldID) => {
     if (this.real) {
       const response = await this.deleteData("/api/world/deleteWorld", { worldID: worldID });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.deleteData("/api/world/deleteWorld", { worldID: worldID });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -309,7 +341,12 @@ class APIClass {
   updateWorld = async (world) => {
     if (this.real) {
       const response = await this.patchData("/api/world/updateWorld", { world: world });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/updateWorld", { world: world });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -318,7 +355,12 @@ class APIClass {
   generateCollabLink = async (worldID) => {
     if (this.real) {
       const response = await this.patchData("/api/world/generateCollabLink", { worldID: worldID });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/generateCollabLink", { worldID: worldID });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -327,7 +369,12 @@ class APIClass {
   addNewCollaborator = async (worldID, userID, email) => {
     if (this.real) {
       const response = await this.patchData("/api/world/addNewCollaborator", { worldID, userID, email });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/addNewCollaborator", { worldID, userID, email });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -336,7 +383,12 @@ class APIClass {
   emailCollaborator = async (worldID, email) => {
     if (this.real) {
       const response = await this.patchData("/api/world/emailCollaborator", { worldID, email });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/emailCollaborator", { worldID, email });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -345,7 +397,12 @@ class APIClass {
   deleteCollab = async (worldID, collabID) => {
     if (this.real) {
       const response = await this.deleteData("/api/world/deleteCollab", { worldID, collabID });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.deleteData("/api/world/deleteCollab", { worldID, collabID });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -354,7 +411,12 @@ class APIClass {
   updateCollaboratorPermission = async (worldID, collabID, editPermission) => {
     if (this.real) {
       const response = await this.patchData("/api/world/updateCollaboratorPermission", { worldID, collabID, editPermission });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/updateCollaboratorPermission", { worldID, collabID, editPermission });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -372,7 +434,12 @@ class APIClass {
   requestToCollaborate = async (worldID) => {
     if (this.real) {
       const response = await this.patchData("/api/world/requestToCollaborate", { worldID });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/requestToCollaborate", { worldID });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -381,7 +448,12 @@ class APIClass {
   declineCollabInvite = async (worldID, collabID) => {
     if (this.real) {
       const response = await this.deleteData("/api/world/declineCollabInvite", { worldID, collabID });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.deleteData("/api/world/declineCollabInvite", { worldID, collabID });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -390,7 +462,12 @@ class APIClass {
   acceptCollabInvite = async (worldID, collabID) => {
     if (this.real) {
       const response = await this.patchData("/api/world/acceptCollabInvite", { worldID, collabID });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/acceptCollabInvite", { worldID, collabID });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -399,7 +476,12 @@ class APIClass {
   selectWorld = async (worldID) => {
     if (this.real) {
       const response = await this.postData("/api/world/selectWorld", { worldID: worldID });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.postData("/api/world/selectWorld", { worldID: worldID });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -425,7 +507,14 @@ class APIClass {
       const response = await this.fetchData(
         `/api/world/getAttributesForWorld/${worldID}`
       );
-      return this.processResponse(response, `attributes_${worldID}`);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData(
+          `/api/world/getAttributesForWorld/${worldID}`
+        );
+        return this.processResponse(response, null, `attributes_${worldID}`);
+      }
+      return this.processResponse(response, retry, `attributes_${worldID}`);
     } else {
       return [{ _id: -1, worldID: -1, Name: "Character" }];
     }
@@ -436,7 +525,14 @@ class APIClass {
       const response = await this.fetchData(
         `/api/world/getAttribute/${worldID}/${attrID}`
       );
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData(
+          `/api/world/getAttribute/${worldID}/${attrID}`
+        );
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return {
         _id: -1,
@@ -452,7 +548,12 @@ class APIClass {
   createAttribute = async (attribute) => {
     if (this.real) {
       const response = await this.postData("/api/world/createAttribute", { attribute: attribute });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.postData("/api/world/createAttribute", { attribute: attribute });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return -1;
     }
@@ -479,7 +580,12 @@ class APIClass {
   upsertAttributes = async (worldID, attributes) => {
     if (this.real) {
       const response = await this.patchData("/api/world/upsertAttributes", { worldID, attributes: attributes });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/upsertAttributes", { worldID, attributes: attributes });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -504,7 +610,14 @@ class APIClass {
       const response = await this.fetchData(
         `/api/world/getTypesForWorld/${worldID}`
       );
-      return this.processResponse(response, `types_${worldID}`);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData(
+          `/api/world/getTypesForWorld/${worldID}`
+        );
+        return this.processResponse(response, null, `types_${worldID}`);
+      }
+      return this.processResponse(response, retry, `types_${worldID}`);
     } else {
       return [{ _id: -1, worldID: -1, Name: "Character" }];
     }
@@ -515,7 +628,14 @@ class APIClass {
       const response = await this.fetchData(
         `/api/world/getType/${worldID}/${typeID}`
       );
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData(
+          `/api/world/getType/${worldID}/${typeID}`
+        );
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return {
         _id: -1,
@@ -531,7 +651,12 @@ class APIClass {
   createType = async (type) => {
     if (this.real) {
       const response = await this.postData("/api/world/createType", { type: type });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.postData("/api/world/createType", { type: type });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return -1;
     }
@@ -540,7 +665,12 @@ class APIClass {
   deleteType = async (worldID, typeID) => {
     if (this.real) {
       const response = await this.deleteData("/api/world/deleteType", { worldID: worldID, typeID: typeID });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.deleteData("/api/world/deleteType", { worldID: worldID, typeID: typeID });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -549,7 +679,12 @@ class APIClass {
   updateType = async (type) => {
     if (this.real) {
       const response = await this.patchData("/api/world/updateType", { type: type });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/updateType", { type: type });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -575,7 +710,14 @@ class APIClass {
       const response = await this.fetchData(
         `/api/world/getThingsForWorld/${worldID}`
       );
-      return this.processResponse(response, `things_${worldID}`);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData(
+          `/api/world/getThingsForWorld/${worldID}`
+        );
+        return this.processResponse(response, null, `things_${worldID}`);
+      }
+      return this.processResponse(response, retry, `things_${worldID}`);
     } else {
       return [{ _id: -1, worldID: -1, Name: "Alice" }];
     }
@@ -584,7 +726,12 @@ class APIClass {
   getThing = async (worldID, thingID) => {
     if (this.real) {
       const response = await this.fetchData(`/api/world/getThing/${worldID}/${thingID}`);
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData(`/api/world/getThing/${worldID}/${thingID}`);
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return {
         _id: -1,
@@ -599,7 +746,12 @@ class APIClass {
   createThing = async (thing) => {
     if (this.real) {
       const response = await this.postData("/api/world/createThing", { thing: thing });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.postData("/api/world/createThing", { thing: thing });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return -1;
     }
@@ -608,7 +760,12 @@ class APIClass {
   deleteThing = async (worldID, thingID) => {
     if (this.real) {
       const response = await this.deleteData("/api/world/deleteThing", { worldID: worldID, thingID: thingID });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.deleteData("/api/world/deleteThing", { worldID: worldID, thingID: thingID });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -617,7 +774,12 @@ class APIClass {
   updateThing = async (thing) => {
     if (this.real) {
       const response = await this.patchData("/api/world/updateThing", { thing: thing });
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/updateThing", { thing: thing });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
     } else {
       return "success";
     }
@@ -706,9 +868,14 @@ class APIClass {
       .catch(this.logErrorReason);
   };
 
-  processResponse = async (response, sessionName = null, noExpiry = false) => {
+  processResponse = async (response, retry, sessionName = null, noExpiry = false) => {
     const body = await response.json();
-    if (response.status !== 200) throw Error(body.message);
+    if (response.status !== 200) { 
+      throw Error(body.message);
+    }
+    else if (body.error !== undefined && retry !== null) {
+      return retry();
+    } 
     else {
       if (sessionName !== null) {
         let expiresAt = new Date();
@@ -725,6 +892,17 @@ class APIClass {
       return body;
     };
   };
+
+  relogin = async () => {
+    try {
+      const user = this.getSessionData("loginUser");
+      if (user !== null) {
+        const response = await this.postData("/api/user/login", user);
+        this.processResponse(response, null, "user", true);
+      }
+    }
+    catch {}
+  }
 
   getSessionData = (sessionName) => {
     const sessionStr = sessionStorage.getItem(sessionName);

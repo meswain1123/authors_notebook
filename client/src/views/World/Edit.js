@@ -9,7 +9,8 @@ import {
   toggleLogin,
   setAttributes,
   setTypes,
-  setThings
+  setThings,
+  logout
 } from "../../redux/actions/index";
 import { Button, Checkbox, FormControl, FormControlLabel,
   OutlinedInput, InputLabel, FormHelperText, Grid, Tooltip, Fab
@@ -43,7 +44,8 @@ function mapDispatchToProps(dispatch) {
     toggleLogin: () => dispatch(toggleLogin({})),
     setAttributes: attributes => dispatch(setAttributes(attributes)),
     setTypes: types => dispatch(setTypes(types)),
-    setThings: things => dispatch(setThings(things))
+    setThings: things => dispatch(setThings(things)),
+    logout: () => dispatch(logout({}))
   };
 }
 class Page extends Component {
@@ -164,8 +166,10 @@ class Page extends Component {
       this.api
         .createWorld(world)
         .then(res => {
-          if (res.error  !== undefined) {
-            this.setState({ message: res.error });
+          if (res.error !== undefined) {
+            this.setState({ message: res.error }, () => {
+              this.props.logout();
+            });
           }
           else {
             world._id = res.worldID;
@@ -182,7 +186,9 @@ class Page extends Component {
         .updateWorld(world)
         .then(res => {
           if (res.error !== undefined) {
-            this.setState({ message: res.error });
+            this.setState({ message: res.error }, () => {
+              this.props.logout();
+            });
           }
           else {
             this.props.updateWorld(world);

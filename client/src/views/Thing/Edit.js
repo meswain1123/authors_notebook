@@ -11,7 +11,8 @@ import {
   setTypes,
   setThings,
   notFromLogin,
-  toggleLogin
+  toggleLogin,
+  logout
 } from "../../redux/actions/index";
 import { 
   Button, FormControl, 
@@ -63,7 +64,8 @@ function mapDispatchToProps(dispatch) {
     setTypes: types => dispatch(setTypes(types)),
     setThings: things => dispatch(setThings(things)),
     notFromLogin: () => dispatch(notFromLogin({})),
-    toggleLogin: () => dispatch(toggleLogin({}))
+    toggleLogin: () => dispatch(toggleLogin({})),
+    logout: () => dispatch(logout({}))
   };
 }
 class Page extends Component {
@@ -472,7 +474,9 @@ class Page extends Component {
             });
           }
           else {
-            this.setState({message: res.error});
+            this.setState({message: res.error}, () => {
+              this.props.logout();
+            });
           }
         })
         .catch(err => console.log(err));
@@ -521,7 +525,9 @@ class Page extends Component {
             });
           }
           else {
-            this.setState({message: res.error});
+            this.setState({message: res.error}, () => {
+              this.props.logout();
+            });
           }
         })
         .catch(err => console.log(err));
@@ -870,6 +876,8 @@ class Page extends Component {
                   this.setState({
                     waiting: false, 
                     message: res.error 
+                  }, () => {
+                    this.props.logout();
                   });
                 }
               })
@@ -878,7 +886,9 @@ class Page extends Component {
         });
       }
       else {
-        this.setState({ message: res.error, waiting: false });
+        this.setState({ message: res.error, waiting: false }, () => {
+          this.props.logout();
+        });
       }
     });
   }
@@ -1140,6 +1150,9 @@ class Page extends Component {
             this.setState({typeModalOpen: false, newTypeForAttribute: type._id});
           }}
           api={this.api}
+          logout={() => {
+            this.props.logout();
+          }}
         />
       );
     } else if (this.state.infoAttribute !== null) {
@@ -1551,6 +1564,9 @@ class Page extends Component {
             });
           }}
           api={this.api}
+          logout={() => {
+            this.props.logout();
+          }}
         />
       );
     } else {

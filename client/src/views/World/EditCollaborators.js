@@ -4,7 +4,8 @@ import { connect } from "react-redux";
 import {
   updateWorld, selectWorld,
   notFromLogin,
-  toggleLogin
+  toggleLogin,
+  logout
 } from "../../redux/actions/index";
 import { Button, Checkbox, FormControl, FormControlLabel,
   OutlinedInput, InputLabel, FormHelperText, Grid, 
@@ -45,7 +46,8 @@ function mapDispatchToProps(dispatch) {
     updateWorld: world => dispatch(updateWorld(world)),
     selectWorld: worldID => dispatch(selectWorld(worldID)),
     notFromLogin: () => dispatch(notFromLogin({})),
-    toggleLogin: () => dispatch(toggleLogin({}))
+    toggleLogin: () => dispatch(toggleLogin({})),
+    logout: () => dispatch(logout({}))
   };
 }
 class Page extends Component {
@@ -159,7 +161,9 @@ class Page extends Component {
           });
         }
         else {
-          this.setState({message: res.error, waiting: false});
+          this.setState({message: res.error, waiting: false}, () => {
+            this.props.logout();
+          });
         }
       });
     }
@@ -185,7 +189,9 @@ class Page extends Component {
             });
           }
           else {
-            this.setState({message: res.error, waiting: false});
+            this.setState({message: res.error, waiting: false}, () => {
+              this.props.logout();
+            });
           }
         });
       }
@@ -209,7 +215,9 @@ class Page extends Component {
           });
         }
         else {
-          this.setState({message: res.error, waiting: false});
+          this.setState({message: res.error, waiting: false}, () => {
+            this.props.logout();
+          });
         }
       });
     }
@@ -234,7 +242,9 @@ class Page extends Component {
           });
         }
         else {
-          this.setState({message: res.error, waiting: false});
+          this.setState({message: res.error, waiting: false}, () => {
+            this.props.logout();
+          });
         }
       });
     }
@@ -257,7 +267,9 @@ class Page extends Component {
           });
         }
         else {
-          this.setState({message: res.error, waiting: false});
+          this.setState({message: res.error, waiting: false}, () => {
+            this.props.logout();
+          });
         }
       });
     }

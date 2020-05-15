@@ -187,18 +187,13 @@ class Control extends Component {
       followingWorlds: this.props.followingWorlds
     };
     if (this.state.formMode === "login") {
-      this.api.login(user).then(res => {
+      this.api.login(user, this.state.remember).then(res => {
         if (res.user === null) {
           let errors = this.state.fieldValidation;
           errors.loginError = { message: res.error, valid: false, show: true };
           this.setState({ fieldValidation: errors, waiting: false });
         }
         else {
-          if (this.state.remember) {
-            const cookies = new Cookies();
-            cookies.set('email', this.state.email);
-            cookies.set('password', this.state.password);
-          }
           this.props.userLogin(res.user);
           this.api.getWorldsForUser(res.user._id).then(res => {
             this.props.setWorlds(res.worlds);
@@ -346,7 +341,7 @@ class Control extends Component {
                           color="primary"
                         />
                       }
-                      label="Remember Me"
+                      label="Stay Signed In"
                     />
                   </div>
                 </div>

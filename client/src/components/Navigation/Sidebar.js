@@ -24,7 +24,8 @@ import menuRoutes from "./routes";
 import {
   setWorlds,
   setPublicWorlds,
-  setFollowingWorlds
+  setFollowingWorlds,
+  logout
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 
@@ -41,7 +42,8 @@ function mapDispatchToProps(dispatch) {
   return {
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
-    setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs))
+    setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs)),
+    logout: () => dispatch(logout({}))
   };
 }
 class Bar extends Component {
@@ -66,7 +68,13 @@ class Bar extends Component {
     setTimeout(() => {
       if (this.props.user !== null) {
         this.api.getWorldsForUser().then(res => {
-          if (res.worlds !== undefined) this.props.setWorlds(res.worlds);
+          if (res.worlds !== undefined) {
+            this.props.setWorlds(res.worlds);
+          }
+          else {
+            // User's login is no longer valid.
+            this.props.logout();
+          }
         });
       }
     }, 500);

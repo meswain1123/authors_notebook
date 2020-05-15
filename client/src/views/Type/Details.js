@@ -9,7 +9,8 @@ import {
   setAttributes,
   setThings,
   notFromLogin,
-  toggleLogin
+  toggleLogin,
+  logout
 } from "../../redux/actions/index";
 import { Edit, Delete, Add, ArrowBack } from "@material-ui/icons";
 import { Fab, Modal, Grid, Button, Tooltip, List, ListItem, ListItemText } from "@material-ui/core";
@@ -56,7 +57,8 @@ function mapDispatchToProps(dispatch) {
     setAttributes: attributes => dispatch(setAttributes(attributes)),
     setThings: things => dispatch(setThings(things)),
     notFromLogin: () => dispatch(notFromLogin({})),
-    toggleLogin: () => dispatch(toggleLogin({}))
+    toggleLogin: () => dispatch(toggleLogin({})),
+    logout: () => dispatch(logout({}))
   };
 }
 class Page extends Component {
@@ -102,7 +104,9 @@ class Page extends Component {
         });
       }
       else {
-        this.setState({ waiting: false, message: res.error });
+        this.setState({ waiting: false, message: res.error }, () => {
+          this.props.logout();
+        });
       }
     });
   }

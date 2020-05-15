@@ -15,7 +15,8 @@ import {
   setTypes,
   setThings,
   notFromLogin,
-  toggleLogin
+  toggleLogin,
+  logout
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 import ThingTable from "../../components/Displays/ThingTable";
@@ -43,7 +44,8 @@ function mapDispatchToProps(dispatch) {
     setTypes: types => dispatch(setTypes(types)),
     setThings: things => dispatch(setThings(things)),
     notFromLogin: () => dispatch(notFromLogin({})),
-    toggleLogin: () => dispatch(toggleLogin({}))
+    toggleLogin: () => dispatch(toggleLogin({})),
+    logout: () => dispatch(logout({}))
   };
 }
 class Page extends Component {
@@ -98,7 +100,9 @@ class Page extends Component {
         });
       }
       else {
-        this.setState({ waiting: false, message: res.error });
+        this.setState({ waiting: false, message: res.error }, () => {
+          this.props.logout();
+        });
       }
       // const things = this.props.things.filter(t=>t._id!==this.state._id);
       // this.props.setThings(things);

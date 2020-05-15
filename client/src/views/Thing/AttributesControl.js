@@ -7,7 +7,7 @@ import {
   // ListItem,
 } from "@material-ui/core";
 import { 
-  updateSelectedThing, addThing 
+  updateSelectedThing, addThing, logout
 } from "../../redux/actions/index";
 import AttributeControl from "./AttributeControl";
 import API from "../../smartAPI";
@@ -24,6 +24,7 @@ function mapDispatchToProps(dispatch) {
   return {
     updateSelectedThing: thing => dispatch(updateSelectedThing(thing)),
     addThing: thing => dispatch(addThing(thing)),
+    logout: () => dispatch(logout({}))
   };
 }
 class Control extends Component {
@@ -215,10 +216,12 @@ class Control extends Component {
             modalOpen: false
           });
         }
-        else if (res.message !== undefined) {
+        else if (res.error !== undefined) {
           this.setState({
             waiting: false, 
-            message: res.message 
+            message: res.error 
+          }, () => {
+            this.props.logout();
           });
         }
       })
