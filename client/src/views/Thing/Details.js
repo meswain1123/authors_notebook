@@ -121,7 +121,7 @@ class Page extends Component {
       index = 0;
     this.setState({ 
       waiting: false, 
-      redirectTo: `/thing/edit/${things[index]._id}` 
+      redirectTo: `/thing/details/${things[index]._id}` 
     });
   }
 
