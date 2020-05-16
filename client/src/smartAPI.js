@@ -170,7 +170,12 @@ class APIClass {
   updateUser = async user => {
     if (this.real) {
       const response = await this.patchData("/api/user/update", user);
-      return this.processResponse(response);
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/user/update", user);
+        return this.processResponse(response, null);
+      }
+      return this.processResponse(response, retry);
     } else {
       return {
         _id: "-1",
@@ -882,7 +887,7 @@ class APIClass {
       .catch(this.logErrorReason);
   };
 
-  processResponse = async (response, retry, sessionName = null, noExpiry = false) => {
+  processResponse = async (response, retry = null, sessionName = null, noExpiry = false) => {
     const body = await response.json();
     if (response.status !== 200) { 
       throw Error(body.message);
