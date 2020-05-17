@@ -1601,7 +1601,7 @@ class Page extends Component {
                 </Grid>
                 <Grid item xs={4} sm={2}>
                   <ListItem>
-                    { this.state.majorType === null ?
+                    { this.state.majorType === null && this.props.things.length > 1 ?
                       <Button
                         fullWidth
                         variant="contained"
@@ -1612,7 +1612,7 @@ class Page extends Component {
                       >
                         <ListItemText primary="Next" />
                       </Button>
-                    :
+                    : this.props.things.filter(t => t.TypeIDs.includes(this.state.majorType._id)).length > 1 &&
                       <Button
                         fullWidth
                         variant="contained"
@@ -1762,14 +1762,16 @@ class Page extends Component {
               </Grid>
               <Grid item>
                 <div className="float-right">
-                  <Button
-                    variant="contained" color="primary"
-                    disabled={this.state.waiting}
-                    onClick={e => {this.onSubmit("next")}}
-                    type="submit"
-                  >
-                    {this.state.waiting ? "Please Wait" : "Submit and Edit Next"}
-                  </Button>
+                  { ((this.state.majorType === null && this.props.things.length > 0) || (this.state.majorType !== null && this.props.things.filter(t => t.TypeIDs.includes(this.state.majorType._id)).length > 0)) && 
+                    <Button
+                      variant="contained" color="primary"
+                      disabled={this.state.waiting}
+                      onClick={e => {this.onSubmit("next")}}
+                      type="submit"
+                    >
+                      {this.state.waiting ? "Please Wait" : "Submit and Edit Next"}
+                    </Button>
+                  }
                   <Button
                     variant="contained" color="primary"
                     style={{marginLeft: "4px"}}

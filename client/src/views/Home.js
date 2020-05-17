@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import {
   notFromLogin
 } from "../redux/actions/index";
+// import MediaCard from "../components/Displays/MediaCard";
 
 const mapStateToProps = state => {
   return {
@@ -36,6 +37,9 @@ class Page extends Component {
       return (
         <div>
           <h3>Author's Notebook</h3>
+
+          {/* <MediaCard title="ANB Basics Tutorial" description="This video explains the basics of how to use the website and its tools.  It covers the basic concepts, creating a world, navigation, creating types, creating attributes, and creating things." /> */}
+
           <p>
             This is something that I've been wanting to build for a while. It's
             purpose is to provide a place for keeping track of various aspects of

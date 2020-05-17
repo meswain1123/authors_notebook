@@ -354,6 +354,10 @@ function deleteWorld(respond, userID, worldID) {
         throw err;
       }
       if (docs != null && docs.length > 0) {
+        db.collection("attribute").deleteMany({
+          worldID: worldID
+        });
+
         db.collection("thing").deleteMany({
           worldID: worldID
         });
@@ -579,6 +583,14 @@ function deleteType(respond, worldID, typeID) {
     worldID: worldID,
     SuperIDs: { $all: [typeID] }
   }, { $pull: { SuperIDs: typeID }}).then(res => {
+    // console.log(res);
+  });
+
+  // Remove it from TypeIDs in Things
+  db.collection("thing").updateMany({ 
+    worldID: worldID,
+    TypeIDs: { $all: [typeID] }
+  }, { $pull: { TypeIDs: typeID }}).then(res => {
     // console.log(res);
   });
 

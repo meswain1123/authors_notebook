@@ -105,11 +105,14 @@ class Page extends Component {
       if (id !== undefined) {
         this.setState({
           resetting: false, 
-          redirectTo: `/type/create`});
+          loaded: true,
+          redirectTo: `/type/create`
+        });
       }
       else {
         this.setState({
-          resetting: false
+          resetting: false,
+          loaded: true
         });
       }
     }, 500);
@@ -331,9 +334,11 @@ class Page extends Component {
                     PluralName: "",
                     Description: "",
                     Supers: [],
+                    SuperIDs: [],
                     AttributesArr: [],
                     Attributes: [],
-                    Major: false
+                    Major: false,
+                    DefaultsHash: {}
                   });
                   this.setState({
                     _id: null,
@@ -352,7 +357,8 @@ class Page extends Component {
                     redirectTo: null,
                     waiting: false,
                     addMore: false,
-                    resetting: true
+                    resetting: true,
+                    loaded: false
                   }, this.resetForm);
                 } else if (this.state.addMore === "next") {
                   this.redirectToNext();
@@ -391,9 +397,11 @@ class Page extends Component {
                     PluralName: "",
                     Description: "",
                     Supers: [],
+                    SuperIDs: [],
                     AttributesArr: [],
                     Attributes: [],
-                    Major: false
+                    Major: false,
+                    DefaultsHash: {}
                   });
                   this.setState({
                     _id: null,
@@ -412,7 +420,8 @@ class Page extends Component {
                     redirectTo: null,
                     waiting: false,
                     addMore: false,
-                    resetting: true
+                    resetting: true,
+                    loaded: false
                   }, this.resetForm);
                 } else if (this.state.addMore === "next") {
                   this.redirectToNext();
@@ -579,9 +588,11 @@ class Page extends Component {
   redirectToNext = () => {
     // Find the next type
     let index = 0;
-    while (this.props.types[index]._id !== this.props.selectedType._id)
+    if (this.props.selectedType === undefined || this.props.selectedType._id !== null) {
+      while (this.props.types[index]._id !== this.props.selectedType._id)
+        index++;
       index++;
-    index++;
+    }
     if (index === this.props.types.length)
       index = 0;
     this.setState({ 
@@ -942,20 +953,22 @@ class Page extends Component {
                 <Grid item xs={7} sm={9}>
                   <h2>{this.state._id === null ? "Create New Type" : "Edit Type"}</h2>
                 </Grid>
-                <Grid item xs={4} sm={2}>
-                  <ListItem>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      onClick={_ => {
-                        this.redirectToNext();
-                      }}
-                    >
-                      <ListItemText primary="Next Type"/>
-                    </Button>
-                  </ListItem>
-                </Grid>
+                { this.props.types.length > 1 &&
+                  <Grid item xs={4} sm={2}>
+                    <ListItem>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        onClick={_ => {
+                          this.redirectToNext();
+                        }}
+                      >
+                        <ListItemText primary="Next Type"/>
+                      </Button>
+                    </ListItem>
+                  </Grid>
+                }
               </Grid>
               <Grid item>
                 { this.state.loaded &&  
@@ -1025,8 +1038,8 @@ class Page extends Component {
                   label="Major Type"
                 />
               </Grid>
-              <Grid item>
-                { this.state.resetting ? "" :
+              { !this.state.resetting &&
+                <Grid item>
                   <Multiselect
                     placeholder="Super Types"
                     options={types}
@@ -1035,8 +1048,8 @@ class Page extends Component {
                     onRemove={this.removeSuper}
                     displayValue="Name"
                   />
-                }
-              </Grid>
+                </Grid>
+              }
               <Grid item container spacing={0} direction="row">
                 <Grid item xs={6}>
                   <span>Attributes&nbsp;
@@ -1196,14 +1209,16 @@ class Page extends Component {
               </Grid>
               <Grid item>
                 <div className="float-right">
-                  <Button
-                    variant="contained" color="primary"
-                    disabled={this.state.waiting}
-                    onClick={e => {this.onSubmit("next")}}
-                    type="submit"
-                  >
-                    {this.state.waiting ? "Please Wait" : "Submit and Edit Next"}
-                  </Button>
+                  { this.props.types.length > 0 &&
+                    <Button
+                      variant="contained" color="primary"
+                      disabled={this.state.waiting}
+                      onClick={e => {this.onSubmit("next")}}
+                      type="submit"
+                    >
+                      {this.state.waiting ? "Please Wait" : "Submit and Edit Next"}
+                    </Button>
+                  }
                   <Button
                     variant="contained" color="primary"
                     style={{marginLeft: "4px"}}
