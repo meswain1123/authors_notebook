@@ -5,7 +5,10 @@ import {
   updateWorld, selectWorld,
   notFromLogin,
   toggleLogin,
-  logout
+  logout,
+  setAttributes,
+  setTypes,
+  setThings
 } from "../../redux/actions/index";
 import { Button, Checkbox, FormControl, FormControlLabel,
   OutlinedInput, InputLabel, FormHelperText, Grid, 
@@ -14,7 +17,7 @@ import { Button, Checkbox, FormControl, FormControlLabel,
   InputAdornment, IconButton,
   Select, MenuItem
 } from "@material-ui/core";
-import { Add, ArrowBack, FileCopyOutlined, Delete } from "@material-ui/icons";
+import { Add, ArrowBack, FileCopyOutlined, Delete, Check } from "@material-ui/icons";
 import { Helmet } from 'react-helmet';
 import API from "../../smartAPI";
 
@@ -47,7 +50,10 @@ function mapDispatchToProps(dispatch) {
     selectWorld: worldID => dispatch(selectWorld(worldID)),
     notFromLogin: () => dispatch(notFromLogin({})),
     toggleLogin: () => dispatch(toggleLogin({})),
-    logout: () => dispatch(logout({}))
+    logout: () => dispatch(logout({})),
+    setAttributes: attributes => dispatch(setAttributes(attributes)),
+    setTypes: types => dispatch(setTypes(types)),
+    setThings: things => dispatch(setThings(things))
   };
 }
 class Page extends Component {
@@ -76,28 +82,6 @@ class Page extends Component {
   }
 
   componentDidMount() {
-    setTimeout(() => {
-      const { id } = this.props.match.params;
-      if (id !== undefined) {
-        const { id } = this.props.match.params;
-        let world = this.props.worlds.filter(w => w._id === id);
-        if (world.length > 0) {
-          world = world[0];
-          this.setState({
-            Name: world.Name,
-            Public: world.Public,
-            AcceptingCollaborators: world.AcceptingCollaborators === undefined || world.AcceptingCollaborators === null ? false : world.AcceptingCollaborators,
-            Collaborators: world.Collaborators === undefined ? [] : world.Collaborators,
-            _id: id
-          });
-          this.api.selectWorld(id);
-          this.props.selectWorld(id);
-        }
-      } else {
-        this.api.selectWorld(null);
-        this.props.selectWorld(null);
-      }
-    }, 500);
   }
 
   handleUserInput = e => {
@@ -276,6 +260,31 @@ class Page extends Component {
     this.setState({waiting: true}, respond);
   }
 
+  acceptCollab = (collab) => {
+    function respond() {
+      this.api.acceptCollabRequest(this.props.selectedWorldID, collab.collabID).then(res => {
+        if (res.error === undefined) {
+          const collabs = [...this.state.Collaborators];
+          const collab2 = collabs.filter(c => c.collabID === collab.collabID)[0];
+          collab2.type = "collab";
+          const world = this.props.selectedWorld;
+          world.Collaborators = collabs;
+          this.props.updateWorld(world);
+          this.setState({
+            Collaborators: collabs, 
+            waiting: false
+          });
+        }
+        else {
+          this.setState({message: res.error, waiting: false}, () => {
+            this.props.logout();
+          });
+        }
+      });
+    }
+    this.setState({waiting: true}, respond);
+  }
+
   // Copies the collaborator link to the user's clipboard
   copyCollabLink = () => {
     const el = this.generatedLink;
@@ -285,17 +294,60 @@ class Page extends Component {
     this.setState({collabLinkCopied: true});
   }
 
+  load = (id) => {
+    if (this.props.fromLogin) {
+      this.props.notFromLogin();
+    }
+    
+    setTimeout(() => {
+      this.setState({
+        _id: id,
+        loaded: false
+      }, this.finishLoading);
+    }, 500);
+  }
+
+  finishLoading = () => {
+    this.api.selectWorld(this.state._id);
+    this.props.selectWorld(this.state._id);
+    this.api.getWorld(this.state._id).then(res => {
+      this.props.setAttributes(res.attributes);
+      this.props.setTypes(res.types);
+      this.props.setThings(res.things);
+      
+      this.api.getAllUsers().then(res => {
+        this.setState({allUsers: res, loaded: true}, 
+          this.actuallyFinishLoading);
+      });
+    });
+  }
+
+  actuallyFinishLoading = () => {
+    let world = this.props.worlds.filter(w => w._id === this.state._id);
+    if (world.length > 0) {
+      world = world[0];
+      this.setState({
+        Name: world.Name,
+        Public: world.Public,
+        AcceptingCollaborators: world.AcceptingCollaborators === undefined || world.AcceptingCollaborators === null ? false : world.AcceptingCollaborators,
+        Collaborators: world.Collaborators === undefined ? [] : world.Collaborators
+      });
+    }
+  }
+
   render() {
     if (this.props.fromLogin) {
       this.props.notFromLogin();
     }
-    if (this.state.allUsers === null) {
-      this.api.getAllUsers().then(res => {
-        this.setState({allUsers: res});
-      });
-      return (<div>Loading...</div>);
-    }
-    else if (this.state.redirectTo !== null) {
+    let { id } = this.props.match.params;
+    if (id === undefined)
+      id = null;
+    if (this.state._id !== id) {
+      this.load(id);
+      return (<span>Loading...</span>);
+    } else if (!this.state.loaded) {
+      return (<span>Loading...</span>);
+    } else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && 
       this.props.user === null) {
@@ -590,15 +642,26 @@ class Page extends Component {
                     { requests.map((c, key) => {
                       return (
                         <Grid item container spacing={1} direcion="row" key={key}>
-                          <Grid item xs={12} sm={9}>
+                          <Grid item xs={12} sm={6}>
                             {this.state.allUsers.filter(u=>u._id === c.userID)[0].username}
+                          </Grid>
+                          <Grid item xs={12} sm={3}>
+                            <Tooltip title={`Accept Request`}>
+                              <Fab size="small"
+                                color="primary"
+                                disabled={this.state.waiting}
+                                onClick={_ => {this.acceptCollab(c)}}
+                              >
+                                <Check />
+                              </Fab>
+                            </Tooltip>
                           </Grid>
                           <Grid item xs={12} sm={3}>
                             <Tooltip title={`Delete Request`}>
                               <Fab size="small"
                                 color="primary"
                                 disabled={this.state.waiting}
-                                onClick={e => {this.deleteCollab(c)}}
+                                onClick={_ => {this.deleteCollab(c)}}
                               >
                                 <Delete />
                               </Fab>

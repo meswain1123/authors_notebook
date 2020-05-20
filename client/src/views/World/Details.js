@@ -219,84 +219,78 @@ class Page extends Component {
               <Grid item xs={9}>
                 <h2>{this.props.selectedWorld.Name}</h2>
               </Grid>
-              <Grid item xs={3}>
-                { this.props.user !== null && this.props.user !== null && this.props.selectedWorld.Owner === this.props.user._id ?
-                  <List>
-                    <ListItem>
-                      <Tooltip title={`Edit ${this.props.selectedWorld.Name}`}>
-                        <Fab size="small" color="primary"
-                          onClick={ _ => {this.setState({redirectTo:`/world/edit/${this.props.selectedWorldID}`})}}
-                        >
-                        <Edit />
-                        </Fab>
-                      </Tooltip>
-                    </ListItem>
-                    <ListItem>
-                      <Tooltip title={`Edit Collaborators`}>
-                        <Fab size="small" color="primary"
-                          onClick={ _ => {this.setState({redirectTo:`/world/collaborators/${this.props.selectedWorldID}`})}}
-                        >
-                        <People />
-                        </Fab>
-                      </Tooltip>
-                    </ListItem>
-                    <ListItem>
-                      <Tooltip title={`Delete ${this.props.selectedWorld.Name}`}>
-                        <Fab size="small" color="primary"
-                          onClick={e => {this.setState({modalOpen: true})}}
-                        >
-                          <Delete />
-                        </Fab>
-                      </Tooltip>
-                    </ListItem>
-                  </List>
-                : 
-                  <List>
-                    { this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id).length === 0 ?
+              { this.props.user !== null &&
+                <Grid item xs={3}>
+                  { this.props.selectedWorld.Owner === this.props.user._id ?
+                    <List>
                       <ListItem>
-                        { this.props.selectedWorld.AcceptingCollaborators && 
+                        <Tooltip title={`Edit ${this.props.selectedWorld.Name}`}>
+                          <Fab size="small" color="primary"
+                            onClick={ _ => {this.setState({redirectTo:`/world/edit/${this.props.selectedWorldID}`})}}
+                          >
+                          <Edit />
+                          </Fab>
+                        </Tooltip>
+                      </ListItem>
+                      <ListItem>
+                        <Tooltip title={`Edit Collaborators`}>
+                          <Fab size="small" color="primary"
+                            onClick={ _ => {this.setState({redirectTo:`/world/collaborators/${this.props.selectedWorldID}`})}}
+                          >
+                          <People />
+                          </Fab>
+                        </Tooltip>
+                      </ListItem>
+                      <ListItem>
+                        <Tooltip title={`Delete ${this.props.selectedWorld.Name}`}>
+                          <Fab size="small" color="primary"
+                            onClick={e => {this.setState({modalOpen: true})}}
+                          >
+                            <Delete />
+                          </Fab>
+                        </Tooltip>
+                      </ListItem>
+                    </List>
+                  : 
+                    <List>
+                      { this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id).length === 0 ?
+                        <ListItem>
+                          { this.props.selectedWorld.AcceptingCollaborators && 
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={this.requestToCollaborate}
+                              type="button"
+                            >
+                              Request to Collaborate
+                            </Button>
+                          }
+                        </ListItem>
+                      : this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id && c.type === "request").length > 0 ?
+                        <ListItem>
+                          Waiting on Collaboration Request
+                        </ListItem>
+                      : this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id && c.type === "invite").length > 0 &&
+                        <ListItem>
                           <Button
                             variant="contained"
                             color="primary"
-                            onClick={this.requestToCollaborate}
+                            onClick={this.respondToInvite}
                             type="button"
                           >
-                            Request to Collaborate
+                            You've been invited to Collaborate
                           </Button>
-                        }
-                      </ListItem>
-                    : this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id && c.type === "request").length > 0 ?
-                      <ListItem>
-                        Waiting on Collaboration Request
-                      </ListItem>
-                    : this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id && c.type === "invite").length > 0 &&
-                      <ListItem>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={this.respondToInvite}
-                          type="button"
-                        >
-                          You've been invited to Collaborate
-                        </Button>
-                      </ListItem>
-                    }
-                  </List>
-                }
-              </Grid>
+                        </ListItem>
+                      }
+                    </List>
+                  }
+                </Grid>
+              }
             </Grid>
           )}
           <Grid item>
             <Index />
           </Grid>
-          {/* <Grid item container spacing={0} direction="row">
-            <Grid item xs={6}>
-              <TypeIndex />
-            </Grid>
-            <Grid item xs={6}>
-              <ThingIndex />
-            </Grid>
-          </Grid> */}
           <Modal
               aria-labelledby="delete-thing-modal"
               aria-describedby="delete-thing-modal-description"

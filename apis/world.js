@@ -257,6 +257,27 @@ router
       db.getWorldForCollab(gotWorld, req.body.worldID);
     }
   })
+  .patch("/acceptCollabRequest", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } 
+    else {
+      function gotWorld(world) {
+        if (world === null) {
+          res.send({ error: "Problem with accepting the Collaborator Invite" });
+        }
+        else {
+          function respond(message) {
+            res.send({message: "Accept successful"});
+          }
+          const collab = world.Collaborators.filter(c=>c.collabID === req.body.collabID)[0];
+          collab.type = "collab";
+          db.updateWorldForCollab(respond, world);
+        }
+      }
+      db.getWorldForCollab(gotWorld, req.body.worldID);
+    }
+  })
   .patch("/updateCollaboratorPermission", function(req, res) {
     if (req.session.userID == undefined) {
       res.send({ error: "Session lost.  Please log in again." });

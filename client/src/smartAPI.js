@@ -473,6 +473,20 @@ class APIClass {
     }
   };
 
+  acceptCollabRequest = async (worldID, collabID) => {
+    if (this.real) {
+      const response = await this.patchData("/api/world/acceptCollabRequest", { worldID, collabID });
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/acceptCollabRequest", { worldID, collabID });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
+    } else {
+      return "success";
+    }
+  };
+
   selectWorld = async (worldID) => {
     if (this.real) {
       const response = await this.postData("/api/world/selectWorld", { worldID: worldID });
