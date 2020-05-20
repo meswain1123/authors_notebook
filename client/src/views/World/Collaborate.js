@@ -6,7 +6,10 @@ import {
 } from "@material-ui/core";
 import LoginControl from '../User/LoginControl';
 import {
-  setWorlds
+  setWorlds,
+  setAttributes,
+  setTypes,
+  setThings
 } from "../../redux/actions/index";
 import API from '../../smartAPI';
 
@@ -18,7 +21,10 @@ const mapStateToProps = state => {
 };
 function mapDispatchToProps(dispatch) {
   return {
-    setWorlds: worlds => dispatch(setWorlds(worlds))
+    setWorlds: worlds => dispatch(setWorlds(worlds)),
+    setAttributes: attributes => dispatch(setAttributes(attributes)),
+    setTypes: types => dispatch(setTypes(types)),
+    setThings: things => dispatch(setThings(things))
   };
 }
 class Page extends Component {
@@ -58,6 +64,15 @@ class Page extends Component {
   getWorlds = () => {
     this.api.getWorldsForUser().then(res => {
       if (res.worlds !== undefined) this.props.setWorlds(res.worlds);
+      this.refreshWorld();
+    });
+  }
+
+  refreshWorld = () => {
+    this.api.getWorld(this.state.worldID, true).then(res => {
+      this.props.setAttributes(res.attributes);
+      this.props.setTypes(res.types);
+      this.props.setThings(res.things);
     });
   }
 
@@ -75,7 +90,7 @@ class Page extends Component {
 
   submitDecline = () => {
     this.api.declineCollabInvite(this.state.worldID, this.state.collabID).then(res => {
-      this.setState({waiting: false, accepted: false});
+      this.setState({waiting: false, accepted: false}, this.refreshWorld);
     });
   }
 
