@@ -6,6 +6,7 @@ import {
   REDIRECT_TO,
   SET_WORLDS,
   SET_PUBLIC_WORLDS,
+  SET_TEMPLATES,
   ADD_WORLD,
   UPDATE_WORLD,
   UPDATE_PUBLIC_WORLD_COLLAB,
@@ -50,6 +51,9 @@ export function redirectTo(payload) {
 }
 export function setWorlds(payload) {
   return { type: SET_WORLDS, payload };
+}
+export function setTemplates(payload) {
+  return { type: SET_TEMPLATES, payload };
 }
 export function addWorld(payload) {
   return { type: ADD_WORLD, payload };

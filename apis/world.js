@@ -581,6 +581,109 @@ router
 
       db.getWorld(gotWorld, req.session.userID, req.body.thing.worldID);
     }
+  })
+  .post("/createTemplate", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else if (req.body.template.worldID != undefined) {
+      console.log(req.body.template);
+      function gotAttributes(attributes) {
+        function gotTypes(types) {
+          const template = {
+            Name: req.body.template.Name,
+            Types: [],
+            Attributes: []
+          };
+          const typeMap = {
+            // realID: {
+            //   typeID: "template type id",
+            //   Name: "The actual Type object in template"
+            // }
+          };
+          const attrMap = {
+            // realID: {
+            //   attrID: "template attr id",
+            //   Name: "The actual Attribute object in template"
+            // }
+          };
+          // req.body.template comes with a list of typeIDs.  
+          // add all those types into a template, along with their attributes.  
+          // Utilize mappings for converting old ids to template ids
+          req.body.template.typeIDs.forEach(id => {
+            let type = types.filter(t => t._id.toString() === id);
+            if (type.length > 0) {
+              type = type[0];
+              const templateType = {...type};
+              delete templateType._id;
+              delete templateType.worldID;
+              delete templateType.ReferenceIDs;
+              delete templateType.AttributesArr;
+              templateType.typeID = uuid.v1();
+              templateType.Attributes = [];
+              templateType.Defaults = [];
+              type.Attributes.forEach(a => {
+                const attr = {...a};
+                if (attrMap[a.attrID] === undefined) {
+                  let templateAttr = attributes.filter(a => a._id.toString() === attr.attrID);
+                  if (templateAttr.length > 0) {
+                    templateAttr = {...templateAttr[0]};
+                    delete templateAttr._id;
+                    delete templateAttr.worldID;
+                    templateAttr.attrID = uuid.v1();
+                    attr.attrID = templateAttr.attrID;
+                    template.Attributes.push(templateAttr);
+                    attrMap[a.attrID] = templateAttr;
+                  }
+                } else {
+                  attr.attrID = attrMap[a.attrID].attrID;
+                }
+                templateType.Attributes.push(attr);
+              });
+              type.Defaults.forEach(d => {
+                const templateAttr = attrMap[d.attrID];
+                if (templateAttr !== undefined) {
+                  // We don't need to worry about adding it because it was already added during the Attributes step
+                  const def = {...d};
+                  def.attrID = templateAttr.attrID;
+                  if (templateAttr.AttributeType === "Type" || (templateAttr.AttributeType === "List" && templateAttr.ListType === "Type")) {
+                    // Only Types and Attributes go into Templates, so Defaults of Defined Type attributes don't go into Templates
+                    def.DefaultValue = "";
+                    def.DefaultListValues = [];
+                  }
+                  templateType.Defaults.push(def);
+                }
+              });
+              template.Types.push(templateType);
+              typeMap[id] = templateType;
+            }
+          });
+          template.Attributes.forEach(a => {
+            if (a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")) {
+              a.DefinedType = typeMap[a.DefinedType].typeID;
+            }
+          });
+          function respond(message) {
+            res.send(message);
+          }
+          // The Template is ready. Insert it.
+          db.createTemplate(respond, template);
+        }
+        db.getTypesForWorld(gotTypes, req.body.template.worldID);
+      }
+      db.getAttributesForWorld(gotAttributes, req.body.template.worldID);
+    } else {
+      res.send({ error: "Invalid request" });
+    }
+  })
+  .get("/getTemplates", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else {
+      function respond(templates) {
+        res.send({templates});
+      }
+      db.getTemplates(respond);
+    }
   });
 
 function close() {

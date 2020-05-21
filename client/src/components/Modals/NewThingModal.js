@@ -7,20 +7,9 @@ import {
   OutlinedInput,
   InputLabel,
   FormHelperText,
-  // Modal,
   Button,
 } from "@material-ui/core";
 
-// const getModalStyle = () => {
-//   const top = Math.round(window.innerHeight / 2) - 100;
-//   const left = Math.round(window.innerWidth / 2) - 200;
-
-//   return {
-//     top: `${top}%`,
-//     left: `${left}%`,
-//     transform: `translate(${left}px, ${top}px)`,
-//   };
-// };
 
 const validate = (value, props, changeMessage) => {
   const valid = props.things.filter((t) => t.Name === value).length === 0;
@@ -28,16 +17,13 @@ const validate = (value, props, changeMessage) => {
 };
 
 const saveNewThing = (value, props, changeName, changeMessage, changeWaiting) => {
-  // if (props.onSave !== undefined && props.onSave !== null)
-  //   props.onSave();
-
+  
   changeWaiting(true);
   const thing = {
     _id: null,
     Name: value.trim(),
     Description: "",
     TypeIDs: props.newThingType === undefined ? [] : [props.newThingType._id],
-    // AttributesArr: this.props.selectedThing.AttributesArr,
     Attributes: [],
     worldID: props.selectedWorldID,
     ReferenceIDs: []

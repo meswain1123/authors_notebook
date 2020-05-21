@@ -13,14 +13,17 @@ import {
   logout
 } from "../../redux/actions/index";
 import { Edit, Delete, Add, ArrowBack } from "@material-ui/icons";
-import { Fab, Modal, Grid, Button, Tooltip, List, ListItem, ListItemText } from "@material-ui/core";
+import { 
+  Fab, Modal, Grid, Button, 
+  Tooltip, List, ListItem, ListItemText 
+} from "@material-ui/core";
 import { Helmet } from 'react-helmet';
 import API from "../../smartAPI";
 
 /* 
   This component will take the main portion of the page and is used for
-  creating or editing a Type.  It will allow the use of Template Types
-  and Super Types to make the process faster.
+  creating or editing a Type.  It will allow the use of Super Types 
+  to make the process faster.
 */
 
 const mapStateToProps = state => {
@@ -45,7 +48,7 @@ const mapStateToProps = state => {
     things: state.app.things,
     attributesByID: state.app.attributesByID,
     attributesByName: state.app.attributesByName,
-    fromLogin: state.app.fromLogin,
+    fromLogin: state.app.fromLogin
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -102,6 +105,9 @@ class Page extends Component {
 
           this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`});
         });
+        // this.getWorld().then(res2 => {
+        //   this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`});
+        // });
       }
       else {
         this.setState({ waiting: false, message: res.error }, () => {
@@ -156,6 +162,31 @@ class Page extends Component {
           });
         }
       });
+      // this.getWorld().then(res => {
+      //   if (id !== null) {
+      //     let type = res.types.filter(t => t._id === id);
+      //     if (type.length > 0) {
+      //       type = type[0];
+
+      //       this.props.updateSelectedType(type);
+      //     }
+      //     else {
+      //       this.setState({ message: "Invalid ID", loaded: true });
+      //     }
+      //   } else {
+      //     this.props.updateSelectedType({
+      //       _id: null,
+      //       Name: "",
+      //       Description: "",
+      //       Supers: [],
+      //       SuperIDs: [],
+      //       AttributesArr: [],
+      //       Attributes: [],
+      //       Major: false,
+      //       DefaultsHash: {}
+      //     });
+      //   }
+      // })
     } else {
       this.props.updateSelectedType({
         _id: null,
@@ -179,6 +210,16 @@ class Page extends Component {
       index = 0;
     this.setState({ redirectTo: `/type/details/${this.props.types[index]._id}` });
   }
+
+  // getWorld = async (refresh) => {
+  //   this.api.getWorld(this.props.selectedWorldID, refresh).then(res => {
+  //     this.props.setAttributes(res.attributes);
+  //     this.props.setTypes(res.types);
+  //     this.props.setThings(res.things);
+
+  //     return res;
+  //   });
+  // }
 
   render() {
     const { id } = this.props.match.params;

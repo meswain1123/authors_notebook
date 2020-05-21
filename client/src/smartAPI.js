@@ -185,7 +185,72 @@ class APIClass {
     }
   };
 
+  // Templates
+  createTemplate = async (template) => {
+    if (this.real) {
+      const response = await this.postData("/api/world/createTemplate", { template: template });
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.postData("/api/world/createTemplate", { template: template });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
+    } else {
+      return -1;
+    }
+  }
+
+  getTemplates = async (refresh = false) => {
+    if (refresh) {
+      return this.getTemplatesFromAPI();
+    }
+    else {
+      const data = this.getSessionData("templates");
+      if (data !== null) {
+        return data;
+      }
+      else {
+        return this.getTemplatesFromAPI();
+      }
+    }
+  }
+  getTemplatesFromAPI = async () => {
+    if (this.real) {
+      const response = await this.fetchData(
+        `/api/world/getTemplates/`
+      );
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData(
+          `/api/world/getTemplates/`
+        );
+        return this.processResponse(response, null, `templates`);
+      }
+      return this.processResponse(response, retry, `templates`);
+    } else {
+      return [{ _id: -1, worldID: -1, Name: "Alice" }];
+    }
+  }
+
   // World
+  getWorlds = async (refresh = false) => {
+    try {
+      const publicWorlds = await this.getPublicWorlds(refresh);
+      const userWorlds = await this.getWorldsForUser(refresh);
+      const templates = await this.getTemplates(refresh);
+
+      return {
+        publicWorlds,
+        userWorlds,
+        templates
+      };
+    }
+    catch (error) {
+      console.log(error);
+      return { error };
+    }
+  };
+
   getWorldsForUser = async (refresh = false) => {
     if (refresh) {
       return this.getWorldsForUserFromAPI();

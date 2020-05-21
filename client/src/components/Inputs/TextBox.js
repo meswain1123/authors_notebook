@@ -29,7 +29,7 @@ export default function TextBox(props) {
             changeValue(e.target.value);
           }}
           onBlur={e => {
-            props.onBlur(value);
+            props.onBlur(value.trim());
           }}
           labelWidth={props.labelWidth}
           fullWidth
@@ -46,7 +46,7 @@ export default function TextBox(props) {
             changeValue(e.target.value);
           }}
           onBlur={e => {
-            props.onBlur(value);
+            props.onBlur(value.trim());
           }}
           labelWidth={props.labelWidth}
           fullWidth

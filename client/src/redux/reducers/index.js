@@ -7,6 +7,7 @@ import {
   REDIRECT_TO,
   SET_WORLDS,
   SET_PUBLIC_WORLDS,
+  SET_TEMPLATES,
   ADD_WORLD,
   UPDATE_WORLD,
   UPDATE_PUBLIC_WORLD_COLLAB,
@@ -55,7 +56,8 @@ const initialState = {
   menuOpen: true,
   loginOpen: false,
   fromLogin: false,
-  width: 0
+  width: 0,
+  templates: []
 };
 function rootReducer(state = initialState, action) {
   if (action.type === UPDATE_INDEX_EXPANDED_PANEL) {
@@ -117,7 +119,7 @@ function rootReducer(state = initialState, action) {
       redirectToURL: action.payload
     });
   } else if (action.type === SET_WORLDS) {
-    if (action.payload.error === undefined){
+    if (action.payload !== undefined && action.payload.error === undefined){
       // sessionStorage.setItem("worlds", JSON.stringify(action.payload));
       if (state.selectedWorldID !== null && state.selectedWorld === null) {
         const worldArr = action.payload.filter(
@@ -154,7 +156,7 @@ function rootReducer(state = initialState, action) {
       return Object.assign({}, state, {});
     }
   } else if (action.type === SET_PUBLIC_WORLDS) {
-    if (action.payload.error === undefined){
+    if (action.payload.error === undefined) {
       // sessionStorage.setItem("publicWorlds", JSON.stringify(action.payload));
       if (state.selectedWorldID !== null && state.selectedWorld === null) {
         const worldArr = action.payload.filter(
@@ -184,6 +186,10 @@ function rootReducer(state = initialState, action) {
     else {
       return Object.assign({}, state, {});
     }
+  } else if (action.type === SET_TEMPLATES) {
+    return Object.assign({}, state, {
+      templates: action.payload
+    });
   } else if (action.type === ADD_WORLD) {
     if (action.payload.Public) {
       const worlds = state.worlds.concat(action.payload);
@@ -206,6 +212,7 @@ function rootReducer(state = initialState, action) {
     let publicWorlds = [...state.publicWorlds];
     const world = worlds.filter(t => t._id === action.payload._id)[0];
     world.Name = action.payload.Name;
+    world.Description = action.payload.Description;
     const wasPublic = world.Public;
     world.Public = action.payload.Public;
     world.AcceptingCollaborators = action.payload.AcceptingCollaborators;

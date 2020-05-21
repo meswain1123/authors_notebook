@@ -21,6 +21,7 @@ import menuRoutes from "./routes";
 import {
   setWorlds,
   setPublicWorlds,
+  setTemplates,
   setFollowingWorlds,
   toggleMenu,
   logout,
@@ -42,6 +43,7 @@ function mapDispatchToProps(dispatch) {
   return {
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
+    setTemplates: templates => dispatch(setTemplates(templates)),
     setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs)),
     toggleMenu: () => dispatch(toggleMenu({})),
     // toggleLogin: () => dispatch(toggleLogin({}))
@@ -59,20 +61,31 @@ class Menu extends Component {
   }
 
   componentDidMount() {
-    this.api.getPublicWorlds().then(res => {
-      this.props.setPublicWorlds(res.worlds);
-    });
-    if (this.props.user !== null) {
-      this.api.getWorldsForUser().then(res => {
-        if (res.worlds !== undefined) {
-          this.props.setWorlds(res.worlds);
-        }
-        else {
-          // User's login is no longer valid.
+    this.api.getWorlds(true).then(res => {
+      this.props.setPublicWorlds(res.publicWorlds.worlds);
+      if (this.props.user !== null) {
+        if (res.publicWorlds === undefined) {
           this.props.logout();
+        } else {
+          this.props.setWorlds(res.userWorlds.worlds);
+          this.props.setTemplates(res.templates.templates);
         }
-      });
-    }
+      }
+    });
+    // this.api.getPublicWorlds().then(res => {
+    //   this.props.setPublicWorlds(res.worlds);
+    // });
+    // if (this.props.user !== null) {
+    //   this.api.getWorldsForUser().then(res => {
+    //     if (res.worlds !== undefined) {
+    //       this.props.setWorlds(res.worlds);
+    //     }
+    //     else {
+    //       // User's login is no longer valid.
+    //       this.props.logout();
+    //     }
+    //   });
+    // }
   }
 
   links() {

@@ -54,6 +54,7 @@ class Page extends Component {
     this.state = {
       _id: null,
       Name: "",
+      Description: "",
       Public: false,
       AcceptingCollaborators: false,
       fieldValidation: {
@@ -157,6 +158,7 @@ class Page extends Component {
     const world = {
       _id: this.state._id,
       Name: this.state.Name.trim(),
+      Description: this.state.Description.trim(),
       Public: this.state.Public,
       AcceptingCollaborators: this.state.AcceptingCollaborators,
       Owner: this.props.user._id
@@ -216,6 +218,8 @@ class Page extends Component {
     if (this.state._id === null) {
       this.setState({
         Name: "",
+        Description: "",
+        AcceptingCollaborators: false,
         Public: false,
         loaded: true
       });
@@ -230,6 +234,8 @@ class Page extends Component {
 
           this.setState({
             Name: this.props.selectedWorld.Name,
+            Description: this.props.selectedWorld.Description === undefined ? "" : this.props.selectedWorld.Description,
+            AcceptingCollaborators: this.props.selectedWorld.AcceptingCollaborators === undefined ? false : this.props.selectedWorld.AcceptingCollaborators,
             Public: this.props.selectedWorld.Public,
             loaded: true
           });
@@ -305,6 +311,23 @@ class Page extends Component {
               <FormHelperText>
                 {this.state.fieldValidation.Name.message}
               </FormHelperText>
+            </FormControl>
+          </Grid>
+          <Grid item>
+            <FormControl variant="outlined" fullWidth>
+              <InputLabel htmlFor="description">Description</InputLabel>
+              <OutlinedInput
+                id="description"
+                name="Description"
+                type="text"
+                autoComplete="Off"
+                multiline
+                value={this.state.Description}
+                onChange={this.handleUserInput}
+                onBlur={this.inputBlur}
+                labelWidth={80}
+                fullWidth
+              />
             </FormControl>
           </Grid>
           <Grid item>

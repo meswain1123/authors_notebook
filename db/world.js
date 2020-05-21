@@ -334,6 +334,7 @@ function createWorld(respond, userID, world) {
         db.collection("world").insertOne({
           Owner: userID,
           Name: world.Name,
+          Description: world.Description,
           Public: world.Public,
           AcceptingCollaborators: world.AcceptingCollaborators,
           Collaborators: []
@@ -391,6 +392,7 @@ function updateWorld(respond, userID, world) {
           {
             $set: {
               Name: world.Name,
+              Description: world.Description,
               Owner: world.Owner,
               Public: world.Public,
               AcceptingCollaborators: world.AcceptingCollaborators
@@ -696,6 +698,30 @@ function updateThing(respond, worldID, thing) {
   respond({ message: `Thing ${thing.Name} updated!` });
 }
 
+function getTemplates(respond) {
+  try {
+    const db = client.db(dbName);
+    db.collection("template").find()
+      .toArray(function(err, docs) {
+        if (err) respond({ error: `Error: ${err}.` });
+        else if (docs == null || docs.length == 0) respond([]);
+        else respond(docs);
+      });
+  } catch (err) {
+    console.log(err);
+    respond(err);
+  }
+}
+
+function createTemplate(respond, template) {
+  const db = client.db(dbName);
+  db.collection("template").insertOne(
+    template
+  ).then(res => {
+    respond(res.insertedId);
+  });
+}
+
 module.exports = {
   open,
   close,
@@ -725,5 +751,7 @@ module.exports = {
   getThingByName,
   createThing,
   deleteThing,
-  updateThing
+  updateThing,
+  getTemplates,
+  createTemplate
 };

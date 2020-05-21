@@ -6,7 +6,7 @@ import Edit from "@material-ui/icons/Edit";
 import Grid from "@material-ui/core/Grid";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
+// import ListItemText from "@material-ui/core/ListItemText";
 import Button from "@material-ui/core/Button";
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
@@ -62,7 +62,7 @@ class Index extends Component {
             <Button 
               fullWidth variant="contained" color="primary" 
               onClick={ _ => {this.setState({redirectTo:`/thing/create/type_id_${type._id}`})}}>
-              <Add/><ListItemText primary={`Create New ${type.Name}`} />
+              <Add/>{`Create New ${type.Name}`}
             </Button>
           </ListItem>
           {
@@ -72,7 +72,7 @@ class Index extends Component {
                   <Button 
                     fullWidth variant="contained" color="primary" 
                     onClick={ _ => {this.setState({redirectTo:`/thing/details/${thing._id}`})}}>
-                    <ListItemText primary={thing.Name} className="marginLeft" />
+                    {thing.Name}
                   </Button>
                 </ListItem>
               );
@@ -92,7 +92,7 @@ class Index extends Component {
             <Button 
               fullWidth variant="contained" color="primary" 
               onClick={ _ => {this.setState({redirectTo:`/thing/create`})}}>
-              <Add/><ListItemText primary={`Create New Thing`} />
+              <Add/>{`Create New Thing`}
             </Button>
           </ListItem>
           {
@@ -102,7 +102,7 @@ class Index extends Component {
                   <Button 
                     fullWidth variant="contained" color="primary" 
                     onClick={ _ => {this.setState({redirectTo:`/thing/details/${thing._id}`})}}>
-                    <ListItemText primary={thing.Name} className="marginLeft" />
+                    {thing.Name}
                   </Button>
                 </ListItem>
               );
@@ -170,7 +170,7 @@ class Index extends Component {
                                 <Button 
                                   fullWidth variant="contained" color="primary" 
                                   onClick={ _ => {this.setState({redirectTo:`/type/details/${type._id}`})}}>
-                                  <ListItemText primary={type.Name} className="marginLeft" />
+                                  {type.Name}
                                 </Button>
                               </Tooltip>
                               { createButtons &&
@@ -224,9 +224,9 @@ class Index extends Component {
                         </Tooltip>
                       }
                       <Tooltip title={`Details for ${type.Name}`}>
-                        <Button 
+                        <Button variant="contained" color="primary"
                           onClick={ _ => {this.setState({redirectTo:`/type/details/${type._id}`})}}>
-                          <ListItemText>{type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName} ({things.length})</ListItemText>
+                          {type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName} ({things.length})
                         </Button>
                       </Tooltip>
                       { createButtons &&
@@ -257,7 +257,7 @@ class Index extends Component {
                                     <Button 
                                       fullWidth variant="contained" color="primary" 
                                       onClick={ _ => {this.setState({redirectTo:`/thing/details/${thing._id}`})}}>
-                                      <ListItemText primary={thing.Name} className="marginLeft" />
+                                      {thing.Name}
                                     </Button>
                                   </Tooltip>
                                   { editButtons &&
@@ -318,7 +318,7 @@ class Index extends Component {
                                 <Button 
                                   fullWidth variant="contained" color="primary" 
                                   onClick={ _ => {this.setState({redirectTo:`/thing/details/${thing._id}`})}}>
-                                  <ListItemText primary={thing.Name} className="marginLeft" />
+                                  {thing.Name}
                                 </Button>
                               </Tooltip>
                               { editButtons &&
