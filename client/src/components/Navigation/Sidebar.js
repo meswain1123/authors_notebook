@@ -289,17 +289,21 @@ class Bar extends Component {
           </Tooltip>
         </ListItem>
         {this.publicWorlds()}
-        <ListItem>
-          <ListItemText primary={"My Worlds"} />
-        </ListItem>
-        <ListItem className="curvedButton">
-          <NavLink to={`/world/create`} className="MyButton" activeClassName="active">
-            <ListItem button>
-              <Add />
-              <ListItemText primary={"Create New"} />
-            </ListItem>
-          </NavLink>
-        </ListItem>
+        { this.props.user !== null &&
+          <ListItem>
+            <ListItemText primary={"My Worlds"} />
+          </ListItem>
+        }
+        { this.props.user !== null &&
+          <ListItem className="curvedButton">
+            <NavLink to={`/world/create`} className="MyButton" activeClassName="active">
+              <ListItem button>
+                <Add />
+                <ListItemText primary={"Create New"} />
+              </ListItem>
+            </NavLink>
+          </ListItem>
+        }
         {this.myWorlds()}
       </List>
     );
