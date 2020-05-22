@@ -241,130 +241,134 @@ class Page extends Component {
                 <title>{ `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
               </Helmet>
               <Grid item container spacing={0} direction="row">
-                <Grid item xs={1}>
-                  <Tooltip title={`Back to ${this.props.selectedWorld.Name}`}>
-                    <Fab size="small"
-                      color="primary"
-                      onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
-                    >
-                      <ArrowBack />
-                    </Fab>
-                  </Tooltip>
+                <Grid item xs={12} sm={8} container spacing={0} direction="column">
+                  <Grid item container spacing={0} direction="row">
+                    <Grid item xs={1}>
+                      <Tooltip title={`Back to ${this.props.selectedWorld.Name}`}>
+                        <Fab size="small"
+                          color="primary"
+                          onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
+                        >
+                          <ArrowBack />
+                        </Fab>
+                      </Tooltip>
+                    </Grid>
+                    <Grid item xs={11}>
+                      <h2>{this.state.Name}</h2>
+                    </Grid>
+                  </Grid>
+                  <Grid item>{this.state.Description}</Grid>
                 </Grid>
-                <Grid item xs={8}>
-                  <h2>{this.state.Name}</h2>
-                </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} sm={4}>
                   <List>
                     { (this.props.user !== null && 
                       this.props.selectedWorld !== null && 
                       (this.props.selectedWorld.Owner === this.props.user._id || 
                         this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length > 0)) &&
                       <ListItem>
-                        <Tooltip title={`Edit ${this.state.Name}`}>
-                          <Fab size="small"
-                            color="primary"
-                            onClick={ _ => {this.setState({redirectTo:`/thing/edit/${this.state._id}`})}}
-                          >
-                            <Edit />
-                          </Fab>
-                        </Tooltip>
+                        <Grid container spacing={1} direction="row">
+                          <Grid item xs={3} sm={0}>
+                            &nbsp;
+                          </Grid>
+                          <Grid item xs={4} sm={12}>
+                            <Tooltip title={`Edit ${this.state.Name}`}>
+                              <Fab size="small"
+                                color="primary"
+                                onClick={ _ => {this.setState({redirectTo:`/thing/edit/${this.state._id}`})}}
+                              >
+                                <Edit />
+                              </Fab>
+                            </Tooltip>
+                          </Grid>
+                          <Grid item xs={5} sm={12}>
+                            <Tooltip title={`Delete ${this.state.Name}`}>
+                              <Fab size="small"
+                                color="primary"
+                                onClick={e => {this.setState({modalOpen: true})}}
+                              >
+                                <Delete />
+                              </Fab>
+                            </Tooltip>
+                          </Grid>
+                        </Grid>
                       </ListItem>
                     }
-                    { (this.props.user !== null && 
-                      this.props.selectedWorld !== null && 
-                      (this.props.selectedWorld.Owner === this.props.user._id || 
-                        this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length > 0)) &&
-                      <ListItem>
-                        <Tooltip title={`Delete ${this.state.Name}`}>
-                          <Fab size="small"
-                            color="primary"
-                            onClick={e => {this.setState({modalOpen: true})}}
-                          >
-                            <Delete />
-                          </Fab>
-                        </Tooltip>
-                      </ListItem>
-                    }
-                    { this.state.majorType === null ?
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        onClick={_ => {
-                          this.redirectToNext();
-                        }}
-                      >
-                        <ListItemText primary="Next" />
-                      </Button>
-                    :
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        onClick={_ => {
-                          this.redirectToNext();
-                        }}
-                      >
-                        <ListItemText primary={`Next ${this.state.majorType.Name}`}/>
-                      </Button>
-                    }
+                    <ListItem>
+                      { this.state.majorType === null ?
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="primary"
+                          onClick={_ => {
+                            this.redirectToNext();
+                          }}
+                        >
+                          <ListItemText primary="Next" />
+                        </Button>
+                      :
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="primary"
+                          onClick={_ => {
+                            this.redirectToNext();
+                          }}
+                        >
+                          <ListItemText primary={`Next ${this.state.majorType.Name}`}/>
+                        </Button>
+                      }
+                    </ListItem>
                   </List> 
                 </Grid>
               </Grid>
               <Grid item container spacing={0} direction="row">
-                <Grid item sm={9} xs={12} container spacing={0} direction="column">
-                  <Grid item>{this.state.Description}</Grid>
-                  <Grid item>
-                    Attributes
-                    <List>
-                      { this.props.selectedThing !== null && this.props.selectedThing !== undefined &&
-                        this.props.selectedThing.AttributesArr.map(
-                          (attribute, i) => {
-                            return (
-                              <ListItem key={i}>
-                                <ListItemText>
-                                  { attribute.AttributeType === "Type" && attribute.Value !== "" ?
-                                    <ThingTable 
-                                      attributesByID={this.props.attributesByID} 
-                                      label={attribute.Name} 
-                                      things={this.props.things.filter(t=>t._id === attribute.Value)} 
-                                      allThings={this.props.things}
-                                    />
-                                  : attribute.AttributeType === "List" && attribute.ListType === "Type" ?
-                                    <ThingTable 
-                                      attributesByID={this.props.attributesByID} 
-                                      label={attribute.Name} 
-                                      things={this.props.things.filter(t=>attribute.ListValues.includes(t._id))} 
-                                      allThings={this.props.things}
-                                      buttonClick={thingID => {
-                                        this.setState({redirectTo:`/thing/details/${thingID}`});
-                                      }}
-                                    />
-                                  : attribute.AttributeType === "List" ?
-                                    attribute.ListValues.map(
-                                      (listValue, i) => {
-                                        return(
-                                          <span key={i}>
-                                            { 
-                                              i > 0 ? `, ${listValue}` : `${listValue}`
-                                            }
-                                          </span>
-                                        );
-                                      })
-                                  : 
-                                    <span>{attribute.Name}:&nbsp;{attribute.Value}</span>
-                                  }
-                                </ListItemText>
-                              </ListItem>
-                            );
-                          }
-                        )
-                      }
-                    </List>
-                  </Grid>
+                <Grid item xs={12} sm={8}>
+                  Attributes
+                  <List>
+                    { this.props.selectedThing !== null && this.props.selectedThing !== undefined &&
+                      this.props.selectedThing.AttributesArr.map(
+                        (attribute, i) => {
+                          return (
+                            <ListItem key={i}>
+                              { attribute.AttributeType === "Type" && attribute.Value !== "" ?
+                                <ThingTable 
+                                  attributesByID={this.props.attributesByID} 
+                                  label={attribute.Name} 
+                                  things={this.props.things.filter(t=>t._id === attribute.Value)} 
+                                  allThings={this.props.things}
+                                />
+                              : attribute.AttributeType === "List" && attribute.ListType === "Type" ?
+                                <ThingTable 
+                                  attributesByID={this.props.attributesByID} 
+                                  label={attribute.Name} 
+                                  things={this.props.things.filter(t=>attribute.ListValues.includes(t._id))} 
+                                  allThings={this.props.things}
+                                  buttonClick={thingID => {
+                                    this.setState({redirectTo:`/thing/details/${thingID}`});
+                                  }}
+                                />
+                              : attribute.AttributeType === "List" ?
+                                attribute.ListValues.map(
+                                  (listValue, i) => {
+                                    return(
+                                      <span key={i}>
+                                        { 
+                                          i > 0 ? `, ${listValue}` : `${listValue}`
+                                        }
+                                      </span>
+                                    );
+                                  })
+                              : 
+                                <span>{attribute.Name}:&nbsp;{attribute.Value}</span>
+                              }
+                            </ListItem>
+                          );
+                        }
+                      )
+                    }
+                  </List>
                 </Grid>
-                <Grid item sm={3} xs={12} container spacing={0} direction="column">
+                <Grid item xs={12} sm={4} container spacing={0} direction="column">
                   { this.state.Types.length > 0 && 
                     <Grid item>
                       <List>

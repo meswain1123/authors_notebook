@@ -45,7 +45,7 @@ router
     } 
     else {
       function respond(message) {
-        res.send({ message });
+        res.send(message);
       }
 
       db.deleteWorld(respond, req.session.userID, req.body.worldID);

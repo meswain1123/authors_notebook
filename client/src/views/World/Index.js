@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
-import Add from "@material-ui/icons/Add";
-import Edit from "@material-ui/icons/Edit";
-import Grid from "@material-ui/core/Grid";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-// import ListItemText from "@material-ui/core/ListItemText";
-import Button from "@material-ui/core/Button";
+import {
+  Add, Edit
+} from "@material-ui/icons";
+import {
+  Grid, List, ListItem, Button, Tooltip, Fab
+} from "@material-ui/core";
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
-import Tooltip from '@material-ui/core/Tooltip';
+// import Tooltip from '@material-ui/core/Tooltip';
 // import { Fab } from "@material-ui/core";
 import {
   updateIndexExpandedPanel
@@ -83,46 +82,12 @@ class Index extends Component {
     );
   }
 
-  renderMajorTypelessThings() {
-    const majorLess = this.props.things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
-    return (
-      <div className="Things">
-        <List style={{ width: "240px" }}>
-          <ListItem>
-            <Button 
-              fullWidth variant="contained" color="primary" 
-              onClick={ _ => {this.setState({redirectTo:`/thing/create`})}}>
-              <Add/>{`Create New Thing`}
-            </Button>
-          </ListItem>
-          {
-            majorLess.map((thing, i) => {
-              return (
-                <ListItem key={i}>
-                  <Button 
-                    fullWidth variant="contained" color="primary" 
-                    onClick={ _ => {this.setState({redirectTo:`/thing/details/${thing._id}`})}}>
-                    {thing.Name}
-                  </Button>
-                </ListItem>
-              );
-            })
-          }
-        </List>
-      </div>
-    );
-  }
-
   render() {
     if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     }
     else {
       const majorless = this.props.things.filter(thing => thing.Types.filter(t=>t.Major).length === 0);
-      const editButtons = this.props.selectedWorld !== null && 
-        this.props.user !== null && 
-        (this.props.selectedWorld.Owner === this.props.user._id || 
-          this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length > 0);
       const createButtons = this.props.selectedWorld !== null && 
         this.props.user !== null && 
         (this.props.selectedWorld.Owner === this.props.user._id || 
@@ -130,42 +95,42 @@ class Index extends Component {
 
       return (
         <div>
-          <List>
-            <ListItem>
-              <Grid container spacing={1} direction="column">
-                <Grid item>
-                  {this.props.indexExpandedPanel === "TYPES" ? 
-                    <Tooltip title={`Collapse Types`}>
-                      <Button 
-                        onClick={_ => {this.handleChange("TYPES")}}>
-                          <KeyboardArrowDownIcon/>
-                      </Button>
-                    </Tooltip>
-                  :
-                    <Tooltip title={`Expand Types`}>
-                        <Button 
-                          onClick={_ => {this.handleChange("TYPES")}}>
-                          <KeyboardArrowRightIcon/>
-                        </Button>
-                      </Tooltip>
-                  }
-                  <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Types (${this.props.types.length})`}</span>
-                  { createButtons &&
-                    <Tooltip title={`Create New Type`}>
-                      <Button 
-                        onClick={ _ => {this.setState({redirectTo:`/type/create`})}}>
-                        <Add/>
-                      </Button>
-                    </Tooltip> 
-                  }
-                </Grid>
-                {this.props.indexExpandedPanel === "TYPES" &&
-                  <Grid item>
-                    <List style={{ maxWidth: "300px" }}>
-                      {
-                        this.props.types.map((type, i) => {
-                          return (
-                            <ListItem key={i}>
+          <Grid item container spacing={1} direction="column">
+            <Grid item>
+              {this.props.indexExpandedPanel === "TYPES" ? 
+                <Tooltip title={`Collapse Types`}>
+                  <Button 
+                    onClick={_ => {this.handleChange("TYPES")}}>
+                      <KeyboardArrowDownIcon/>
+                  </Button>
+                </Tooltip>
+              :
+                <Tooltip title={`Expand Types`}>
+                    <Button 
+                      onClick={_ => {this.handleChange("TYPES")}}>
+                      <KeyboardArrowRightIcon/>
+                    </Button>
+                  </Tooltip>
+              }
+              <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Types (${this.props.types.length})`}</span>
+              { createButtons &&
+                <Tooltip title={`Create New Type`}>
+                  <Fab size="small" color="primary" style={{marginLeft: "8px"}}
+                    onClick={ _ => {this.setState({redirectTo:`/type/create`})}}>
+                    <Add/>
+                  </Fab>
+                </Tooltip> 
+              }
+            </Grid>
+            { this.props.indexExpandedPanel === "TYPES" &&
+              <Grid item>
+                <List style={{ maxWidth: "380px" }}>
+                  {
+                    this.props.types.map((type, i) => {
+                      return (
+                        <ListItem key={i}>
+                          <Grid container spacing={1} direction="row">
+                            <Grid item xs={8}>
                               <Tooltip title={`Details for ${type.Name}`}>
                                 <Button 
                                   fullWidth variant="contained" color="primary" 
@@ -173,147 +138,151 @@ class Index extends Component {
                                   {type.Name}
                                 </Button>
                               </Tooltip>
-                              { createButtons &&
-                                <Grid container spacing={0} direction="row">
-                                  <Grid item xs={6}>
-                                    <Tooltip title={`Create New ${type.Name}`}>
-                                      <Button 
-                                        onClick={ _ => {this.setState({redirectTo:`/thing/create/type_id_${type._id}`})}}>
-                                        <Add/>
-                                      </Button>
-                                    </Tooltip>
-                                  </Grid>
-                                  <Grid item xs={6}>
-                                    <Tooltip title={`Edit ${type.Name}`}>
-                                      <Button 
-                                        onClick={ _ => {this.setState({redirectTo:`/type/edit/${type._id}`})}}>
-                                        <Edit/>
-                                      </Button>
-                                    </Tooltip>
-                                  </Grid>
-                                </Grid>
-                              }
-                            </ListItem>
-                          );
-                        })
-                      }
-                    </List>
-                  </Grid>
-                }
+                            </Grid>
+                            { createButtons &&
+                              <Grid item xs={2}>
+                                <Tooltip title={`Create New ${type.Name}`}>
+                                  <Fab size="small" color="primary" style={{marginLeft: "8px"}}
+                                    onClick={ _ => {this.setState({redirectTo:`/thing/create/type_id_${type._id}`})}}>
+                                    <Add/>
+                                  </Fab>
+                                </Tooltip>
+                              </Grid>
+                            }
+                            { createButtons &&
+                              <Grid item xs={2}>
+                                <Tooltip title={`Edit ${type.Name}`}>
+                                  <Fab size="small" color="primary" style={{marginLeft: "8px"}}
+                                    onClick={ _ => {this.setState({redirectTo:`/type/edit/${type._id}`})}}>
+                                    <Edit/>
+                                  </Fab>
+                                </Tooltip>
+                              </Grid>
+                            }
+                          </Grid>
+                        </ListItem>
+                      );
+                    })
+                  }
+                </List>
               </Grid>
-            </ListItem>
+            }
             { this.props.types.filter(t=>t.Major).map((type, i) => {
               const things = this.props.things.filter(thing => thing.TypeIDs.includes(type._id));
               return (
-                <ListItem key={i}>
-                  <Grid container spacing={1} direction="column">
-                    <Grid item>
-                      {this.props.indexExpandedPanel === type._id ? 
-                        <Tooltip title={`Collapse ${type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName}`}>
-                          <Button 
-                            onClick={_ => {this.handleChange(type._id)}}>
-                            <KeyboardArrowDownIcon/>
-                          </Button>
-                        </Tooltip>
-                        :
-                        <Tooltip title={`Expand ${type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName}`}>
-                          <Button 
-                            onClick={_ => {this.handleChange(type._id)}}>
-                            <KeyboardArrowRightIcon/>
-                          </Button>
-                        </Tooltip>
-                      }
-                      <Tooltip title={`Details for ${type.Name}`}>
-                        <Button variant="contained" color="primary"
-                          onClick={ _ => {this.setState({redirectTo:`/type/details/${type._id}`})}}>
-                          {type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName} ({things.length})
+                <Grid key={i} item container spacing={1} direction="column">
+                  <Grid item>
+                    {this.props.indexExpandedPanel === type._id ? 
+                      <Tooltip title={`Collapse ${type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName}`}>
+                        <Button 
+                          onClick={_ => {this.handleChange(type._id)}}>
+                          <KeyboardArrowDownIcon/>
                         </Button>
                       </Tooltip>
-                      { createButtons &&
-                        <span>
-                          <Tooltip title={`Create New ${type.Name}`}>
-                            <Button 
-                              onClick={ _ => {this.setState({redirectTo:`/thing/create/type_id_${type._id}`})}}>
-                              <Add/>
-                            </Button>
-                          </Tooltip>
-                          <Tooltip title={`Edit ${type.Name}`}>
-                            <Button 
-                              onClick={ _ => {this.setState({redirectTo:`/type/edit/${type._id}`})}}>
-                              <Edit/>
-                            </Button>
-                          </Tooltip>
-                        </span>
-                      }
-                    </Grid>
-                    {this.props.indexExpandedPanel === type._id &&
-                      <Grid item>
-                        <List style={{ maxWidth: "300px" }}>
-                          {
-                            things.map((thing, j) => {
-                              return (
-                                <ListItem key={j}>
-                                  <Tooltip title={`Details for ${thing.Name}`}>
-                                    <Button 
-                                      fullWidth variant="contained" color="primary" 
-                                      onClick={ _ => {this.setState({redirectTo:`/thing/details/${thing._id}`})}}>
-                                      {thing.Name}
-                                    </Button>
-                                  </Tooltip>
-                                  { editButtons &&
-                                    <Tooltip title={`Edit ${thing.Name}`}>
-                                      <Button 
-                                        onClick={ _ => {this.setState({redirectTo:`/thing/edit/${thing._id}`})}}>
-                                        <Edit/>
-                                      </Button>
-                                    </Tooltip>
-                                  }
-                                </ListItem>
-                              );
-                            })
-                          }
-                        </List>
-                      </Grid>
+                      :
+                      <Tooltip title={`Expand ${type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName}`}>
+                        <Button 
+                          onClick={_ => {this.handleChange(type._id)}}>
+                          <KeyboardArrowRightIcon/>
+                        </Button>
+                      </Tooltip>
+                    }
+                    <Tooltip title={`Details for ${type.Name}`}>
+                      <Button variant="contained" color="primary" style={{ width: "180px" }}
+                        onClick={ _ => {this.setState({redirectTo:`/type/details/${type._id}`})}}>
+                        {type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName} ({things.length})
+                      </Button>
+                    </Tooltip>
+                    { createButtons &&
+                      <span>
+                        <Tooltip title={`Create New ${type.Name}`}>
+                          <Fab size="small" color="primary" style={{marginLeft: "8px"}}
+                            onClick={ _ => {this.setState({redirectTo:`/thing/create/type_id_${type._id}`})}}>
+                            <Add/>
+                          </Fab>
+                        </Tooltip>
+                        <Tooltip title={`Edit ${type.Name}`}>
+                          <Fab size="small" color="primary" style={{marginLeft: "8px"}}
+                            onClick={ _ => {this.setState({redirectTo:`/type/edit/${type._id}`})}}>
+                            <Edit />
+                          </Fab>
+                        </Tooltip>
+                      </span>
                     }
                   </Grid>
-                </ListItem>
-              );
-            })}
-            <ListItem>
-              <Grid container spacing={1} direction="column">
-                <Grid item>
-                  {this.props.indexExpandedPanel === "OTHER" ? 
-                    <Tooltip title={`Collapse Other Things`}>
-                      <Button 
-                        onClick={_ => {this.handleChange("OTHER")}}>
-                        <KeyboardArrowDownIcon/>
-                      </Button>
-                    </Tooltip>
-                  :
-                    <Tooltip title={`Expand Other Things`}>
-                      <Button 
-                        onClick={_ => {this.handleChange("OTHER")}}>
-                        <KeyboardArrowRightIcon/>
-                      </Button>
-                    </Tooltip>
-                  }
-                  <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Other Things (${majorless.length})`}</span>
-                  { createButtons &&
-                    <Tooltip title={`Create New Thing`}>
-                      <Button 
-                        onClick={ _ => {this.setState({redirectTo:`/thing/create`})}}>
-                        <Add/>
-                      </Button>
-                    </Tooltip>
+                  {this.props.indexExpandedPanel === type._id &&
+                    <Grid item>
+                      <List style={{ maxWidth: "380px" }}>
+                        {
+                          things.map((thing, j) => {
+                            return (
+                              <ListItem key={j}>
+                                <Grid container spacing={1} direction="row">
+                                  <Grid item xs={10}>
+                                    <Tooltip title={`Details for ${thing.Name}`}>
+                                      <Button 
+                                        fullWidth variant="contained" color="primary" 
+                                        onClick={ _ => {this.setState({redirectTo:`/thing/details/${thing._id}`})}}>
+                                        {thing.Name}
+                                      </Button>
+                                    </Tooltip>
+                                  </Grid>
+                                  { createButtons &&
+                                    <Grid item xs={2}>
+                                      <Tooltip title={`Edit ${thing.Name}`}>
+                                        <Fab size="small" color="primary" style={{marginLeft: "8px"}}
+                                          onClick={ _ => {this.setState({redirectTo:`/thing/edit/${thing._id}`})}}>
+                                          <Edit/>
+                                        </Fab>
+                                      </Tooltip>
+                                    </Grid>
+                                  }
+                                </Grid>
+                              </ListItem>
+                            );
+                          })
+                        }
+                      </List>
+                    </Grid>
                   }
                 </Grid>
-                {this.props.indexExpandedPanel === "OTHER" &&
-                  <Grid item>
-                    <List style={{ maxWidth: "300px" }}>
-                      {
-                        majorless.map((thing, i) => {
-                          return (
-                            <ListItem key={i}>
+              );
+            })}
+            <Grid item>
+              {this.props.indexExpandedPanel === "OTHER" ? 
+                <Tooltip title={`Collapse Other Things`}>
+                  <Button 
+                    onClick={_ => {this.handleChange("OTHER")}}>
+                    <KeyboardArrowDownIcon/>
+                  </Button>
+                </Tooltip>
+              :
+                <Tooltip title={`Expand Other Things`}>
+                  <Button 
+                    onClick={_ => {this.handleChange("OTHER")}}>
+                    <KeyboardArrowRightIcon/>
+                  </Button>
+                </Tooltip>
+              }
+              <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Other Things (${majorless.length})`}</span>
+              { createButtons &&
+                <Tooltip title={`Create New Thing`}>
+                  <Fab size="small" color="primary" style={{marginLeft: "8px"}}
+                    onClick={ _ => {this.setState({redirectTo:`/thing/create`})}}>
+                    <Add/>
+                  </Fab>
+                </Tooltip>
+              }
+            </Grid>
+            {this.props.indexExpandedPanel === "OTHER" &&
+              <Grid item>
+                <List style={{ maxWidth: "380px" }}>
+                  {
+                    majorless.map((thing, j) => {
+                      return (
+                        <ListItem key={j}>
+                          <Grid container spacing={1} direction="row">
+                            <Grid item xs={10}>
                               <Tooltip title={`Details for ${thing.Name}`}>
                                 <Button 
                                   fullWidth variant="contained" color="primary" 
@@ -321,24 +290,26 @@ class Index extends Component {
                                   {thing.Name}
                                 </Button>
                               </Tooltip>
-                              { editButtons &&
+                            </Grid>
+                            { createButtons &&
+                              <Grid item xs={2}>
                                 <Tooltip title={`Edit ${thing.Name}`}>
-                                  <Button 
+                                  <Fab size="small" color="primary" style={{marginLeft: "8px"}}
                                     onClick={ _ => {this.setState({redirectTo:`/thing/edit/${thing._id}`})}}>
                                     <Edit/>
-                                  </Button>
+                                  </Fab>
                                 </Tooltip>
-                              }
-                            </ListItem>
-                          );
-                        })
-                      }
-                    </List>
-                  </Grid>
-                }
+                              </Grid>
+                            }
+                          </Grid>
+                        </ListItem>
+                      );
+                    })
+                  }
+                </List>
               </Grid>
-            </ListItem>
-          </List>
+            }
+          </Grid>
         </div>
       );
     }

@@ -12,6 +12,7 @@ import TableRow from '@material-ui/core/TableRow';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
 import Paper from '@material-ui/core/Paper';
 import { 
   Button, ListItemText
@@ -277,79 +278,89 @@ export default function ThingTable(props) {
 
   return (
     <div className={classes.root}>
-      <Paper className={classes.paper}>
-        <ThingTableToolbar label={props.label} />
-        <TableContainer>
-          <Table
-            className={classes.table}
-            aria-labelledby="tableTitle"
-            size={dense ? 'small' : 'medium'}
-            aria-label="enhanced table"
-          >
-            <ThingTableHead
-              classes={classes}
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-              columnMap={columnMap}
+      <Box display={{ xs: 'none', sm: 'block' }}>
+        <Paper className={classes.paper}>
+          <ThingTableToolbar label={props.label} />
+          <TableContainer>
+            <Table
+              className={classes.table}
+              aria-labelledby="tableTitle"
+              size={dense ? 'small' : 'medium'}
+              aria-label="enhanced table"
+            >
+              <ThingTableHead
+                classes={classes}
+                numSelected={selected.length}
+                order={order}
+                orderBy={orderBy}
+                onSelectAllClick={handleSelectAllClick}
+                onRequestSort={handleRequestSort}
+                rowCount={rows.length}
+                columnMap={columnMap}
+              />
+              <TableBody>
+                {stableSort(rows, getComparator(order, orderBy))
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((row, index) => {
+                    const isItemSelected = isSelected(row.name);
+                    
+                    return (
+                      <TableRow
+                        hover
+                        role="checkbox"
+                        aria-checked={isItemSelected}
+                        tabIndex={-1}
+                        key={index}
+                        selected={isItemSelected}
+                      >
+                        {columnMap.map((column, key) => {
+                          return (
+                            <TableCell key={key}>
+                              {column.id === "Name" ?
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  onClick={ _ => { props.buttonClick(row._id)}}
+                                >
+                                  <ListItemText primary={row.Name}/>
+                                </Button>
+                              :
+                                <span>{row[column.id]}</span>
+                              }
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    );
+                  })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          { rows.length > 5 &&
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={rows.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onChangePage={handleChangePage}
+              onChangeRowsPerPage={handleChangeRowsPerPage}
             />
-            <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  const isItemSelected = isSelected(row.name);
-                  
-                  return (
-                    <TableRow
-                      hover
-                      role="checkbox"
-                      aria-checked={isItemSelected}
-                      tabIndex={-1}
-                      key={index}
-                      selected={isItemSelected}
-                    >
-                      {columnMap.map((column, key) => {
-                        return (
-                          <TableCell key={key}>
-                            {column.id === "Name" ?
-                              <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={ _ => { props.buttonClick(row._id)}}
-                              >
-                                <ListItemText primary={row.Name}/>
-                              </Button>
-                            :
-                              <span>{row[column.id]}</span>
-                            }
-                          </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        { rows.length > 5 &&
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={rows.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onChangePage={handleChangePage}
-            onChangeRowsPerPage={handleChangeRowsPerPage}
-          />
-        }
-      </Paper>
-      {/* <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      /> */}
+          }
+        </Paper>
+      </Box>
+      <Box display={{ xs: 'block', sm: 'none' }}>
+        { props.label }: 
+        { props.things.map((thing, i) => {
+          return (
+            <Button key={i} style={{ marginLeft: "4px" }}
+              variant="contained" color="primary"
+              onClick={ _ => { props.buttonClick(thing._id)}}>
+              <ListItemText primary={thing.Name}/>
+            </Button>
+          );
+        })}
+      </Box>
     </div>
   );
 }

@@ -90,7 +90,7 @@ import {
 
 export default function TemplatesModal(props) {
   const [selectedTemplate, changeSelectedTemplate] = useState({});
-  const [selectedTemplateIDs, changeSelectedTemplates] = useState([]);
+  const [selectedTemplateIDs, changeSelectedTemplates] = useState(props.selectedTemplateIDs === undefined ? [] : props.selectedTemplateIDs);
 
   return (
     <Grid container spacing={1} direction="column">
@@ -175,7 +175,7 @@ export default function TemplatesModal(props) {
               props.onSubmit(selectedTemplateIDs);
             }}
           >
-            Submit
+            OK
           </Button>
         </Grid>
         <Grid item xs={6}>

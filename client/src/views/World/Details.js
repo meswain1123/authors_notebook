@@ -19,7 +19,7 @@ import {
   List, ListItem, 
   Grid, Button, 
   Modal, Tooltip,
-  Fab
+  Fab, Box
 } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
 import TemplateModal from "../../components/Modals/TemplateModal";
@@ -147,20 +147,9 @@ class Page extends Component {
           this.props.setWorlds(res2.userWorlds.worlds);
           this.props.setTemplates(res2.templates.templates);
 
-          this.api.selectWorld(null).then(res3 => {
-            this.props.selectWorld(null);
-            this.setState({modalOpen: false, redirectTo: `/`});
-          });
+          this.props.selectWorld(null);
+          this.setState({modalOpen: false, redirectTo: `/`});
         });
-        // this.api.getPublicWorlds(true).then(res2 => {
-        //   if (res2.worlds !== undefined) this.props.setPublicWorlds(res2.worlds);
-        //   this.api.getWorldsForUser(true).then(res3 => {
-        //     if (res3.worlds !== undefined) this.props.setWorlds(res3.worlds);
-        //     this.api.selectWorld(null);
-        //     this.props.selectWorld(null);
-        //     this.setState({modalOpen: false, redirectTo: `/`});
-        //   });
-        // });
       }
       else {
         this.setState({ waiting: false, message: res.error });
@@ -218,8 +207,6 @@ class Page extends Component {
     if (templatesToImport.length > 0) {
       const template = {...this.props.templates.filter(t => t._id === templatesToImport[0])[0]};
       this.importDumbTypesRecursive(0, template.Types, [], {}, template.Attributes, template.Name);
-    } else {
-      console.log('Finished');
     }
   }
 
@@ -523,7 +510,7 @@ class Page extends Component {
               <Helmet>
                 <title>{ `Author's Notebook: ${this.props.selectedWorld.Name}` }</title>
               </Helmet>
-              <Grid item xs={9} container spacing={0} direction="column">
+              <Grid item xs={12} sm={8} container spacing={0} direction="column">
                 <Grid item>
                   <h2>{this.props.selectedWorld.Name}</h2>
                 </Grid>
@@ -531,39 +518,45 @@ class Page extends Component {
                   {this.props.selectedWorld.Description}
                 </Grid>
                 <Grid item>
-                  <Index />
+                  <Box display={{ xs: 'none', sm: 'block' }}>
+                    <Index />
+                  </Box>
                 </Grid>
               </Grid>
               { this.props.user !== null &&
-                <Grid item xs={3}>
+                <Grid item xs={12} sm={4}>
                   { this.props.selectedWorld.Owner === this.props.user._id ?
                     <List>
                       <ListItem>
-                        <Tooltip title={`Edit ${this.props.selectedWorld.Name}`}>
-                          <Fab size="small" color="primary"
-                            onClick={ _ => {this.setState({redirectTo:`/world/edit/${this.props.selectedWorldID}`})}}
-                          >
-                            <Edit />
-                          </Fab>
-                        </Tooltip>
-                      </ListItem>
-                      <ListItem>
-                        <Tooltip title={`Edit Collaborators`}>
-                          <Fab size="small" color="primary"
-                            onClick={ _ => {this.setState({redirectTo:`/world/collaborators/${this.props.selectedWorldID}`})}}
-                          >
-                          <People />
-                          </Fab>
-                        </Tooltip>
-                      </ListItem>
-                      <ListItem>
-                        <Tooltip title={`Delete ${this.props.selectedWorld.Name}`}>
-                          <Fab size="small" color="primary"
-                            onClick={e => {this.setState({modalOpen: true})}}
-                          >
-                            <Delete />
-                          </Fab>
-                        </Tooltip>
+                        <Grid container spacing={1} direction="row">
+                          <Grid item xs={4} sm={12}>
+                            <Tooltip title={`Edit ${this.props.selectedWorld.Name}`}>
+                              <Fab size="small" color="primary"
+                                onClick={ _ => {this.setState({redirectTo:`/world/edit/${this.props.selectedWorldID}`})}}
+                              >
+                                <Edit />
+                              </Fab>
+                            </Tooltip>
+                          </Grid>
+                          <Grid item xs={4} sm={12}>
+                            <Tooltip title={`Edit Collaborators`}>
+                              <Fab size="small" color="primary"
+                                onClick={ _ => {this.setState({redirectTo:`/world/collaborators/${this.props.selectedWorldID}`})}}
+                              >
+                              <People />
+                              </Fab>
+                            </Tooltip>
+                          </Grid>
+                          <Grid item xs={4} sm={12}>
+                            <Tooltip title={`Delete ${this.props.selectedWorld.Name}`}>
+                              <Fab size="small" color="primary"
+                                onClick={e => {this.setState({modalOpen: true})}}
+                              >
+                                <Delete />
+                              </Fab>
+                            </Tooltip>
+                          </Grid>
+                        </Grid>
                       </ListItem>
                       <ListItem>
                         <Button
@@ -625,6 +618,11 @@ class Page extends Component {
                   }
                 </Grid>
               }
+              <Grid item xs={12}>
+                <Box display={{ xs: 'block', sm: 'none' }}>
+                  <Index />
+                </Box>
+              </Grid>
             </Grid>
           }
           <Modal

@@ -18,6 +18,7 @@ import { Button, Checkbox, FormControl, FormControlLabel,
 import { ArrowBack } from "@material-ui/icons";
 import { Helmet } from 'react-helmet';
 import API from "../../smartAPI";
+import TemplatesModal from "../../components/Modals/TemplatesModal";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -32,7 +33,10 @@ const mapStateToProps = state => {
     selectedWorldID: state.app.selectedWorldID,
     worlds: state.app.worlds,
     user: state.app.user,
-    fromLogin: state.app.fromLogin
+    fromLogin: state.app.fromLogin,
+    templates: state.app.templates,
+    types: state.app.types,
+    attributesByName: state.app.attributesByName
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -63,7 +67,10 @@ class Page extends Component {
       formValid: false,
       message: "",
       redirectTo: null,
-      loaded: true
+      loaded: true,
+      importMode: false,
+      selectedTemplateIDs: [],
+      tempSelectedTemplateIDs: []
     };
     this.api = API.getInstance();
   }
@@ -176,10 +183,18 @@ class Page extends Component {
           else {
             world._id = res.worldID;
             this.props.addWorld(world);
-            this.setState({
-              waiting: false,
-              redirectTo: `/world/details/${res.worldID}`
-            });
+            this.props.selectWorld(world._id);
+            if (this.state.tempSelectedTemplateIDs === undefined) {
+              this.setState({
+                waiting: false,
+                redirectTo: `/world/details/${res.worldID}`
+              });
+            } else {
+              this.setState({
+                selectedTemplateIDs: this.state.tempSelectedTemplateIDs,
+                tempSelectedTemplateIDs: []
+              });
+            }
           }
         })
         .catch(err => console.log(err));
@@ -196,7 +211,7 @@ class Page extends Component {
             this.props.updateWorld(world);
             this.setState({
               waiting: false,
-              redirectTo: `/world/details/${this.props.selectedWorld._id}`
+              redirectTo: `/world/details/${this.props.selectedWorldID}`
             });
           }
         })
@@ -244,6 +259,270 @@ class Page extends Component {
     }
   }
 
+  importSelectedTemplates = () => {
+    const templatesToImport = [...this.state.selectedTemplateIDs];
+    if (templatesToImport.length > 0) {
+      const template = {...this.props.templates.filter(t => t._id === templatesToImport[0])[0]};
+      this.importDumbTypesRecursive(0, template.Types, [], {}, template.Attributes, template.Name);
+    }
+  }
+
+  /**
+   * This checks to see if a type by that name exists.
+   * If so then it merges their descriptions and majorness,
+   * then it puts it in the map.
+   * If not then it inserts it with just name, description, 
+   * and majorness, and puts it in the map.
+   * After all the dumb types are merged or inserted and mapped,
+   * and after all the attributes are merged, upserted, and mapped,
+   * then we go through all the types and merge in their attributes.
+   */
+  importDumbTypesRecursive = (typePos, types, newTypes, typeMap, attributes, templateName) => {
+    // function next() {
+      
+    // }
+    const type = {...types[typePos]};
+    const typeID = type.typeID;
+    // Check for an existing Type with the same name.
+    let existingType = this.props.types.filter(t => t.Name.trim().toLowerCase() === type.Name.trim().toLowerCase());
+    if (existingType.length > 0) {
+      existingType = existingType[0];
+      typeMap[typeID] = existingType._id;
+      newTypes.push(existingType);
+      if (existingType.Description === type.Description && (existingType.Major || !type.Major)) {
+        // Sans attributes, they match, so we can just move on.
+        // next();
+        typePos++;
+        if (types.length === typePos) {
+          // We're done with all the types.
+          // Now for the attributes.
+          this.compareAndFixAttributes(types, newTypes, typeMap, attributes, templateName);
+        } else {
+          this.importDumbTypesRecursive(typePos, types, newTypes, typeMap, attributes, templateName);
+        }
+      } else {
+        if (existingType.Description !== type.Description) {
+          existingType.Description += ` From Template (${templateName}) ${type.Description}`;
+        }
+        if (type.Major)
+          existingType.Major = true;
+        if (existingType.PluralName === undefined || existingType.PluralName === "")
+          existingType.PluralName = type.PluralName;
+        this.api.updateType(existingType).then(res => {
+          // next();
+          typePos++;
+          if (types.length === typePos) {
+            // We're done with all the types.
+            // Now for the attributes.
+            this.compareAndFixAttributes(types, newTypes, typeMap, attributes, templateName);
+          } else {
+            this.importDumbTypesRecursive(typePos, types, newTypes, typeMap, attributes, templateName);
+          }
+        });
+      }
+    } else {
+      // Remove the attributes
+      delete type.typeID;
+      type.Attributes = [];
+      type.worldID = this.props.selectedWorldID;
+      // insert it
+      this.api.createType(type).then(res => {
+        if (res.error === undefined) {
+          // map it
+          typeMap[typeID] = res.typeID;
+          type._id = res.typeID;
+          newTypes.push(type);
+          // next();
+          typePos++;
+          if (types.length === typePos) {
+            // We're done with all the types.
+            // Now for the attributes.
+            this.compareAndFixAttributes(types, newTypes, typeMap, attributes, templateName);
+          } else {
+            this.importDumbTypesRecursive(typePos, types, newTypes, typeMap, attributes, templateName);
+          }
+        } else {
+          console.log(res.error);
+        }
+      });
+    }
+  }
+  
+  /**
+   * This goes through all the Attributes, 
+   * and looks for existing Attributes with the same name.  
+   * If it finds one it checks to see if they're compatible 
+   * (same type, etc).  
+   * If they're compatible then it merges them.  
+   * If not then the new one gets the template name appended to its name.
+   * Then they're upserted, and then all attributes are pulled, 
+   * and it puts together a mapping of the ids to be used in the types.
+   */
+  compareAndFixAttributes = (types, newTypes, typeMap, attributes, templateName) => {
+    const upsertUs = [];
+    const nameChanges = {
+      // oldName: newName
+    };
+    attributes.forEach(a => {
+      const attribute = {...a};
+      delete attribute.attrID;
+      if (attribute.AttributeType === "Type" || (attribute.AttributeType === "List" && attribute.ListType === "Type")) {
+        // We need to fix DefinedType
+        attribute.DefinedType = typeMap[attribute.DefinedType];
+      }
+      const existingAttribute = this.props.attributesByName[attribute.Name];
+      if (existingAttribute !== undefined) {
+        // We've got a matching name.  Check if the types match.
+        if (attribute.AttributeType !== existingAttribute.AttributeType || (attribute.AttributeType === "List" && attribute.ListType !== existingAttribute.ListType)) {
+          // They don't, so we need to change the name.
+          attribute.Name += ` From Template (${templateName})`;
+          nameChanges[existingAttribute.Name] = attribute.Name;
+        } else {
+          // It matches, so we can merge them.
+          attribute._id = existingAttribute._id;
+          if (attribute.AttributeType === "Options" || (attribute.AttributeType === "List" && attribute.ListType === "Options")) {
+            // It's Options, so we need to merge the Options.
+            const attrOptions = attribute.Options;
+            attribute.Options = existingAttribute.Options;
+            attrOptions.forEach(o => {
+              if (!attribute.Options.includes(o))
+                attribute.Options.push(o);
+            });
+          }
+        }
+      }
+      attribute.worldID = this.props.selectedWorldID;
+      upsertUs.push(attribute);
+    });
+    // We've compared them, now we upsert.
+    this.api.upsertAttributes(this.props.selectedWorldID, upsertUs).then(res => {
+      // Now we need to build the map
+      const attrMap = {
+        // templateID: realID
+      };
+      attributes.forEach(a => {
+        if (nameChanges[a.Name] !== undefined) {
+          // The name changed so use the new name.
+          attrMap[a.attrID] = res.attributes[nameChanges[a.Name]];
+        } else {
+          attrMap[a.attrID] = res.attributes[a.Name];
+        }
+      });
+      // The map is built, so now we're done here, and we need to update the types with their attributes
+      this.addAttributesToDumbTypesRecursive(0, types, newTypes, typeMap, attributes, attrMap, templateName);
+    });
+  }
+
+  /**
+   * Goes through each type and adds its attributes onto its 
+   * corresponding type in newTypes, updates, then sends it back 
+   * to the beginning of the process.
+   * 
+   */
+  addAttributesToDumbTypesRecursive = (typePos, types, newTypes, typeMap, attributes, attrMap, templateName) => {
+    const type = types[typePos];
+    const newType = newTypes[typePos];
+    if (type.Name !== newType.Name) {
+      console.log("Names don't match");
+      // If this happens then I did something wrong.  Should never happen
+    }
+    else {
+      // function next() {
+        
+      // }
+      let attributesAdded = false;
+      if (newType.Attributes.length === 0) {
+        // It's not a merged type, so just add the attributes.
+        let index = 0;
+        type.Attributes.forEach(attr => {
+          const realID = attrMap[attr.attrID];
+          newType.Attributes.push({
+            attrID: realID, index
+          });
+          index++;
+          attributesAdded = true;
+        });
+      } else {
+        // It's a merged type, so we need to check each attribute to see if it's already on it.
+        let index = newType.Attributes.length;
+        type.Attributes.forEach(attr => {
+          const realID = attrMap[attr.attrID];
+          if (newType.Attributes.filter(a => a.attrID === realID).length === 0) {
+            newType.Attributes.push({
+              attrID: realID, index
+            });
+            index++;
+            attributesAdded = true;
+          }
+        });
+      }
+      if (attributesAdded) {
+        // Update the type
+        this.api.updateType(newType).then(res => {
+          if (res.error === undefined) {
+            // Done.  Move on.
+            // next();
+            typePos++;
+            if (types.length === typePos) {
+              // We're done with all the types.
+              // Now we see if there's another selected template.
+              this.api.getWorld(this.props.selectedWorldID, true).then(res => {
+                this.props.setAttributes(res.attributes);
+                this.props.setTypes(res.types);
+                this.props.setThings(res.things);
+
+                let templateIDs = [...this.state.selectedTemplateIDs];
+                templateIDs.splice(0);
+                if (templateIDs.length === 0) {
+                  this.setState({
+                    waiting: false,
+                    redirectTo: `/world/details/${this.props.selectedWorldID}`,
+                    selectedTemplateIDs: templateIDs 
+                  });
+                }
+                else {
+                  this.setState({ selectedTemplateIDs: templateIDs });
+                }
+              });
+            } else {
+              this.addAttributesToDumbTypesRecursive(typePos, types, newTypes, typeMap, attributes, attrMap, templateName);
+            }
+          } else {
+            console.log(res.error);
+          }
+        });
+      } else {
+        // Nothing to update.  Move on.
+        // next();
+        typePos++;
+        if (types.length === typePos) {
+          // We're done with all the types.
+          // Now we see if there's another selected template.
+          this.api.getWorld(this.props.selectedWorldID, true).then(res => {
+            this.props.setAttributes(res.attributes);
+            this.props.setTypes(res.types);
+            this.props.setThings(res.things);
+
+            let templateIDs = [...this.state.selectedTemplateIDs];
+            templateIDs.splice(0);
+            if (templateIDs.length === 0) {
+              this.setState({
+                waiting: false,
+                redirectTo: `/world/details/${this.props.selectedWorldID}`,
+                selectedTemplateIDs: templateIDs 
+              });
+            }
+            else {
+              this.setState({ selectedTemplateIDs: templateIDs });
+            }
+          });
+        } else {
+          this.addAttributesToDumbTypesRecursive(typePos, types, newTypes, typeMap, attributes, attrMap, templateName);
+        }
+      }
+    }
+  }
+
   render() {
     if (this.props.fromLogin) {
       this.props.notFromLogin();
@@ -268,6 +547,27 @@ class Page extends Component {
     } else if (this.props.selectedWorld !== null && 
       this.props.selectedWorld.Owner !== this.props.user._id) {
       return <Redirect to="/" />;
+    } else if (this.state.importMode) {
+      return (
+        <TemplatesModal 
+          templates={this.props.templates} 
+          selectedTemplateIDs={this.state.tempSelectedTemplateIDs}
+          onSubmit={ tempSelectedTemplateIDs => {
+            this.setState({ tempSelectedTemplateIDs, importMode: false });
+            // console.log(selectedTemplateIDs);
+            // this.updateTemplates();
+          }}
+          onCancel={_ => {
+            this.setState({ importMode: false });
+          }} />
+      );
+    } else if (this.state.selectedTemplateIDs.length > 0) {
+      setTimeout(() => {
+        this.importSelectedTemplates();
+      }, 500);
+      return (
+        <span>Importing {this.props.templates.filter(t => t._id === this.state.selectedTemplateIDs[0] )[0].Name}.  Please Wait.</span>
+      );
     } else {
       return (
         <Grid item xs={12} container spacing={1} direction="column">
@@ -355,21 +655,41 @@ class Page extends Component {
               label="Accepting Collaborator Requests"
             /> : "" }
           </Grid>
-          <Grid item>
-            <div className="float-right">
+          <Grid item>{this.state.message}</Grid>
+          { this.state.tempSelectedTemplateIDs !== undefined && this.state.tempSelectedTemplateIDs.length > 0 &&
+            <Grid item>Templates will be imported on submit</Grid>
+          }
+          <Grid item container spacing={1} direction="row">
+            <Grid item xs={12} sm={4}>
               <Button
                 variant="contained"
+                fullWidth
                 color="primary"
-                className="w-200"
+                disabled={this.state.waiting}
+                onClick={_ => {
+                  this.setState({ importMode: true });
+                }}
+                type="submit"
+              >
+                Import Templates
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Button
+                variant="contained"
+                fullWidth
+                color="primary"
                 disabled={this.state.waiting}
                 onClick={this.onSubmit}
                 type="submit"
               >
                 {this.state.waiting ? "Please Wait" : "Submit"}
               </Button>
+            </Grid>
+            <Grid item xs={12} sm={4}>
               <Button
                 variant="contained"
-                style={{ marginLeft: "4px" }}
+                fullWidth
                 disabled={this.state.waiting}
                 onClick={_ => {
                   this.setState({
@@ -380,9 +700,8 @@ class Page extends Component {
               >
                 Cancel
               </Button>
-            </div>
+            </Grid>
           </Grid>
-          <Grid item>{this.state.message}</Grid>
           <Grid item>
             {Object.keys(this.state.fieldValidation).map((fieldName, i) => {
               if (
