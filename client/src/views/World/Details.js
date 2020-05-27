@@ -585,7 +585,7 @@ class Page extends Component {
                     </List>
                   : 
                     <List>
-                      { this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id).length === 0 ?
+                      { this.props.selectedWorld.Collaborators !== undefined && this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id).length === 0 ?
                         <ListItem>
                           { this.props.selectedWorld.AcceptingCollaborators && 
                             <Button
