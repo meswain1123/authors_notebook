@@ -56,7 +56,7 @@ class Page extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      _id: null,
+      // _id: null, // This gets used, but I'm intentionally making it undefined to start
       Name: "",
       Description: "",
       Public: false,
@@ -534,18 +534,17 @@ class Page extends Component {
       this.load(id);
       return (<span>Loading...</span>);
     } else if (!this.state.loaded) {
-      return (<span>Loading...</span>);
+      return (<span>Loading2...</span>);
     } else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && 
-      !this.props.selectedWorld.Public && 
       this.props.user === null) {
       setTimeout(() => {
         this.props.toggleLogin();
       }, 500);
       return <span>Requires Login</span>;
-    } else if (this.props.selectedWorld !== null && 
-      this.props.selectedWorld.Owner !== this.props.user._id) {
+    } else if (this.state._id !== null && this.props.selectedWorld !== null && 
+      (this.props.user === null || this.props.selectedWorld.Owner !== this.props.user._id)) {
       return <Redirect to="/" />;
     } else if (this.state.importMode) {
       return (
@@ -554,8 +553,6 @@ class Page extends Component {
           selectedTemplateIDs={this.state.tempSelectedTemplateIDs}
           onSubmit={ tempSelectedTemplateIDs => {
             this.setState({ tempSelectedTemplateIDs, importMode: false });
-            // console.log(selectedTemplateIDs);
-            // this.updateTemplates();
           }}
           onCancel={_ => {
             this.setState({ importMode: false });

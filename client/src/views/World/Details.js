@@ -450,7 +450,7 @@ class Page extends Component {
 
   render() {
     const { id } = this.props.match.params;
-    if (this.props.worlds.length > 0 && (this.props.selectedWorldID === null || this.props.selectedWorldID !== id)) {
+    if ((this.props.worlds.length > 0 || this.props.publicWorlds.length > 0) && (this.props.selectedWorldID === null || this.props.selectedWorldID !== id)) {
       this.load(id);
     }
     if (this.state.redirectTo !== null) {

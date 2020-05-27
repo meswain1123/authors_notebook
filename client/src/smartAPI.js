@@ -273,7 +273,8 @@ class APIClass {
         const response = await this.fetchData(`/api/world/getWorldsForUser`);
         return this.processResponse(response, null, "worlds");
       }
-      return this.processResponse(response, retry, "worlds");
+      const res = this.processResponse(response, retry, "worlds");
+      return res;
     } else {
       return [
         { _id: -1, OwnerID: -1, Name: "Alice in Wonderland", Public: true }

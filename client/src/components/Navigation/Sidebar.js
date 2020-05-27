@@ -61,36 +61,15 @@ class Bar extends Component {
   componentDidMount() {
     this.api.getWorlds(true).then(res => {
       this.props.setPublicWorlds(res.publicWorlds.worlds);
+      this.props.setTemplates(res.templates.templates);
       if (this.props.user !== null) {
-        if (res.publicWorlds === undefined) {
+        if (res.userWorlds.worlds === undefined) {
           this.props.logout();
         } else {
           this.props.setWorlds(res.userWorlds.worlds);
-          this.props.setTemplates(res.templates.templates);
         }
       }
     });
-    // this.api.getPublicWorlds(true).then(res => {
-    //   this.props.setPublicWorlds(res.worlds);
-    // });
-    // // These kinds of things can also be done in render,
-    // // but I prefer to put it here because it's only run once.
-    // // The downside is that it's run before props gets populated
-    // // so, it needs to be put into setTimeout to give the props
-    // // a chance to get populated.
-    // setTimeout(() => {
-    //   if (this.props.user !== null) {
-    //     this.api.getWorldsForUser().then(res => {
-    //       if (res.worlds !== undefined) {
-    //         this.props.setWorlds(res.worlds);
-    //       }
-    //       else {
-    //         // User's login is no longer valid.
-    //         this.props.logout();
-    //       }
-    //     });
-    //   }
-    // }, 500);
   }
 
   links() {

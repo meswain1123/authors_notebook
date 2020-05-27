@@ -676,14 +676,10 @@ router
     }
   })
   .get("/getTemplates", function(req, res) {
-    if (req.session.userID == undefined) {
-      res.send({ error: "Session lost.  Please log in again." });
-    } else {
-      function respond(templates) {
-        res.send({templates});
-      }
-      db.getTemplates(respond);
+    function respond(templates) {
+      res.send({templates});
     }
+    db.getTemplates(respond);
   });
 
 function close() {
