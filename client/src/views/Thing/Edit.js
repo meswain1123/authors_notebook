@@ -1612,7 +1612,7 @@ class Page extends Component {
                       >
                         <ListItemText primary="Next" />
                       </Button>
-                    : this.props.things.filter(t => t.TypeIDs.includes(this.state.majorType._id)).length > 1 &&
+                    : this.state.majorType !== null && this.props.things.filter(t => t.TypeIDs.includes(this.state.majorType._id)).length > 1 &&
                       <Button
                         fullWidth
                         variant="contained"
