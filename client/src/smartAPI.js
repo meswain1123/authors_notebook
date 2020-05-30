@@ -870,6 +870,50 @@ class APIClass {
     }
   };
 
+  // Comments
+  getComments = async (worldID, objectType, objectID) => {
+    if (this.real) {
+      const response = await this.fetchData(`/api/world/getComments/${worldID}/${objectType}/${objectID}`);
+      return this.processResponse(response);
+    } else {
+      return {
+        _id: -1,
+        worldID: -1,
+        Types: [-1],
+        Name: "Alice",
+        Description: ""
+      };
+    }
+  }
+
+  addComment = async (comment) => {
+    if (this.real) {
+      const response = await this.postData("/api/world/addComment", { comment });
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.postData("/api/world/addComment", { comment });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
+    } else {
+      return -1;
+    }
+  }
+
+  updateComment = async (comment) => {
+    if (this.real) {
+      const response = await this.patchData("/api/world/updateComment", { comment });
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.patchData("/api/world/updateComment", { comment });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
+    } else {
+      return -1;
+    }
+  }
+
   // Core API Calls
   fetchData = async (path, options = {}) => {
     return await fetch(`${path}`, {

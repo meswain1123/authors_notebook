@@ -680,6 +680,36 @@ router
       res.send({templates});
     }
     db.getTemplates(respond);
+  })
+  .get("/getComments/:worldID/:objectType/:objectID", function(req, res) {
+    function respond(comments) {
+      res.send({comments});
+    }
+    db.getComments(respond, req.params.worldID, req.params.objectType, req.params.objectID);
+  })
+  .post("/addComment", function(req, res) {
+    if (req.session.userID == undefined || req.session.userID != req.body.comment.userID) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else {
+      function respond(commentID) {
+        res.send({ commentID });
+      }
+      db.addComment(
+        respond,
+        req.body.comment
+      );
+    }
+  })
+  .patch("/updateComment", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else {
+      function respond(message) {
+        res.send(message);
+      }
+      delete req.body.comment.voteSum;
+      db.updateComment(respond, req.body.comment);
+    }
   });
 
 function close() {

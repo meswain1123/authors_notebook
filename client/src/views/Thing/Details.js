@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { ArrowBack, Edit, Delete } from "@material-ui/icons";
 import { 
   Fab, Tooltip, Modal, Grid, Button, 
-  List, ListItem, ListItemText
+  List, ListItem, ListItemText, Box
 } from "@material-ui/core";
 import { Helmet } from 'react-helmet';
 import {
@@ -20,6 +20,7 @@ import {
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 import ThingTable from "../../components/Displays/ThingTable";
+import CommentsControl from "../../components/Inputs/CommentsControl";
 
 const mapStateToProps = state => {
   const thing = state.app.selectedThing;
@@ -266,31 +267,57 @@ class Page extends Component {
                       (this.props.selectedWorld.Owner === this.props.user._id || 
                         this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab" && c.editPermission).length > 0)) &&
                       <ListItem>
-                        <Grid container spacing={1} direction="row">
-                          <Grid item xs={3} sm={0}>
-                            &nbsp;
+                        <Box display={{ xs: 'block', sm: 'none' }} width={1}>
+                          <Grid container spacing={1} direction="row">
+                            <Grid item xs={3}>
+                              &nbsp;
+                            </Grid>
+                            <Grid item xs={4}>
+                              <Tooltip title={`Edit ${this.state.Name}`}>
+                                <Fab size="small"
+                                  color="primary"
+                                  onClick={ _ => {this.setState({redirectTo:`/thing/edit/${this.state._id}`})}}
+                                >
+                                  <Edit />
+                                </Fab>
+                              </Tooltip>
+                            </Grid>
+                            <Grid item xs={5}>
+                              <Tooltip title={`Delete ${this.state.Name}`}>
+                                <Fab size="small"
+                                  color="primary"
+                                  onClick={e => {this.setState({modalOpen: true})}}
+                                >
+                                  <Delete />
+                                </Fab>
+                              </Tooltip>
+                            </Grid>
                           </Grid>
-                          <Grid item xs={4} sm={12}>
-                            <Tooltip title={`Edit ${this.state.Name}`}>
-                              <Fab size="small"
-                                color="primary"
-                                onClick={ _ => {this.setState({redirectTo:`/thing/edit/${this.state._id}`})}}
-                              >
-                                <Edit />
-                              </Fab>
-                            </Tooltip>
+                        </Box>
+                        <Box display={{ xs: 'none', sm: 'block' }}>
+                          <Grid container spacing={1} direction="column">
+                            <Grid item>
+                              <Tooltip title={`Edit ${this.state.Name}`}>
+                                <Fab size="small"
+                                  color="primary"
+                                  onClick={ _ => {this.setState({redirectTo:`/thing/edit/${this.state._id}`})}}
+                                >
+                                  <Edit />
+                                </Fab>
+                              </Tooltip>
+                            </Grid>
+                            <Grid item>
+                              <Tooltip title={`Delete ${this.state.Name}`}>
+                                <Fab size="small"
+                                  color="primary"
+                                  onClick={e => {this.setState({modalOpen: true})}}
+                                >
+                                  <Delete />
+                                </Fab>
+                              </Tooltip>
+                            </Grid>
                           </Grid>
-                          <Grid item xs={5} sm={12}>
-                            <Tooltip title={`Delete ${this.state.Name}`}>
-                              <Fab size="small"
-                                color="primary"
-                                onClick={e => {this.setState({modalOpen: true})}}
-                              >
-                                <Delete />
-                              </Fab>
-                            </Tooltip>
-                          </Grid>
-                        </Grid>
+                        </Box>
                       </ListItem>
                     }
                     <ListItem>
@@ -415,6 +442,18 @@ class Page extends Component {
                   }
                 </Grid>
               </Grid>
+              { this.props.selectedThing !== null &&
+                <Grid item xs={12}>
+                  <CommentsControl 
+                    user={this.props.user} 
+                    object={this.props.selectedThing}
+                    objectType="Thing"
+                    world={this.props.selectedWorld}
+                    api={this.api} 
+                    onChange={this.commentsChange}
+                  /> 
+                </Grid>
+              }
               <Modal
                 aria-labelledby="delete-thing-modal"
                 aria-describedby="delete-thing-modal-description"

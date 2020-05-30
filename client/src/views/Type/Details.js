@@ -25,6 +25,7 @@ import {
 } from "@material-ui/core";
 import { Helmet } from "react-helmet";
 import API from "../../smartAPI";
+import CommentsControl from "../../components/Inputs/CommentsControl";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -927,6 +928,16 @@ class Page extends Component {
                     </Grid>
                   )}
                 </Grid>
+              </Grid>
+              <Grid item xs={12}>
+                <CommentsControl 
+                  user={this.props.user} 
+                  object={this.props.selectedType}
+                  objectType="Type"
+                  world={this.props.selectedWorld}
+                  api={this.api} 
+                  onChange={this.commentsChange}
+                /> 
               </Grid>
               <Modal
                 aria-labelledby="delete-type-modal"

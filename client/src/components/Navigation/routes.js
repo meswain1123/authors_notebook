@@ -2,7 +2,7 @@
 import Home from "@material-ui/icons/Home";
 import Forum from "@material-ui/icons/Forum";
 import HomePage from "../../views/Home";
-import TemplatePage from "../../views/Template";
+import GeneralDiscussionPage from "../../views/Discussion/GeneralDiscussion";
 
 
 const menuRoutes = [
@@ -13,10 +13,10 @@ const menuRoutes = [
     component: HomePage,
   },
   {
-    path: "/Forums",
-    name: "Forums",
+    path: "/discussion",
+    name: "Discussion",
     icon: Forum,
-    component: TemplatePage,
+    component: GeneralDiscussionPage,
   }
 ];
 

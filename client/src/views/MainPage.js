@@ -5,7 +5,7 @@ import {
   Switch } from "react-router-dom";
   import { connect } from "react-redux";
 import HomePage from "./Home";
-import ForumMenuPage from "./Forum/ForumMenu";
+import GeneralDiscussionPage from "./Discussion/GeneralDiscussion";
 import ProfilePage from "./User/Profile";
 // import UserEditPage from "./User/Edit";
 import WorldDetailsPage from "./World/Details";
@@ -67,7 +67,7 @@ class Page extends Component {
             {/* <Route exact path="/profile" component={UserEditPage} /> */}
             
             {/* <Route exact path="/test/:testtext" component={Test} /> */}
-            <Route exact path="/forums" component={ForumMenuPage} />
+            <Route exact path="/discussion" component={GeneralDiscussionPage} />
             <Route exact path="/world/details/:id" component={WorldDetailsPage} />
             <Route exact path="/world/create" component={WorldEditPage} />
             <Route exact path="/world/edit/:id" component={WorldEditPage} />

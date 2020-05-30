@@ -287,15 +287,11 @@ class Page extends Component {
           <p>Other Planned Future Features:</p>
           <div>
             <p>
-              Forums: I'm going to have a General Site Forum, and each World will
-              automatically get its own Forum.
-            </p>
-            <p>
               Direct Messages: I'll add a simple messaging system to allow people
               to communicate directly with one another.
             </p>
             <p>
-              Auto-links: For both Forums and DMs I'll allow users to put links to
+              Auto-links: For both comments and DMs I'll allow users to put links to
               pages through a simple system similar to hashtags in Social Media.
               I'm thinking I also want to add this capability to Descriptions on
               Types and Things.
@@ -313,7 +309,7 @@ class Page extends Component {
               have yet to make, and will need occasional updating after it's
               made), as well as things like recent software changes. I also want
               to make it so it can automatically have links to recently added or
-              edited Types or Things and recent Forum posts which may be of
+              edited Types or Things and recent comments which may be of
               interest to the user.
             </p>
           </div>

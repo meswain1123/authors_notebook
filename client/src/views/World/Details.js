@@ -24,6 +24,7 @@ import {
 import { Helmet } from 'react-helmet';
 import TemplateModal from "../../components/Modals/TemplateModal";
 import TemplatesModal from "../../components/Modals/TemplatesModal";
+import CommentsControl from "../../components/Inputs/CommentsControl";
 
 const mapStateToProps = state => {
   return {
@@ -622,6 +623,16 @@ class Page extends Component {
                 <Box display={{ xs: 'block', sm: 'none' }}>
                   <Index />
                 </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <CommentsControl 
+                  user={this.props.user} 
+                  object={this.props.selectedWorld}
+                  objectType="World"
+                  world={this.props.selectedWorld}
+                  api={this.api} 
+                  onChange={this.commentsChange}
+                /> 
               </Grid>
             </Grid>
           }

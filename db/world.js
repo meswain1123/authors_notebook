@@ -722,6 +722,44 @@ function createTemplate(respond, template) {
   });
 }
 
+function getComments(respond, worldID, objectType, objectID) {
+  try {
+    const db = client.db(dbName);
+    db.collection("comment")
+      .find({ worldID, objectType, objectID })
+      .toArray(function(err, docs) {
+        if (err) respond({ error: `Error: ${err}.` });
+        else respond(docs);
+      });
+  } catch (err) {
+    console.log(err);
+    respond(err);
+  }
+}
+
+function addComment(respond, comment) {
+  const db = client.db(dbName);
+  db.collection("comment").insertOne(
+    comment
+  ).then(res => {
+    respond(res.insertedId);
+  });
+}
+
+function updateComment(respond, comment) {
+  const db = client.db(dbName);
+
+  comment._id = ObjectID(comment._id);
+  db.collection("comment").updateOne(
+    { 
+      worldID: comment.worldID, 
+      _id: comment._id
+    },
+    { $set: comment }
+  );
+  respond({ message: `Comment updated!` });
+}
+
 module.exports = {
   open,
   close,
@@ -753,5 +791,8 @@ module.exports = {
   deleteThing,
   updateThing,
   getTemplates,
-  createTemplate
+  createTemplate,
+  getComments,
+  addComment,
+  updateComment
 };
