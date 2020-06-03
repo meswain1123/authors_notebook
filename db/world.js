@@ -321,6 +321,7 @@ function getWorldForCollab(respond, worldID) {
 
 function createWorld(respond, userID, world) {
   const db = client.db(dbName);
+  world.Collaborators = [];
 
   db.collection("world")
     .find({ Owner: userID, Name: world.Name })

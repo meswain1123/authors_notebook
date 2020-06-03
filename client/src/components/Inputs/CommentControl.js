@@ -3,9 +3,9 @@ import React, { useState } from "react";
 
 import { makeStyles } from '@material-ui/core/styles';
 import {
-  FormControl,
-  OutlinedInput,
-  InputLabel,
+  // FormControl,
+  // OutlinedInput,
+  // InputLabel,
   Grid,
   // Button,
   Typography,
@@ -16,7 +16,7 @@ import {
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import ReplyIcon from '@material-ui/icons/Reply';
-// import TextBox from "./TextBox";
+import TextBox from "./TextBox";
 
 const useStyles = makeStyles({
   root: {
@@ -162,7 +162,9 @@ export default function CommentControl(props) {
               <IconButton 
                 aria-label="upvote comment"
                 onClick={_ => {
-                  vote(props.comment, 1, props);
+                  if (props.user !== null && (props.world.Owner === props.user._id || (props.world.Collaborators !== undefined && props.world.Collaborators.filter(c=> c.userID === props.user._id && c.type === "collab").length === 0))) {
+                    vote(props.comment, 1, props);
+                  }
                 }}>
                 <ArrowUpwardIcon />
               </IconButton>
@@ -182,7 +184,9 @@ export default function CommentControl(props) {
               <IconButton 
                 aria-label="downvote comment"
                 onClick={_ => {
-                  vote(props.comment, -1, props);
+                  if (props.user !== null && (props.world.Owner === props.user._id || (props.world.Collaborators !== undefined && props.world.Collaborators.filter(c=> c.userID === props.user._id && c.type === "collab").length === 0))) {
+                    vote(props.comment, -1, props);
+                  }
                 }}>
                 <ArrowDownwardIcon />
               </IconButton>
@@ -198,7 +202,7 @@ export default function CommentControl(props) {
             }
             <IconButton style={{ marginLeft: "auto" }}
               onClick={_ => {
-                if (props.user !== null) {
+                if (props.user !== null && (props.world.Owner === props.user._id || (props.world.Collaborators !== undefined && props.world.Collaborators.filter(c=> c.userID === props.user._id && c.type === "collab").length === 0))) {
                   // Open a reply box under the card
                   changeReplying(!replying);
                 }
@@ -232,6 +236,7 @@ export default function CommentControl(props) {
                     changeWaiting={newWaiting => {
                       props.changeWaiting(newWaiting);
                     }}
+                    suggestions={props.suggestions}
                   />
                 </Grid>
               );
@@ -241,7 +246,7 @@ export default function CommentControl(props) {
       }
       { replying &&
         <Grid item>
-          <FormControl variant="outlined" fullWidth>
+          {/* <FormControl variant="outlined" fullWidth>
             <InputLabel htmlFor={`text_field_reply`}>New Reply</InputLabel>
             <OutlinedInput
               id={`text_field_reply`}
@@ -263,7 +268,27 @@ export default function CommentControl(props) {
               labelWidth={80}
               fullWidth
             />
-          </FormControl>
+          </FormControl> */}
+          <TextBox 
+            Value={value} 
+            fieldName="New Reply" 
+            multiline={true}
+            onChange={e => {
+              changeValue(e.target.value);
+            }}
+            // onBlur={reply => {
+            //   changeValue(reply);
+            // }}
+            onKeyPress={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                reply(value,  
+                  props, changeReplying, 
+                  changeValue);
+              }
+            }}
+            options={props.suggestions}
+            labelWidth={110}
+          />
         </Grid>
       }
     </Grid>

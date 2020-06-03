@@ -8,7 +8,8 @@ import {
   logout,
   setAttributes,
   setTypes,
-  setThings
+  setThings,
+  setAllUsers
 } from "../../redux/actions/index";
 import { Button, Checkbox, FormControl, FormControlLabel,
   OutlinedInput, InputLabel, FormHelperText, Grid, 
@@ -41,7 +42,8 @@ const mapStateToProps = state => {
     selectedWorldID: state.app.selectedWorldID,
     worlds: state.app.worlds,
     user: state.app.user,
-    fromLogin: state.app.fromLogin
+    fromLogin: state.app.fromLogin,
+    allUsers: state.app.allUsers
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -53,7 +55,8 @@ function mapDispatchToProps(dispatch) {
     logout: () => dispatch(logout({})),
     setAttributes: attributes => dispatch(setAttributes(attributes)),
     setTypes: types => dispatch(setTypes(types)),
-    setThings: things => dispatch(setThings(things))
+    setThings: things => dispatch(setThings(things)),
+    setAllUsers: allUsers => dispatch(setAllUsers(allUsers))
   };
 }
 class Page extends Component {
@@ -62,7 +65,7 @@ class Page extends Component {
     this.state = {
       _id: null,
       Collaborators: [],
-      allUsers: null,
+      // allUsers: null,
       fieldValidation: {
         inviteEmail: { valid: true, message: "" }
       },
@@ -315,10 +318,22 @@ class Page extends Component {
       this.props.setTypes(res.types);
       this.props.setThings(res.things);
       
-      this.api.getAllUsers().then(res => {
-        this.setState({allUsers: res, loaded: true}, 
+      if (this.props.allUsers.length === 0) {
+        this.api.getAllUsers().then(res => {
+          this.props.setAllUsers(res);
+          this.setState({
+            // allUsers: res, 
+            loaded: true}, 
+            this.actuallyFinishLoading);
+        });
+      } else {
+        // this.api.getAllUsers().then(res => {
+        this.setState({
+          // allUsers: res, 
+          loaded: true}, 
           this.actuallyFinishLoading);
-      });
+        // });
+      }
     });
   }
 
@@ -362,7 +377,7 @@ class Page extends Component {
       const collabs = this.state.Collaborators.filter(c=>c.type==="collab");
       const invites = this.state.Collaborators.filter(c=>c.type==="invite");
       const requests = this.state.Collaborators.filter(c=>c.type==="request");
-      const selectUsers = this.state.allUsers.filter(u=>u._id !== this.props.selectedWorld.Owner && this.state.Collaborators.filter(c=>c.userID === u._id).length === 0);
+      const selectUsers = this.props.allUsers.filter(u=>u._id !== this.props.selectedWorld.Owner && this.state.Collaborators.filter(c=>c.userID === u._id).length === 0);
       const userMenuItems = selectUsers.map((u, i) => {
         return (
           <MenuItem key={i} value={u}>
@@ -563,7 +578,7 @@ class Page extends Component {
                       return (
                         <Grid item container spacing={1} direcion="row" key={key}>
                           <Grid item xs={12} sm={3}>
-                            {this.state.allUsers.filter(u=>u._id === c.userID)[0].username}
+                            {this.props.allUsers.filter(u=>u._id === c.userID)[0].username}
                           </Grid>
                           <Grid item xs={12} sm={6}>
                             <FormControlLabel
@@ -598,7 +613,7 @@ class Page extends Component {
                 <TabPanel value={this.state.collabTab} index={1}>
                   <Grid container spacing={3} direction="column">
                     { invites.map((c, key) => {
-                      let user = this.state.allUsers.filter(u=>u._id === c.userID);
+                      let user = this.props.allUsers.filter(u=>u._id === c.userID);
                       if (user.length === 0)
                         user = null;
                       else {
@@ -643,7 +658,7 @@ class Page extends Component {
                       return (
                         <Grid item container spacing={1} direcion="row" key={key}>
                           <Grid item xs={12} sm={6}>
-                            {this.state.allUsers.filter(u=>u._id === c.userID)[0].username}
+                            {this.props.allUsers.filter(u=>u._id === c.userID)[0].username}
                           </Grid>
                           <Grid item xs={12} sm={3}>
                             <Tooltip title={`Accept Request`}>

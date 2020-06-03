@@ -3,7 +3,7 @@ import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import {
   selectWorld,
-  addWorld,
+  addAndSelectWorld,
   updateWorld,
   notFromLogin,
   toggleLogin,
@@ -19,6 +19,7 @@ import { ArrowBack } from "@material-ui/icons";
 import { Helmet } from 'react-helmet';
 import API from "../../smartAPI";
 import TemplatesModal from "../../components/Modals/TemplatesModal";
+import TextBox from "../../components/Inputs/TextBox";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -36,13 +37,15 @@ const mapStateToProps = state => {
     fromLogin: state.app.fromLogin,
     templates: state.app.templates,
     types: state.app.types,
-    attributesByName: state.app.attributesByName
+    attributesByName: state.app.attributesByName,
+    typeSuggestions: state.app.typeSuggestions,
+    thingSuggestions: state.app.thingSuggestions
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
     selectWorld: worldID => dispatch(selectWorld(worldID)),
-    addWorld: world => dispatch(addWorld(world)),
+    addAndSelectWorld: world => dispatch(addAndSelectWorld(world)),
     updateWorld: world => dispatch(updateWorld(world)),
     notFromLogin: () => dispatch(notFromLogin({})),
     toggleLogin: () => dispatch(toggleLogin({})),
@@ -182,9 +185,9 @@ class Page extends Component {
           }
           else {
             world._id = res.worldID;
-            this.props.addWorld(world);
-            this.props.selectWorld(world._id);
-            if (this.state.tempSelectedTemplateIDs === undefined) {
+            this.props.addAndSelectWorld(world);
+            // this.props.selectWorld(world._id);
+            if (this.state.tempSelectedTemplateIDs === undefined || this.state.tempSelectedTemplateIDs.length === 0) {
               this.setState({
                 waiting: false,
                 redirectTo: `/world/details/${res.worldID}`
@@ -209,10 +212,17 @@ class Page extends Component {
           }
           else {
             this.props.updateWorld(world);
-            this.setState({
-              waiting: false,
-              redirectTo: `/world/details/${this.props.selectedWorldID}`
-            });
+            if (this.state.tempSelectedTemplateIDs === undefined || this.state.tempSelectedTemplateIDs.length === 0) {
+              this.setState({
+                waiting: false,
+                redirectTo: `/world/details/${this.props.selectedWorldID}`
+              });
+            } else {
+              this.setState({
+                selectedTemplateIDs: this.state.tempSelectedTemplateIDs,
+                tempSelectedTemplateIDs: []
+              });
+            }
           }
         })
         .catch(err => console.log(err));
@@ -566,6 +576,7 @@ class Page extends Component {
         <span>Importing {this.props.templates.filter(t => t._id === this.state.selectedTemplateIDs[0] )[0].Name}.  Please Wait.</span>
       );
     } else {
+      const suggestions = [...this.props.typeSuggestions, ...this.props.thingSuggestions];
       return (
         <Grid item xs={12} container spacing={1} direction="column">
           <Helmet>
@@ -611,7 +622,7 @@ class Page extends Component {
             </FormControl>
           </Grid>
           <Grid item>
-            <FormControl variant="outlined" fullWidth>
+            {/* <FormControl variant="outlined" fullWidth>
               <InputLabel htmlFor="description">Description</InputLabel>
               <OutlinedInput
                 id="description"
@@ -625,7 +636,20 @@ class Page extends Component {
                 labelWidth={80}
                 fullWidth
               />
-            </FormControl>
+            </FormControl> */}
+            <TextBox 
+              Value={this.state.Description} 
+              fieldName="Description" 
+              multiline={true}
+              onBlur={desc => {
+                this.setState({ Description: desc });
+                // const type = this.props.selectedType;
+                // type.Description = desc;
+                // this.props.updateSelectedType(type);
+              }}
+              labelWidth={82}
+              options={suggestions}
+            />
           </Grid>
           <Grid item>
             <FormControlLabel

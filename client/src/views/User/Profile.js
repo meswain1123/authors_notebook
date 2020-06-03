@@ -20,6 +20,7 @@ import {
   setAttributes,
   setTypes,
   setThings,
+  setAllUsers,
   notFromLogin
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
@@ -35,7 +36,8 @@ const mapStateToProps = state => {
   return {
     types: state.app.types,
     user: state.app.user,
-    fromLogin: state.app.fromLogin
+    fromLogin: state.app.fromLogin,
+    allUsers: state.app.allUsers
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -43,7 +45,8 @@ function mapDispatchToProps(dispatch) {
     setAttributes: attrs => dispatch(setAttributes(attrs)),
     setTypes: types => dispatch(setTypes(types)),
     setThings: things => dispatch(setThings(things)),
-    notFromLogin: () => dispatch(notFromLogin({}))
+    notFromLogin: () => dispatch(notFromLogin({})),
+    setAllUsers: allUsers => dispatch(setAllUsers(allUsers))
   };
 }
 class Page extends Component {
@@ -96,7 +99,7 @@ class Page extends Component {
         if (value.length < 2) {
           valid = false;
           message = "Username is too short";
-        } else if (this.state.allUsers.filter(u=>u.username === value && u._id !== this.props.user._id).length !== 0) {
+        } else if (this.props.allUsers.filter(u=>u.username === value && u._id !== this.props.user._id).length !== 0) {
           valid = false;
           message = "This Username is taken";
         }
@@ -178,15 +181,27 @@ class Page extends Component {
     if (this.props.fromLogin) {
       this.props.notFromLogin();
     }
-    this.api.getAllUsers().then(res2 => {
+    
+    // if (this.props.allUsers.length === 0) {
+    //   this.api.getAllUsers().then(res => {
+    //     this.props.setAllUsers(res);
+    //     this.setState({
+    //       // allUsers: res2, 
+    //       username: this.props.user.username, 
+    //       email: this.props.user.email,
+    //       loaded: true,
+    //       message: ""
+    //     });
+    //   });
+    // } else {
       this.setState({
-        allUsers: res2, 
+        // allUsers: res2, 
         username: this.props.user.username, 
         email: this.props.user.email,
         loaded: true,
         message: ""
       });
-    });
+    // }
   }
 
   render() {

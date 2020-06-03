@@ -22,6 +22,7 @@ import {
   setWorlds,
   setPublicWorlds,
   setTemplates,
+  setAllUsers,
   setFollowingWorlds,
   toggleMenu,
   logout,
@@ -44,6 +45,7 @@ function mapDispatchToProps(dispatch) {
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
     setTemplates: templates => dispatch(setTemplates(templates)),
+    setAllUsers: allUsers => dispatch(setAllUsers(allUsers)),
     setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs)),
     toggleMenu: () => dispatch(toggleMenu({})),
     // toggleLogin: () => dispatch(toggleLogin({}))
@@ -63,12 +65,14 @@ class Menu extends Component {
   componentDidMount() {
     this.api.getWorlds(true).then(res => {
       this.props.setPublicWorlds(res.publicWorlds.worlds);
+      this.props.setTemplates(res.templates.templates);
+      this.props.setAllUsers(res.allUsers);
+      
       if (this.props.user !== null) {
-        if (res.publicWorlds === undefined) {
+        if (res.userWorlds.worlds === undefined) {
           this.props.logout();
         } else {
           this.props.setWorlds(res.userWorlds.worlds);
-          this.props.setTemplates(res.templates.templates);
         }
       }
     });

@@ -49,7 +49,9 @@ const mapStateToProps = state => {
     user: state.app.user,
     attributesByID: state.app.attributesByID,
     attributesByName: state.app.attributesByName,
-    fromLogin: state.app.fromLogin
+    fromLogin: state.app.fromLogin,
+    typeSuggestions: state.app.typeSuggestions,
+    thingSuggestions: state.app.thingSuggestions
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -932,6 +934,7 @@ class Page extends Component {
           selectedAttributeTypes = this.props.types.filter(t => this.props.attributesByID[this.state.browseAttributesSelected].TypeIDs.includes(t._id));
         }
       }
+      const suggestions = [...this.props.typeSuggestions, ...this.props.thingSuggestions];
       return (
         <Grid item xs={12} container spacing={1} direction="column">
           { this.props.selectedWorld === null ? "" :
@@ -1015,7 +1018,9 @@ class Page extends Component {
                       type.Description = desc;
                       this.props.updateSelectedType(type);
                     }}
-                    labelWidth={82}/>
+                    labelWidth={82}
+                    options={suggestions}
+                  />
                 }
               </Grid>
               <Grid item>

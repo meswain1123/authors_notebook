@@ -60,21 +60,29 @@ class APIClass {
   };
 
   // User
-  getAllUsers = async () => {
+  getAllUsers = async (refresh = false) => {
+    if (refresh) {
+      return this.getAllUsersFromAPI();
+    }
+    else {
+      const data = this.getSessionData("allUsers");
+      if (data !== null) {
+        return data;
+      }
+      else {
+        return this.getAllUsersFromAPI();
+      }
+    }
+  };
+  getAllUsersFromAPI = async () => {
     if (this.real) {
       const response = await this.fetchData("/api/user/getAllUsers");
-      const retry = async () => {
-        await this.relogin();
-        const response = await this.fetchData("/api/user/getAllUsers");
-        return this.processResponse(response);
-      }
-      return this.processResponse(response, retry);
+      const res = this.processResponse(response, null, "allUsers");
+      return res;
     } else {
-      return [{
-        _id: "-1",
-        email: "fake@fakemail.com",
-        username: "Liar Liar"
-      }];
+      return [
+        { _id: -1, OwnerID: -1, Name: "Alice in Wonderland", Public: true }
+      ];
     }
   };
 
@@ -238,11 +246,13 @@ class APIClass {
       const publicWorlds = await this.getPublicWorlds(refresh);
       const userWorlds = await this.getWorldsForUser(refresh);
       const templates = await this.getTemplates(refresh);
+      const allUsers = await this.getAllUsers(refresh);
 
       return {
         publicWorlds,
         userWorlds,
-        templates
+        templates,
+        allUsers
       };
     }
     catch (error) {

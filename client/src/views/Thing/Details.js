@@ -14,6 +14,7 @@ import {
   setAttributes,
   setTypes,
   setThings,
+  setAllUsers,
   notFromLogin,
   toggleLogin,
   logout
@@ -33,7 +34,10 @@ const mapStateToProps = state => {
     things: state.app.things,
     user: state.app.user,
     attributesByID: state.app.attributesByID,
-    fromLogin: state.app.fromLogin
+    fromLogin: state.app.fromLogin,
+    allUsers: state.app.allUsers,
+    typeSuggestions: state.app.typeSuggestions,
+    thingSuggestions: state.app.thingSuggestions
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -44,6 +48,7 @@ function mapDispatchToProps(dispatch) {
     setAttributes: attrs => dispatch(setAttributes(attrs)),
     setTypes: types => dispatch(setTypes(types)),
     setThings: things => dispatch(setThings(things)),
+    setAllUsers: allUsers => dispatch(setAllUsers(allUsers)),
     notFromLogin: () => dispatch(notFromLogin({})),
     toggleLogin: () => dispatch(toggleLogin({})),
     logout: () => dispatch(logout({}))
@@ -130,7 +135,8 @@ class Page extends Component {
     setTimeout(() => {
       this.setState({
         _id: id,
-        redirectTo: null
+        redirectTo: null,
+        loaded: false
       }, this.finishLoading);
     }, 500);
   }
@@ -148,7 +154,7 @@ class Page extends Component {
       if (id !== undefined) {
         let thing = res.things.filter(t => t._id === id);
         if (thing.length === 0) {
-          this.setState({ message: "Invalid Thing ID" });
+          this.setState({ message: "Invalid Thing ID", loaded: true });
         }
         else {
           thing = thing[0];
@@ -168,6 +174,7 @@ class Page extends Component {
               TypeIDs: attr.TypeIDs
             });
           });
+          this.props.updateSelectedThing(thing);
           if (this.state.majorType === null) {
             let majorType = thing.Types.filter(t=>t.Major);
             if (majorType.length > 0) {
@@ -178,7 +185,8 @@ class Page extends Component {
                 Description: thing.Description,
                 _id: id,
                 Types: thing.Types,
-                majorType
+                majorType,
+                loaded: true
               });
             }
             else {
@@ -186,7 +194,8 @@ class Page extends Component {
                 Name: thing.Name,
                 Description: thing.Description,
                 _id: id,
-                Types: thing.Types
+                Types: thing.Types,
+                loaded: true
               });
             }
           }
@@ -195,11 +204,11 @@ class Page extends Component {
               Name: thing.Name,
               Description: thing.Description,
               _id: id,
-              Types: thing.Types
+              Types: thing.Types,
+              loaded: true
             });
           }
         }
-        this.props.updateSelectedThing(thing);
       } else {
         this.props.updateSelectedThing({
           _id: null,
@@ -209,6 +218,7 @@ class Page extends Component {
           Attributes: [],
           AttributesArr: []
         });
+        this.setState({ loaded: true });
       }
     });
   }
@@ -217,8 +227,10 @@ class Page extends Component {
     const { id } = this.props.match.params;
     if (this.state._id !== id) {
       this.load(id);
-    }
-    if (this.state.redirectTo !== null) {
+      return (<span>Loading</span>);
+    } else if (!this.state.loaded) {
+      return (<span>Loading</span>);
+    } else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && 
       !this.props.selectedWorld.Public && 
@@ -232,8 +244,16 @@ class Page extends Component {
       (this.props.selectedWorld.Owner !== this.props.user._id && 
         this.props.selectedWorld.Collaborators.filter(c=>c.userID === this.props.user._id && c.type === "collab").length === 0)) {
       return <Redirect to="/" />;
+    // } else if (this.props.allUsers.length === 0) {
+    //   setTimeout(() => {
+    //     this.api.getAllUsers().then(res => {
+    //       this.props.setAllUsers(res);
+    //     });
+    //   }, 500);
+    //   return (<span>Loading</span>);
     } else {
       const references = this.props.things.filter(t=>t.ReferenceIDs !== undefined && t.ReferenceIDs.includes(this.state._id));
+      const suggestions = [...this.props.typeSuggestions, ...this.props.thingSuggestions];
       return (
         <Grid item xs={12} container spacing={0} direction="column">
           { this.props.selectedWorld === null ? "" :
@@ -446,11 +466,13 @@ class Page extends Component {
                 <Grid item xs={12}>
                   <CommentsControl 
                     user={this.props.user} 
+                    allUsers={this.props.allUsers}
                     object={this.props.selectedThing}
                     objectType="Thing"
                     world={this.props.selectedWorld}
                     api={this.api} 
                     onChange={this.commentsChange}
+                    suggestions={suggestions}
                   /> 
                 </Grid>
               }

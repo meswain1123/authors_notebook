@@ -12,7 +12,9 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import { userLogin, setWorlds, setFollowingWorlds } from "../../redux/actions/index";
+import { 
+  userLogin, setWorlds, setFollowingWorlds, setAllUsers
+} from "../../redux/actions/index";
 import Link from "@material-ui/core/Link";
 import Cookies from "universal-cookie";
 import API from '../../smartAPI';
@@ -23,14 +25,16 @@ const mapStateToProps = state => {
     // selectedPage: state.app.selectedPage, 
     user: state.app.user, 
     loginError: state.app.loginError,
-    followingWorlds: state.app.followingWorlds
+    followingWorlds: state.app.followingWorlds,
+    allUsers: state.app.allUsers
   };
 };
 function mapDispatchToProps(dispatch) {
   return {
     userLogin: user => dispatch(userLogin(user)),
     setWorlds: worlds => dispatch(setWorlds(worlds)),
-    setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs))
+    setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs)),
+    setAllUsers: allUsers => dispatch(setAllUsers(allUsers))
   };
 }
 class Control extends Component {
@@ -57,7 +61,7 @@ class Control extends Component {
       message: "",
       username: "",
       // redirectTo: null,
-      allUsers: null
+      // allUsers: null
     };
     this.api = API.getInstance();
   }
@@ -119,7 +123,7 @@ class Control extends Component {
       case "username":
         valid = value.length >= 2;
         message = valid ? "" : "Username is too short";
-        if (valid && this.state.allUsers.filter(u=>u.username === value).length !== 0) {
+        if (valid && this.props.allUsers.filter(u=>u.username === value).length !== 0) {
           valid = false;
           message = "This Username is taken";
         }
@@ -258,9 +262,10 @@ class Control extends Component {
   };
 
   render() {
-    if (this.state.allUsers === null) {
-      this.api.getAllUsers().then(res => {
-        this.setState({allUsers: res});
+    if (this.props.allUsers === null) {
+      this.api.getAllUsers(true).then(res => {
+        this.props.setAllUsers(res);
+        // this.setState({allUsers: res});
       });
       return (<div></div>);
     }

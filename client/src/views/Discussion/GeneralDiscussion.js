@@ -9,6 +9,7 @@ import {
   // setAttributes, 
   // setTemplates,
   // updateAttributes,
+  // setAllUsers,
   notFromLogin,
   toggleLogin
 } from "../../redux/actions/index";
@@ -32,7 +33,10 @@ const mapStateToProps = state => {
     // attributesByID: state.app.attributesByID,
     // attributesByName: state.app.attributesByName,
     fromLogin: state.app.fromLogin,
-    templates: state.app.templates
+    templates: state.app.templates,
+    allUsers: state.app.allUsers,
+    userSuggestions: state.app.userSuggestions,
+    worldSuggestions: state.app.worldSuggestions
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -46,6 +50,7 @@ function mapDispatchToProps(dispatch) {
     // updatePublicWorldForCollab: world => dispatch(updatePublicWorldForCollab(world)),
     // setAttributes: attributes => dispatch(setAttributes(attributes)),
     // updateAttributes: attributes => dispatch(updateAttributes(attributes)),
+    // setAllUsers: allUsers => dispatch(setAllUsers(allUsers)),
     notFromLogin: () => dispatch(notFromLogin({})),
     toggleLogin: () => dispatch(toggleLogin({}))
   };
@@ -63,7 +68,6 @@ class Page extends Component {
     if (this.props.fromLogin) {
       this.props.notFromLogin();
     }
-    console.log(this.props);
     return (
       <Grid item xs={12} container spacing={0} direction="column">
         <Grid item>
@@ -80,6 +84,7 @@ class Page extends Component {
         <Grid item>
           <CommentsControl 
             user={this.props.user} 
+            allUsers={this.props.allUsers}
             object={{_id: "General"}}
             objectType="General"
             world={{_id: "General"}}

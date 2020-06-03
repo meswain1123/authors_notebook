@@ -26,6 +26,7 @@ import {
   setPublicWorlds,
   setFollowingWorlds,
   setTemplates,
+  setAllUsers,
   logout
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
@@ -45,6 +46,7 @@ function mapDispatchToProps(dispatch) {
     setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
     setFollowingWorlds: worldIDs => dispatch(setFollowingWorlds(worldIDs)),
     setTemplates: templates => dispatch(setTemplates(templates)),
+    setAllUsers: allUsers => dispatch(setAllUsers(allUsers)),
     logout: () => dispatch(logout({}))
   };
 }
@@ -62,6 +64,8 @@ class Bar extends Component {
     this.api.getWorlds(true).then(res => {
       this.props.setPublicWorlds(res.publicWorlds.worlds);
       this.props.setTemplates(res.templates.templates);
+      this.props.setAllUsers(res.allUsers);
+      
       if (this.props.user !== null) {
         if (res.userWorlds.worlds === undefined) {
           this.props.logout();

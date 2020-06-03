@@ -7,7 +7,9 @@ import {
   SET_WORLDS,
   SET_PUBLIC_WORLDS,
   SET_TEMPLATES,
+  SET_ALL_USERS,
   ADD_WORLD,
+  ADD_AND_SELECT_WORLD,
   UPDATE_WORLD,
   UPDATE_PUBLIC_WORLD_COLLAB,
   SELECT_WORLD,
@@ -55,8 +57,14 @@ export function setWorlds(payload) {
 export function setTemplates(payload) {
   return { type: SET_TEMPLATES, payload };
 }
+export function setAllUsers(payload) {
+  return { type: SET_ALL_USERS, payload };
+}
 export function addWorld(payload) {
   return { type: ADD_WORLD, payload };
+}
+export function addAndSelectWorld(payload) {
+  return { type: ADD_AND_SELECT_WORLD, payload };
 }
 export function updateWorld(payload) {
   return { type: UPDATE_WORLD, payload };

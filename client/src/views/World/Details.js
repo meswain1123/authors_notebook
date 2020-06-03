@@ -6,6 +6,7 @@ import {
   setPublicWorlds, updatePublicWorldForCollab,
   setAttributes, 
   setTemplates,
+  setAllUsers,
   updateAttributes,
   notFromLogin,
   toggleLogin
@@ -39,7 +40,10 @@ const mapStateToProps = state => {
     attributesByID: state.app.attributesByID,
     attributesByName: state.app.attributesByName,
     fromLogin: state.app.fromLogin,
-    templates: state.app.templates
+    templates: state.app.templates,
+    allUsers: state.app.allUsers,
+    typeSuggestions: state.app.typeSuggestions,
+    thingSuggestions: state.app.thingSuggestions
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -49,6 +53,7 @@ function mapDispatchToProps(dispatch) {
     setThings: things => dispatch(setThings(things)),
     setWorlds: worlds => dispatch(setWorlds(worlds)),
     setTemplates: templates => dispatch(setTemplates(templates)),
+    setAllUsers: allUsers => dispatch(setAllUsers(allUsers)),
     setPublicWorlds: worlds => dispatch(setPublicWorlds(worlds)),
     updatePublicWorldForCollab: world => dispatch(updatePublicWorldForCollab(world)),
     setAttributes: attributes => dispatch(setAttributes(attributes)),
@@ -147,6 +152,7 @@ class Page extends Component {
           this.props.setPublicWorlds(res2.publicWorlds.worlds);
           this.props.setWorlds(res2.userWorlds.worlds);
           this.props.setTemplates(res2.templates.templates);
+          this.props.setAllUsers(res2.allUsers);
 
           this.props.selectWorld(null);
           this.setState({modalOpen: false, redirectTo: `/`});
@@ -172,6 +178,9 @@ class Page extends Component {
   load = (id) => {
     if (this.props.fromLogin) {
       this.props.notFromLogin();
+    }
+    if (this.state.templateMode || this.state.importMode) {
+      this.setState({ templateMode: false, importMode: false });
     }
     setTimeout(() => {
       this.props.selectWorld(id);
@@ -453,8 +462,8 @@ class Page extends Component {
     const { id } = this.props.match.params;
     if ((this.props.worlds.length > 0 || this.props.publicWorlds.length > 0) && (this.props.selectedWorldID === null || this.props.selectedWorldID !== id)) {
       this.load(id);
-    }
-    if (this.state.redirectTo !== null) {
+      return (<span>Loading</span>);
+    } else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && 
       !this.props.selectedWorld.Public && 
@@ -503,7 +512,15 @@ class Page extends Component {
       return (
         <span>Importing {this.props.templates.filter(t => t._id === this.state.selectedTemplateIDs[0] )[0].Name}.  Please Wait.</span>
       );
+    // } else if (this.props.allUsers.length === 0) {
+    //   setTimeout(() => {
+    //     this.api.getAllUsers().then(res => {
+    //       this.props.setAllUsers(res);
+    //     });
+    //   }, 500);
+    //   return (<span>Loading</span>);
     } else {
+      const suggestions = [...this.props.typeSuggestions, ...this.props.thingSuggestions];
       return (
         <Grid item xs={12} container spacing={0} direction="column">
           {this.props.selectedWorld !== null && 
@@ -627,11 +644,13 @@ class Page extends Component {
               <Grid item xs={12}>
                 <CommentsControl 
                   user={this.props.user} 
+                  allUsers={this.props.allUsers}
                   object={this.props.selectedWorld}
                   objectType="World"
                   world={this.props.selectedWorld}
                   api={this.api} 
                   onChange={this.commentsChange}
+                  suggestions={suggestions}
                 /> 
               </Grid>
             </Grid>

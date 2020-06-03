@@ -50,7 +50,9 @@ const mapStateToProps = state => {
     user: state.app.user,
     attributesByID: state.app.attributesByID,
     attributesByName: state.app.attributesByName,
-    fromLogin: state.app.fromLogin
+    fromLogin: state.app.fromLogin,
+    typeSuggestions: state.app.typeSuggestions,
+    thingSuggestions: state.app.thingSuggestions
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -1041,7 +1043,9 @@ class Page extends Component {
             let attributes = [...thing.Attributes, ...newAttributes];
             thing.Attributes = attributes;
             thing.AttributesArr = [];
+            console.log(this.props.attributesByID);
             thing.Attributes.forEach(a => {
+              // if (a.attrID !== undefined) {
               const attr = this.props.attributesByID[a.attrID];
               thing.AttributesArr.push({
                 index: thing.AttributesArr.length,
@@ -1056,6 +1060,7 @@ class Page extends Component {
                 FromTypeIDs: a.FromTypeIDs,
                 TypeIDs: attr.TypeIDs
               });
+              // }
             });
             thing.Types = Types;
             this.props.updateSelectedThing(thing);
@@ -1578,6 +1583,7 @@ class Page extends Component {
           }
         });
       }
+      const suggestions = [...this.props.typeSuggestions, ...this.props.thingSuggestions];
       return (
         <Grid item xs={12} container spacing={1} direction="column">
           { this.props.selectedWorld !== null &&
@@ -1655,6 +1661,7 @@ class Page extends Component {
                       this.props.updateSelectedThing(thing);
                       // this.setState({ Description: desc });
                     }}
+                    options={suggestions}
                     labelWidth={82}/>
                 }
               </Grid>

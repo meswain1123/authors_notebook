@@ -9,6 +9,8 @@ import {
   Button
 } from "@material-ui/core";
 import CommentControl from "./CommentControl";
+import TextBox from "./TextBox";
+
 
 const saveComment = (text, props, changeWaiting, comments, changeComments, changeValue) => {
   changeWaiting(true);
@@ -57,26 +59,14 @@ export default function CommentsControl(props) {
   const [value, changeValue] = useState("");
   const [waiting, changeWaiting] = useState(false);
   const [comments, changeComments] = useState([]);
-  const [allUsers, changeUsers] = useState([]);
-  const [loadUsers, changeLoadUsers] = useState(true);
-  const [loadComments, changeLoadComments] = useState(false);
+  const [loadComments, changeLoadComments] = useState(true);
   
-  console.log(props.user);
-
-  if (loadUsers) {
-    changeLoadUsers(false);
-    setTimeout(() => {
-      props.api.getAllUsers().then(res => {
-        changeUsers(res);
-        changeLoadComments(true);
-      });
-    }, 500);
-  } else if (loadComments) {
+  if (loadComments && props.allUsers.length > 0) {
     changeLoadComments(false);
     setTimeout(() => {
       props.api.getComments(props.world._id, props.objectType, props.object._id).then(res => {
         res.comments.forEach(comment => {
-          prepComment(comment, allUsers);
+          prepComment(comment, props.allUsers);
         });
         changeComments(res.comments);
       });
@@ -100,12 +90,13 @@ export default function CommentsControl(props) {
               world={props.world}
               object={props.object}
               objectType={props.objectType}
-              allUsers={allUsers} 
+              allUsers={props.allUsers} 
               api={props.api} 
               changeComments={newComments => {
                 changeComments(newComments);
               }} 
               changeWaiting={changeWaiting}
+              suggestions={props.suggestions}
             />
           </Grid>
         );
@@ -120,40 +111,64 @@ export default function CommentsControl(props) {
         </Grid>
       }
       <Grid item>
-        { (props.user !== null && (props.world.Owner === props.user._id || (props.world.Collaborators !== undefined && props.world.Collaborators.filter(c=> c.userID === props.user._id).length === 0))) ?
-          <FormControl variant="outlined" fullWidth>
-            <InputLabel htmlFor={`text_field_comments`}>New Comment</InputLabel>
-            <OutlinedInput
-              id={`text_field_comments`}
-              name={`text_field_comments`}
-              type="text"
-              autoComplete="Off"
-              multiline
-              value={value}
-              onChange={e => {
-                changeValue(e.target.value);
-              }}
-              labelWidth={110}
-              fullWidth
-            />
-          </FormControl>
+        { (props.user !== null && (props.world.Owner === props.user._id || (props.world.Collaborators !== undefined && props.world.Collaborators.filter(c=> c.userID === props.user._id && c.type === "collab").length === 0))) ?
+          // <FormControl variant="outlined" fullWidth>
+          //   <InputLabel htmlFor={`text_field_comments`}>New Comment</InputLabel>
+          //   <OutlinedInput
+          //     id={`text_field_comments`}
+          //     name={`text_field_comments`}
+          //     type="text"
+          //     autoComplete="Off"
+          //     multiline
+          //     value={value}
+          //     onChange={e => {
+          //       changeValue(e.target.value);
+          //     }}
+          //     labelWidth={110}
+          //     fullWidth
+          //   />
+          // </FormControl>
+          <TextBox 
+            Value={value} 
+            fieldName="New Comment" 
+            multiline={true}
+            // onChange={e => {
+            // }}
+            onBlur={comment => {
+              changeValue(comment);
+            }}
+            options={props.suggestions}
+            labelWidth={110}
+          />
         : (props.user !== null && props.objectType === "General") ?
-          <FormControl variant="outlined" fullWidth>
-            <InputLabel htmlFor={`text_field_comments`}>New Discussion</InputLabel>
-            <OutlinedInput
-              id={`text_field_comments`}
-              name={`text_field_comments`}
-              type="text"
-              autoComplete="Off"
-              multiline
-              value={value}
-              onChange={e => {
-                changeValue(e.target.value);
-              }}
-              labelWidth={115}
-              fullWidth
-            />
-          </FormControl>
+          // <FormControl variant="outlined" fullWidth>
+          //   <InputLabel htmlFor={`text_field_comments`}>New Discussion</InputLabel>
+          //   <OutlinedInput
+          //     id={`text_field_comments`}
+          //     name={`text_field_comments`}
+          //     type="text"
+          //     autoComplete="Off"
+          //     multiline
+          //     value={value}
+          //     onChange={e => {
+          //       changeValue(e.target.value);
+          //     }}
+          //     labelWidth={115}
+          //     fullWidth
+          //   />
+          // </FormControl>
+          <TextBox 
+            Value={value} 
+            fieldName="New Discussion" 
+            multiline={true}
+            // onChange={e => {
+            // }}
+            onBlur={desc => {
+              changeValue(desc);
+            }}
+            options={props.suggestions}
+            labelWidth={110}
+          />
         : (props.user === null && props.objectType === "General") ?
           <FormControl variant="outlined" fullWidth>
             <InputLabel htmlFor="fake_comments_label">

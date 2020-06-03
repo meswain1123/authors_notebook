@@ -8,6 +8,7 @@ import {
   setTypes,
   setAttributes,
   setThings,
+  setAllUsers,
   notFromLogin,
   toggleLogin,
   logout,
@@ -56,6 +57,9 @@ const mapStateToProps = (state) => {
     attributesByID: state.app.attributesByID,
     attributesByName: state.app.attributesByName,
     fromLogin: state.app.fromLogin,
+    allUsers: state.app.allUsers,
+    typeSuggestions: state.app.typeSuggestions,
+    thingSuggestions: state.app.thingSuggestions
   };
 };
 function mapDispatchToProps(dispatch) {
@@ -65,6 +69,7 @@ function mapDispatchToProps(dispatch) {
     updateType: (type) => dispatch(updateType(type)),
     setTypes: (types) => dispatch(setTypes(types)),
     setAttributes: (attributes) => dispatch(setAttributes(attributes)),
+    setAllUsers: allUsers => dispatch(setAllUsers(allUsers)),
     setThings: (things) => dispatch(setThings(things)),
     notFromLogin: () => dispatch(notFromLogin({})),
     toggleLogin: () => dispatch(toggleLogin({})),
@@ -134,6 +139,7 @@ class Page extends Component {
         {
           _id: id,
           redirectTo: null,
+          loaded: false
         },
         this.finishLoading
       );
@@ -157,6 +163,7 @@ class Page extends Component {
             type = type[0];
 
             this.props.updateSelectedType(type);
+            this.setState({ loaded: true });
           } else {
             this.setState({ message: "Invalid ID", loaded: true });
           }
@@ -174,31 +181,6 @@ class Page extends Component {
           });
         }
       });
-      // this.getWorld().then(res => {
-      //   if (id !== null) {
-      //     let type = res.types.filter(t => t._id === id);
-      //     if (type.length > 0) {
-      //       type = type[0];
-
-      //       this.props.updateSelectedType(type);
-      //     }
-      //     else {
-      //       this.setState({ message: "Invalid ID", loaded: true });
-      //     }
-      //   } else {
-      //     this.props.updateSelectedType({
-      //       _id: null,
-      //       Name: "",
-      //       Description: "",
-      //       Supers: [],
-      //       SuperIDs: [],
-      //       AttributesArr: [],
-      //       Attributes: [],
-      //       Major: false,
-      //       DefaultsHash: {}
-      //     });
-      //   }
-      // })
     } else {
       this.props.updateSelectedType({
         _id: null,
@@ -227,8 +209,10 @@ class Page extends Component {
     const { id } = this.props.match.params;
     if (this.state._id !== id) {
       this.load(id);
-    }
-    if (this.state.redirectTo !== null) {
+      return (<span>Loading</span>);
+    } else if (!this.state.loaded) {
+      return (<span>Loading</span>);
+    } else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (
       this.props.selectedWorld !== null &&
@@ -253,6 +237,13 @@ class Page extends Component {
       this.props.selectedType === null
     ) {
       return <span>Loading</span>;
+    // } else if (this.props.allUsers.length === 0) {
+    //   setTimeout(() => {
+    //     this.api.getAllUsers().then(res => {
+    //       this.props.setAllUsers(res);
+    //     });
+    //   }, 500);
+    //   return (<span>Loading</span>);
     } else {
       const references = this.props.types.filter(
         (t) =>
@@ -270,11 +261,10 @@ class Page extends Component {
           }
         });
       });
+      const suggestions = [...this.props.typeSuggestions, ...this.props.thingSuggestions];
       return (
         <Grid item xs={12} container spacing={0} direction="column">
-          {this.props.selectedWorld === null ? (
-            ""
-          ) : (
+          {this.props.selectedWorld !== null && 
             <div>
               <Helmet>
                 <title>{`Author's Notebook: ${this.props.selectedWorld.Name}`}</title>
@@ -932,11 +922,13 @@ class Page extends Component {
               <Grid item xs={12}>
                 <CommentsControl 
                   user={this.props.user} 
+                  allUsers={this.props.allUsers}
                   object={this.props.selectedType}
                   objectType="Type"
                   world={this.props.selectedWorld}
                   api={this.api} 
                   onChange={this.commentsChange}
+                  suggestions={suggestions}
                 /> 
               </Grid>
               <Modal
@@ -984,7 +976,7 @@ class Page extends Component {
                 </div>
               </Modal>
             </div>
-          )}
+          }
         </Grid>
       );
     }
