@@ -8,9 +8,9 @@ import {
   FormHelperText
 } from "@material-ui/core";
 // import TextInput from 'react-autocomplete-input';
-// import AutocompleteTextField from "./AutocompleteTextField";
-import AutocompleteTextField from 'react-autocomplete-input';
-import 'react-autocomplete-input/dist/bundle.css';
+import AutocompleteTextField from "./AutocompleteTextField";
+// import AutocompleteTextField from 'react-autocomplete-input';
+// import 'react-autocomplete-input/dist/bundle.css';
 
 
 export default function TextBox(props) {
@@ -26,10 +26,10 @@ export default function TextBox(props) {
           name={`text_field_${props.fieldName}`}
           type="text"
           autoComplete="Off"
-          // multiline
-          // error={props.message !== undefined && props.message !== ""}
-          multiline="multiline"
-          error={props.message}
+          multiline
+          error={props.message !== undefined && props.message !== ""}
+          // multiline="multiline"
+          // error={props.message}
           value={value}
           onChange={e => {
             changeValue(e);
@@ -47,8 +47,8 @@ export default function TextBox(props) {
               props.onBlur(value.trim());
             }
           }}
-          // labelWidth={props.labelWidth}
-          // fullWidth
+          labelWidth={props.labelWidth}
+          fullWidth
           options={props.options}
         />
       : props.options !== undefined ?
@@ -57,8 +57,8 @@ export default function TextBox(props) {
           name={`text_field_${props.fieldName}`}
           type="text"
           autoComplete="Off"
-          error={props.message}
-          // error={props.message !== undefined && props.message !== ""}
+          error={props.message !== undefined && props.message !== ""}
+          // error={props.message}
           value={value}
           onChange={e => {
             changeValue(e);
@@ -76,8 +76,8 @@ export default function TextBox(props) {
               props.onBlur(value.trim());
             }
           }}
-          // labelWidth={props.labelWidth}
-          // fullWidth
+          labelWidth={props.labelWidth}
+          fullWidth
           options={props.options}
         />
       : props.multiline !== undefined && props.multiline ?
