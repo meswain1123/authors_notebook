@@ -425,9 +425,12 @@ class AutocompleteTextField extends React.Component {
     const { value: stateValue } = this.state;
 
     const propagated = Object.assign({}, rest);
-    if (this.constructor.propTypes !== undefined) {
-      Object.keys(this.constructor.propTypes).forEach((k) => { delete propagated[k]; });
+    if (propTypes !== undefined) {
+      // console.log(Object.keys(propTypes));
+      // console.log(Object.keys(rest));
+      Object.keys(propTypes).forEach((k) => { delete propagated[k]; });
     }
+    // console.log(Object.keys(propagated));
     let val = '';
 
     if (typeof value !== 'undefined' && value !== null) {
