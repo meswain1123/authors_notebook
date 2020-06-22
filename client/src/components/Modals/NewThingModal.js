@@ -39,12 +39,10 @@ const saveNewThing = (value, props, changeName, changeMessage, changeWaiting) =>
         thing.AttributesArr = [];
         // Adds to props 
         props.addThing(thing);
-        setTimeout(() => {
-          // Calls respond back to Attribute to set the thing
-          changeName("");
-          changeWaiting(false);
-          props.onSave(thing);
-        }, 500);
+        // Calls respond back to Attribute to set the thing
+        changeName("");
+        changeWaiting(false);
+        props.onSave(thing);
 
         // this.state.modalSubmit(thing);
         // this.setState({

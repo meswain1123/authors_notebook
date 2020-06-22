@@ -27,9 +27,6 @@ import {
 import { Helmet } from "react-helmet";
 import API from "../../smartAPI";
 import CommentsControl from "../../components/Inputs/CommentsControl";
-// import ReactQuill from '../../components/Inputs/ReactQuill';
-// import '../../assets/css/quill.read-only.css';
-
 
 /* 
   This component will take the main portion of the page and is used for
@@ -299,10 +296,7 @@ class Page extends Component {
                   <Grid item>
                     <h3>{this.props.selectedType.Major ? "Major Type" : ""}</h3>
                   </Grid>
-                  <Grid item>
-                    <div  dangerouslySetInnerHTML={{__html: this.props.selectedType.Description}} />
-                    {/* {this.props.selectedType.Description} */}
-                  </Grid>
+                  <Grid item>{this.props.selectedType.Description}</Grid>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <List>

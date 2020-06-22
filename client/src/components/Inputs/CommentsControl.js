@@ -12,18 +12,6 @@ import CommentControl from "./CommentControl";
 import TextBox from "./TextBox";
 
 
-/**
- * <p>First Reply <a href="/type/details/5e7694ce7fc0e1501c57f7cb" rel="noopener noreferrer" target="_blank">Completed Item</a></p><p><br></p>
- * gets translated to 
- * <p>First Reply <a href="/type/details/5e7694ce7fc0e1501c57f7cb" rel="noopener noreferrer" target="_blank">Completed Item</a></p>
- */
-const cleanWYSIWYG = (str) => {
-  if (str.endsWith("<p><br></p>")) {
-    str = str.substring(0, str.length - 11);
-  }
-  return str;
-}
-
 const saveComment = (text, props, changeWaiting, comments, changeComments, changeValue) => {
   changeWaiting(true);
   const comment = {
@@ -33,7 +21,7 @@ const saveComment = (text, props, changeWaiting, comments, changeComments, chang
     worldID: props.world._id,
     objectType: props.objectType,
     objectID: props.object._id,
-    text: cleanWYSIWYG(text),
+    text,
     votes: {},
     replies: []
   };
@@ -144,9 +132,8 @@ export default function CommentsControl(props) {
             Value={value} 
             fieldName="New Comment" 
             multiline={true}
-            onChange={comment => {
-              changeValue(comment);
-            }}
+            // onChange={e => {
+            // }}
             onBlur={comment => {
               changeValue(comment);
             }}

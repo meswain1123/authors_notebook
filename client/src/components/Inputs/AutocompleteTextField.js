@@ -1,64 +1,15 @@
-// import React, { createRef } from 'react';
-// import PropTypes from 'prop-types';
-// // import getCaretCoordinates from './textarea-caret';
-// // import getCaretCoordinates from 'textarea-caret';
-// import getInputSelection, { setCaretPosition } from 'get-input-selection';
-import '../../assets/css/AutocompleteTextField.css';
-// import {
-//   Button
-//   // FormControl,
-//   // OutlinedInput,
-//   // InputLabel,
-//   // FormHelperText
-// } from "@material-ui/core";
-// import Quill, {
-//   // QuillOptionsStatic,
-//   // DeltaStatic,
-//   RangeStatic,
-//   // BoundsStatic,
-//   // StringMap,
-//   // Sources,
-// } from 'quill';
-// import ContentEditable from "react-contenteditable";
-// import ContentEditable from "./ContentEditable";
-import sanitizeHtml from "sanitize-html";
-// import "../../assets/css/editable-content.css";
-
-
 import React, { createRef } from 'react';
 import PropTypes from 'prop-types';
-// import ReactQuill from 'react-quill';
-import ReactQuill from './ReactQuill';
-  
-const modules = {
-  toolbar: [
-    [
-      // { 'header': [1, 2, false] }
-    ],
-    [
-      'bold', 'italic', 'underline','strike', 'blockquote'
-    ],
-    [
-      {'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}
-    ],
-    [
-      'link', 
-      'image'
-    ],
-    [
-      'clean'
-    ]
-  ],
-};
-
-const formats = [
-  'header',
-  'bold', 
-  'italic', 'underline', 'strike', 'blockquote',
-  'list', 'bullet', 'indent',
-  'link', 
-  'image'
-];
+// import getCaretCoordinates from './textarea-caret';
+import getCaretCoordinates from 'textarea-caret';
+import getInputSelection, { setCaretPosition } from 'get-input-selection';
+import '../../assets/css/AutocompleteTextField.css';
+import {
+  // FormControl,
+  OutlinedInput,
+  // InputLabel,
+  // FormHelperText
+} from "@material-ui/core";
 
 const KEY_UP = 38;
 const KEY_DOWN = 40;
@@ -66,6 +17,9 @@ const KEY_RETURN = 13;
 const KEY_ENTER = 14;
 const KEY_ESCAPE = 27;
 const KEY_TAB = 9;
+
+const OPTION_LIST_Y_OFFSET = 10;
+const OPTION_LIST_MIN_WIDTH = 100;
 
 const propTypes = {
   Component: PropTypes.oneOfType([
@@ -79,7 +33,7 @@ const propTypes = {
   onChange: PropTypes.func,
   onKeyDown: PropTypes.func,
   onRequestOptions: PropTypes.func,
-  // options: PropTypes.arrayOf(PropTypes.Object),
+  options: PropTypes.arrayOf(PropTypes.string),
   regex: PropTypes.string,
   matchAny: PropTypes.bool,
   minChars: PropTypes.number,
@@ -110,13 +64,25 @@ const defaultProps = {
   spacer: ' ',
   trigger: '@',
   offsetX: 0,
-  offsetY: -10,
+  offsetY: 0,
   value: null,
 };
 
 class AutocompleteTextField extends React.Component {
   constructor(props) {
     super(props);
+
+    this.isTrigger = this.isTrigger.bind(this);
+    this.getMatch = this.getMatch.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleResize = this.handleResize.bind(this);
+    this.handleSelection = this.handleSelection.bind(this);
+    this.updateCaretPosition = this.updateCaretPosition.bind(this);
+    this.updateHelper = this.updateHelper.bind(this);
+    this.resetHelper = this.resetHelper.bind(this);
+    this.renderAutocompleteList = this.renderAutocompleteList.bind(this);
+
     this.state = {
       helperVisible: false,
       left: 0,
@@ -125,11 +91,16 @@ class AutocompleteTextField extends React.Component {
       options: [],
       selection: 0,
       top: 0,
-      value: props.value
+      value: null,
     };
 
     this.recentValue = props.defaultValue;
+    this.enableSpaceRemovers = false;
     this.refInput = createRef();
+  }
+
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize);
   }
 
   componentDidUpdate(prevProps) {
@@ -141,30 +112,16 @@ class AutocompleteTextField extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
+  }
+
   getMatch(str, caret, providedOptions) {
     const { trigger, matchAny, regex } = this.props;
     const re = new RegExp(regex);
     const triggerLength = trigger.length;
     const triggerMatch = trigger.match(re);
 
-    let last = str[caret - 1];
-    // The Quill control I'm using puts things inside of a <p>.  
-    // I need to back the caret up to be before it.
-    while (last === ">") {
-      while (last !== "<") {
-        caret--;
-        last = str[caret - 1];
-      }
-      caret--;
-      last = str[caret - 1];
-    }
-    // string change event happens before keydown event with Quill control, 
-    // which is preventing tabs from causing selection.
-    // This should fix it.
-    if (last === "	") {
-      caret--;
-      last = str[caret - 1];
-    }
     for (let i = caret - 1; i >= 0; --i) {
       const substr = str.substring(i, caret);
       const match = substr.match(re);
@@ -198,8 +155,7 @@ class AutocompleteTextField extends React.Component {
       if (matchStart >= 0) {
         const matchedSlug = str.substring(matchStart, caret);
         const options = providedOptions.filter((slug) => {
-          // TODO: Change this to work with object
-          const idx = slug.Display.toLowerCase().indexOf(matchedSlug.toLowerCase());
+          const idx = slug.toLowerCase().indexOf(matchedSlug.toLowerCase());
           return idx !== -1 && (matchAny || idx === 0);
         });
 
@@ -234,35 +190,10 @@ class AutocompleteTextField extends React.Component {
       spacer,
       value,
     } = this.props;
-    const old = this.recentValue;
-    let str = e.target === undefined || e.target.value === undefined ? this.state.value : e.target.value;
 
-    let end = -1;
-    if (old.length === 0) {
-      end = str.length - 1;
-    } else if (str.length === 0) {
-      end = 0;
-    } else {
-      let old2 = old.trim();
-      let str2 = str.trim();
-      if (old2.substring(old2.length - 6) === "&nbsp;") {
-        old2 = old2.substring(0, old2.length - 6);
-      }
-      if (str2.substring(str2.length - 6) === "&nbsp;") {
-        str2 = str2.substring(0, str2.length - 6);
-      }
-      if (old2 !== str2) {
-        // let inSpan = false;
-            
-        for (let i = 1; i <= Math.min(str2.length, old2.length); i++) {
-          if (str2.length < i || old2.length < i || str2[str2.length - i] !== old2[old2.length - i]) {
-            end = str2.length - i;
-            break;
-          }
-        }
-      }
-    }
-    const caret = end + 1;
+    const old = this.recentValue;
+    const str = e.target.value;
+    const caret = getInputSelection(e.target).end;
 
     if (!str.length) {
       this.setState({ helperVisible: false });
@@ -270,10 +201,10 @@ class AutocompleteTextField extends React.Component {
 
     this.recentValue = str;
 
-    this.setState({ caret, value: e });
+    this.setState({ caret, value: e.target.value });
 
     if (!str.length || !caret) {
-      return onChange(e);
+      return onChange(e.target.value);
     }
 
     // '@wonderjenny ,|' -> '@wonderjenny, |'
@@ -285,10 +216,11 @@ class AutocompleteTextField extends React.Component {
             && str[i - 1] === spacer
             && spaceRemovers.indexOf(str[i - 2]) === -1
             && spaceRemovers.indexOf(str[i]) !== -1
-            && this.getMatch(str.substring(0, i - 2), caret - 3, options) // TODO: Change this to work with objects
+            && this.getMatch(str.substring(0, i - 2), caret - 3, options)
           ) {
             const newValue = (`${str.slice(0, i - 1)}${str.slice(i, i + 1)}${str.slice(i - 1, i)}${str.slice(i + 1)}`);
 
+            this.updateCaretPosition(i + 1);
             this.refInput.current.value = newValue;
 
             if (!value) {
@@ -308,12 +240,13 @@ class AutocompleteTextField extends React.Component {
     this.updateHelper(str, caret, options);
 
     if (!value) {
-      this.setState({ value: e });
+      this.setState({ value: e.target.value });
     }
-    return onChange(e);
+
+    return onChange(e.target.value);
   }
 
-  handleKeyDown = (event) => {
+  handleKeyDown(event) {
     const { helperVisible, options, selection } = this.state;
     const { onKeyDown } = this.props;
 
@@ -346,90 +279,50 @@ class AutocompleteTextField extends React.Component {
     }
   }
 
+  handleResize() {
+    this.setState({ helperVisible: false });
+  }
+
   handleSelection(idx) {
     const { matchStart, matchLength, options } = this.state;
-    // const { spacer } = this.props;
+    const { spacer } = this.props;
 
-    // const slug = `<span id='myid' style="color: blue">${options[idx]}</span>`;
-    let slug = `<a href='/${options[idx].suggestionType}/details/${options[idx]._id}' rel="noopener noreferrer" target="_blank">${options[idx].Display}</a>`;
+    const slug = options[idx];
     const value = this.recentValue;
-    const part1 = value.substring(0, matchStart - 1); // - 1 to remove the @
+    const part1 = value.substring(0, matchStart);
     const part2 = value.substring(matchStart + matchLength);
+
+    const event = { target: this.refInput.current.children[0] };
     
-    if (part2 === "") {
-      slug += "&nbsp;";
-    }
-    this.setState({ value: `${part1}${slug}${part2}` });
-    let caret = 0;
-    let searched = 0;
-    let part1Sub = part1;
-    while (searched < part1.length) {
-      // I'll need some way in the future to make it so <> can be used in these.
-      // Probably something like catching them and putting an escape character before them.
-      // Of course then it will also have to do escape characters for escape characters as well.
-      // Actually, it looks like I don't.  It's automatically converting < and > to &lt; and &gt;.
+    event.target.value = `${part1}${slug}${spacer}${part2}`;
+    this.handleChange(event);
 
-      const index = part1Sub.indexOf("<");
-      if (index > -1) {
-        if (index > 0) 
-          caret += index;
-        searched += index; // everything before the tag;
-        part1Sub = part1Sub.substring(index);
-        let openerEndIndex = part1Sub.indexOf(">");
-        if (openerEndIndex === -1) {
-          // Probably an error because I haven't done the escape character thing yet.
-          throw Error("What the Pizza Sauce");
-        } else {
-          searched += openerEndIndex + 1;
-          part1Sub = part1Sub.substring(openerEndIndex + 1);
-        }
-      } else if (part1Sub.length > 0) {
-        searched += part1Sub.length;
-        caret += part1Sub.length;
-        part1Sub = "";
-      }
-      if (part1Sub.length === 0 && searched < part1.length) {
-        throw Error("OMGOSH");
-      }
-    }
-    caret += options[idx].Display.length;
-    this.updateCaretPosition(caret);
+    this.resetHelper();
+
+    this.updateCaretPosition(part1.length + slug.length + 1);
+
+    this.enableSpaceRemovers = true;
   }
 
-  updateCaretPosition(index) {
-    setTimeout(() => {
-      let input = this.refInput.current;
-      
-      const editor = input.getEditor();
-      const unprivilegedEditor = input.makeUnprivilegedEditor(editor);
-      
-      const length = unprivilegedEditor.getLength();
-      // Caret at the end
-      // const range = {
-      //   index: length - 1,
-      //   length: 0
-      // };
-      const range = {
-        index: Math.max(0, Math.min(index, length-1)),
-        length: 0
-      };
-      unprivilegedEditor.setSelection(range);
-    }, 500);
-  }
-
-  setValue = (event) => {
-    this.setState({ value: event }, _ => { 
-      this.handleChange(event);
-    });
+  updateCaretPosition(caret) {
+    this.setState({ caret }, () => setCaretPosition(this.refInput.current, caret));
   }
 
   updateHelper(str, caret, options) {
+    let input = this.refInput.current;
+    input = input.children[0];
+
     const slug = this.getMatch(str, caret, options);
+
     if (slug) {
-      let input = this.refInput.current;
-      let element = input.refInput.current;
-      const top = element.clientHeight;
-      const left = 0;
+      const caretPos = getCaretCoordinates(input, caret);
+      const rect = input.getBoundingClientRect();
+
+      const top = caretPos.top + input.offsetTop;
+      const left = Math.min(
+        caretPos.left + input.offsetLeft - OPTION_LIST_Y_OFFSET,
+        input.offsetLeft + rect.width - OPTION_LIST_MIN_WIDTH,
+      );
 
       const { minChars, onRequestOptions, requestOnlyIfNoOptions } = this.props;
 
@@ -439,7 +332,7 @@ class AutocompleteTextField extends React.Component {
           slug.options.length > 1
           || (
             slug.options.length === 1
-            && slug.options[0].Display.length !== slug.matchLength
+            && slug.options[0].length !== slug.matchLength
           )
         )
       ) {
@@ -496,18 +389,18 @@ class AutocompleteTextField extends React.Component {
     const optionNumber = maxOptions === 0 ? options.length : maxOptions;
 
     const helperOptions = options.slice(0, optionNumber).map((val, idx) => {
-      const highlightStart = val.Display.toLowerCase().indexOf(value.substr(matchStart, matchLength).toLowerCase());
+      const highlightStart = val.toLowerCase().indexOf(value.substr(matchStart, matchLength).toLowerCase());
 
       return (
         <li
           className={idx === selection ? 'active' : null}
-          key={val.Display}
+          key={val}
           onClick={() => { this.handleSelection(idx); }}
           onMouseEnter={() => { this.setState({ selection: idx }); }}
         >
-          {val.Display.slice(0, highlightStart)}
-          <strong>{val.Display.substr(highlightStart, matchLength)}</strong>
-          {val.Display.slice(highlightStart + matchLength)}
+          {val.slice(0, highlightStart)}
+          <strong>{val.substr(highlightStart, matchLength)}</strong>
+          {val.slice(highlightStart + matchLength)}
         </li>
       );
     });
@@ -519,37 +412,72 @@ class AutocompleteTextField extends React.Component {
     );
   }
 
-  sanitizeConf = {
-    allowedTags: ["b", "i", "em", "strong", "a", "p", "h1"],
-    allowedAttributes: { a: ["href"] }
-  };
-
-  sanitize = (onBlur) => {
-    this.setState({ html: sanitizeHtml(this.state.html, this.sanitizeConf) }, onBlur);
-  };
-
   render() {
+    const {
+      Component,
+      defaultValue,
+      disabled,
+      onBlur,
+      value,
+      ...rest
+    } = this.props;
+
+    const { value: stateValue } = this.state;
+
+    const propagated = Object.assign({}, rest);
+    if (propTypes !== undefined) {
+      // console.log(Object.keys(propTypes));
+      // console.log(Object.keys(rest));
+      Object.keys(propTypes).forEach((k) => { delete propagated[k]; });
+    }
+    // console.log(Object.keys(propagated));
+    let val = '';
+
+    if (typeof value !== 'undefined' && value !== null) {
+      val = value;
+    } else if (stateValue) {
+      val = stateValue;
+    } else if (defaultValue) {
+      val = defaultValue;
+    }
+
     return (
-      <div style={{position: "relative"}}>
-        <ReactQuill 
-          theme="snow"
-          modules={modules}
-          formats={formats} 
-          value={this.state.value} 
-          onChange={ e => {
-              this.setValue(e);
-            }
-          }
-          onBlur={_ => {
-            if (this.props.onBlur !== undefined) {
-              this.props.onBlur(this.state.value.trim());
-            }
-          }}
+      <span>
+        {/* <Component
+          disabled={disabled}
+          onBlur={onBlur}
+          onChange={this.handleChange}
           onKeyDown={this.handleKeyDown}
           ref={this.refInput}
+          value={val}
+          {...propagated}
+        /> */}
+        <OutlinedInput
+          id="testing"
+          name="testing"
+          type="text"
+          autoComplete="Off"
+          disabled={disabled}
+          onBlur={onBlur}
+          onChange={this.handleChange}
+          onKeyDown={this.handleKeyDown}
+          ref={this.refInput}
+          value={val}
+          {...propagated}
+          multiline
+          // error={props.message !== undefined && props.message !== ""}
+          // value={val}
+          // onChange={e => {
+          //   // changeValue(e.target.value);
+          // }}
+          // onBlur={e => {
+          //   // props.onBlur(value.trim());
+          // }}
+          labelWidth={100}
+          fullWidth
         />
         {this.renderAutocompleteList()}
-      </div>
+      </span>
     );
   }
 }

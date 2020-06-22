@@ -64,18 +64,6 @@ const vote = (comment, theVote, props) => {
     .catch(err => console.log(err));
 };
 
-/**
- * <p>First Reply <a href="/type/details/5e7694ce7fc0e1501c57f7cb" rel="noopener noreferrer" target="_blank">Completed Item</a></p><p><br></p>
- * gets translated to 
- * <p>First Reply <a href="/type/details/5e7694ce7fc0e1501c57f7cb" rel="noopener noreferrer" target="_blank">Completed Item</a></p>
- */
-const cleanWYSIWYG = (str) => {
-  if (str.endsWith("<p><br></p>")) {
-    str = str.substring(0, str.length - 11);
-  }
-  return str;
-}
-
 const reply = (text, props, changeReplying, changeValue) => {
   if (props.user === null) {
     return;
@@ -91,7 +79,7 @@ const reply = (text, props, changeReplying, changeValue) => {
     time: new Date(),
     user: props.user,
     userID: props.user._id,
-    text: cleanWYSIWYG(text),
+    text,
     votes: {},
     voteSum: 0,
     replies: []
@@ -166,8 +154,7 @@ export default function CommentControl(props) {
               {props.comment.user.username}: {props.comment.time.toLocaleDateString()} {props.comment.time.toLocaleTimeString()}
             </Typography>
             <Typography component="p">
-              <span  dangerouslySetInnerHTML={{__html: props.comment.text}} />
-              {/* {props.comment.text} */}
+              {props.comment.text}
             </Typography>
           </CardContent>
           <CardActions disableSpacing>
@@ -287,8 +274,7 @@ export default function CommentControl(props) {
             fieldName="New Reply" 
             multiline={true}
             onChange={e => {
-              changeValue(e);
-              // changeValue(e.target.value);
+              changeValue(e.target.value);
             }}
             // onBlur={reply => {
             //   changeValue(reply);

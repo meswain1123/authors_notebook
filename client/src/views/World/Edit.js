@@ -164,23 +164,11 @@ class Page extends Component {
     this.validateForm(respond);
   }
 
-  /**
-   * <p>First Reply <a href="/type/details/5e7694ce7fc0e1501c57f7cb" rel="noopener noreferrer" target="_blank">Completed Item</a></p><p><br></p>
-   * gets translated to 
-   * <p>First Reply <a href="/type/details/5e7694ce7fc0e1501c57f7cb" rel="noopener noreferrer" target="_blank">Completed Item</a></p>
-   */
-  cleanWYSIWYG = (str) => {
-    if (str.endsWith("<p><br></p>")) {
-      str = str.substring(0, str.length - 11);
-    }
-    return str;
-  }
-
   submitThroughAPI = () => {
     const world = {
       _id: this.state._id,
       Name: this.state.Name.trim(),
-      Description: this.cleanWYSIWYG(this.state.Description.trim()),
+      Description: this.state.Description.trim(),
       Public: this.state.Public,
       AcceptingCollaborators: this.state.AcceptingCollaborators,
       Owner: this.props.user._id
@@ -494,7 +482,7 @@ class Page extends Component {
                 this.props.setThings(res.things);
 
                 let templateIDs = [...this.state.selectedTemplateIDs];
-                templateIDs.splice(0, 1);
+                templateIDs.splice(0);
                 if (templateIDs.length === 0) {
                   this.setState({
                     waiting: false,
@@ -526,7 +514,7 @@ class Page extends Component {
             this.props.setThings(res.things);
 
             let templateIDs = [...this.state.selectedTemplateIDs];
-            templateIDs.splice(0, 1);
+            templateIDs.splice(0);
             if (templateIDs.length === 0) {
               this.setState({
                 waiting: false,
@@ -556,7 +544,7 @@ class Page extends Component {
       this.load(id);
       return (<span>Loading...</span>);
     } else if (!this.state.loaded) {
-      return (<span>Loading...</span>);
+      return (<span>Loading2...</span>);
     } else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
     } else if (this.props.selectedWorld !== null && 

@@ -5,7 +5,6 @@ import {
   notFromLogin
 } from "../redux/actions/index";
 // import MediaCard from "../components/Displays/MediaCard";
-// import ContentEditableBox from "../components/Inputs/ContentEditableBox";
 
 const mapStateToProps = state => {
   return {
@@ -38,10 +37,6 @@ class Page extends Component {
       return (
         <div>
           <h3>Author's Notebook</h3>
-
-          {/* <div class="editable" value="" id="text_field_New Comment" name="text_field_New Comment" type="text" autocomplete="Off" contenteditable="true">;lkjsdfa sfsdfasd /fasdfkjsdf likuh</div> */}
-
-          {/* <ContentEditableBox /> */}
 
           {/* <MediaCard title="ANB Basics Tutorial" description="This video explains the basics of how to use the website and its tools.  It covers the basic concepts, creating a world, navigation, creating types, creating attributes, and creating things." /> */}
 

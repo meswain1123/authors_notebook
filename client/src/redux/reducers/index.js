@@ -178,12 +178,7 @@ function rootReducer(state = initialState, action) {
       // sessionStorage.setItem("publicWorlds", JSON.stringify(action.payload));
       const worldSuggestions = [];
       action.payload.forEach(w => {
-        // worldSuggestions.push(`${w.Name}-${w._id}`);
-        worldSuggestions.push({
-          _id: w._id,
-          suggestionType: "world",
-          Display: `${w.Name}`
-        });
+        worldSuggestions.push(`w/${w.Name}-${w._id}`);
       });
       sessionStorage.setItem("worldSuggestions", JSON.stringify(worldSuggestions));
       if (state.selectedWorldID !== null && state.selectedWorld === null) {
@@ -225,24 +220,14 @@ function rootReducer(state = initialState, action) {
   } else if (action.type === SET_ALL_USERS) {
     const userSuggestions = [];
     action.payload.forEach(u => {
-      // userSuggestions.push(`${u.username}-${u._id}`);
-      userSuggestions.push({
-        _id: u._id,
-        suggestionType: "user",
-        Display: `${u.username}`
-      });
+      userSuggestions.push(`u/${u.username}-${u._id}`);
     });
     sessionStorage.setItem("userSuggestions", JSON.stringify(userSuggestions));
     if (state.selectedWorld !== null){
       const collabSuggestions = [];
       action.payload.forEach(u => {
         if (state.selectedWorld.Owner === u._id || (state.selectedWorld.Collaborators !== undefined && state.selectedWorld.Collaborators !== null && state.selectedWorld.Collaborators.filter(c => c.userID === u._id).length > 0)) {
-          // collabSuggestions.push(`${u.username}-${u._id}`);
-          collabSuggestions.push({
-            _id: u._id,
-            suggestionType: "user",
-            Display: `${u.username}`
-          });
+          collabSuggestions.push(`u/${u.username}-${u._id}`);
         }
       });
       sessionStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
@@ -286,12 +271,7 @@ function rootReducer(state = initialState, action) {
         const collabSuggestions = [];
         state.allUsers.forEach(u => {
           if (world.Owner === u._id) {
-            // collabSuggestions.push(`${u.username}-${u._id}`);
-            collabSuggestions.push({
-              _id: u._id,
-              suggestionType: "user",
-              Display: `${u.username}`
-            });
+            collabSuggestions.push(`u/${u.username}-${u._id}`);
           }
         });
         sessionStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
@@ -324,12 +304,7 @@ function rootReducer(state = initialState, action) {
         const collabSuggestions = [];
         state.allUsers.forEach(u => {
           if (world.Owner === u._id) {
-            // collabSuggestions.push(`${u.username}-${u._id}`);
-            collabSuggestions.push({
-              _id: u._id,
-              suggestionType: "user",
-              Display: `${u.username}`
-            });
+            collabSuggestions.push(`u/${u.username}-${u._id}`);
           }
         });
         sessionStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
@@ -416,12 +391,7 @@ function rootReducer(state = initialState, action) {
         const collabSuggestions = [];
         state.allUsers.forEach(u => {
           if (world.Owner === u._id || (world.Collaborators !== undefined && world.Collaborators !== null && world.Collaborators.filter(c => c.userID === u._id).length > 0)) {
-            // collabSuggestions.push(`${u.username}-${u._id}`);
-            collabSuggestions.push({
-              _id: u._id,
-              suggestionType: "user",
-              Display: `${u.username}`
-            });
+            collabSuggestions.push(`u/${u.username}-${u._id}`);
           }
         });
         sessionStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
@@ -511,12 +481,7 @@ function rootReducer(state = initialState, action) {
     sessionStorage.setItem("types", JSON.stringify(action.payload));
     const typeSuggestions = [];
     action.payload.forEach(t => {
-      // typeSuggestions.push(`${t.Name}-${t._id}`);
-      typeSuggestions.push({
-        _id: t._id,
-        suggestionType: "type",
-        Display: `${t.Name}`
-      });
+      typeSuggestions.push(`y/${t.Name}-${t._id}`);
     });
     sessionStorage.setItem("typeSuggestions", JSON.stringify(typeSuggestions));
     return Object.assign({}, state, {
@@ -528,12 +493,7 @@ function rootReducer(state = initialState, action) {
     sessionStorage.setItem("types", JSON.stringify(types));
     const typeSuggestions = [];
     types.forEach(t => {
-      // typeSuggestions.push(`${t.Name}-${t._id}`);
-      typeSuggestions.push({
-        _id: t._id,
-        suggestionType: "type",
-        Display: `${t.Name}`
-      });
+      typeSuggestions.push(`y/${t.Name}-${t._id}`);
     });
     sessionStorage.setItem("typeSuggestions", JSON.stringify(typeSuggestions));
     return Object.assign({}, state, {
@@ -545,19 +505,9 @@ function rootReducer(state = initialState, action) {
     
     const thingSuggestions = [];
     action.payload.forEach(t => {
-      // thingSuggestions.push(`${t.Name}-${t._id}`);
-      thingSuggestions.push({
-        _id: t._id,
-        suggestionType: "thing",
-        Display: `${t.Name}`
-      });
+      thingSuggestions.push(`t/${t.Name}-${t._id}`);
       t.Types.forEach(t2 => {
-        // thingSuggestions.push(`${t2.Name}-${t.Name}-${t._id}`);
-        thingSuggestions.push({
-          _id: t._id,
-          suggestionType: "thing",
-          Display: `${t2.Name}-${t.Name}`
-        });
+        thingSuggestions.push(`t/${t2.Name}-${t.Name}-${t._id}`);
       });
     });
     sessionStorage.setItem("thingSuggestions", JSON.stringify(thingSuggestions));
@@ -570,19 +520,9 @@ function rootReducer(state = initialState, action) {
     sessionStorage.setItem("things", JSON.stringify(things));
     const thingSuggestions = [];
     things.forEach(t => {
-      // thingSuggestions.push(`${t.Name}-${t._id}`);
-      thingSuggestions.push({
-        _id: t._id,
-        suggestionType: "thing",
-        Display: `${t.Name}`
-      });
+      thingSuggestions.push(`t/${t.Name}-${t._id}`);
       t.Types.forEach(t2 => {
-        // thingSuggestions.push(`${t2.Name}-${t.Name}-${t._id}`);
-        thingSuggestions.push({
-          _id: t._id,
-          suggestionType: "thing",
-          Display: `${t2.Name}-${t.Name}`
-        });
+        thingSuggestions.push(`t/${t2.Name}-${t.Name}-${t._id}`);
       });
     });
     sessionStorage.setItem("thingSuggestions", JSON.stringify(thingSuggestions));

@@ -81,12 +81,7 @@ class Control extends Component {
 
   deleteAttribute = value => {
     const thing = this.props.selectedThing;
-    thing.AttributesArr.splice(value.index, 1);
-    thing.AttributesArr.forEach(a => {
-      if (a.index > this.state.infoAttribute.index) {
-        a.index--;
-      }
-    })
+    thing.AttributesArr.splice(value.index);
     this.props.updateSelectedThing(thing);
   };
 

@@ -63,10 +63,10 @@ const addType = (selectedItem, props) => {
     //   props.onChange(attr);
     // }
     
-    // setTimeout(() => {
-    const attr = props.attribute;
-    props.onNewThing(attr);
-    // }, 500);
+    setTimeout(() => {
+      const attr = props.attribute;
+      props.onNewThing(attr);
+    }, 500);
     // props.onNewThing(
     //   // respond2,
     //   // props.types.filter(t => t._id === props.attribute.DefinedType)[0]
