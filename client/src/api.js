@@ -13,7 +13,7 @@ var API = (function() {
   function createInstance() {
     var api = new APIClass();
     return api;
-  }
+  } 
 
   return {
     getInstance: function() {

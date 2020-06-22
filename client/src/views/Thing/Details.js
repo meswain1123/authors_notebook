@@ -278,7 +278,11 @@ class Page extends Component {
                       <h2>{this.state.Name}</h2>
                     </Grid>
                   </Grid>
-                  <Grid item>{this.state.Description}</Grid>
+                  <Grid item>
+                    <div  dangerouslySetInnerHTML={{__html: this.state.Description}} />
+                    
+                    {/* {this.state.Description} */}
+                  </Grid>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <List>

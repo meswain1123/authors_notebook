@@ -24,7 +24,7 @@ import {
   // Modal
 } from "@material-ui/core";
 import ChipInput from "material-ui-chip-input";
-import { ArrowBack, Add, Search } from "@material-ui/icons";
+import { ArrowBack, Add, Search, Delete } from "@material-ui/icons";
 import AttributesControl from "./AttributesControl";
 import { Multiselect } from 'multiselect-react-dropdown';
 import { Helmet } from 'react-helmet';
@@ -191,10 +191,17 @@ class Page extends Component {
     setTimeout(() => {
       let { id } = this.props.match.params;
       if (id !== undefined && !id.includes("type_id_")) {
-        this.setState({
-          resetting: false, 
-          redirectTo: `/thing/create`
-        });
+        if (this.state.majorType === null) {
+          this.setState({
+            resetting: false, 
+            redirectTo: `/thing/create`
+          });
+        } else {
+          this.setState({
+            resetting: false, 
+            redirectTo: `/thing/create/type_id_${this.state.majorType._id}`
+          });
+        }
       }
       else {
         this.setState({
@@ -446,7 +453,7 @@ class Page extends Component {
                   _id: null,
                   Name: "",
                   Description: "",
-                  Types: [],
+                  Types: this.state.majorType === null ? [] : [this.state.majorType],
                   Attributes: [],
                   AttributesArr: []
                 });
@@ -497,7 +504,7 @@ class Page extends Component {
                   _id: null,
                   Name: "",
                   Description: "",
-                  Types: [],
+                  Types: this.state.majorType === null ? [] : [this.state.majorType],
                   Attributes: [],
                   AttributesArr: []
                 });
@@ -746,6 +753,33 @@ class Page extends Component {
     this.validateAttrForm(respond);
   }
 
+  deleteInfoAttribute = () => {
+    const thing = this.props.selectedThing;
+    thing.AttributesArr.splice(this.state.infoAttribute.index, 1);
+    thing.AttributesArr.forEach(a => {
+      if (a.index > this.state.infoAttribute.index) {
+        a.index--;
+      }
+    })
+
+    function respond() {
+      this.props.updateSelectedThing(thing);
+    }
+    this.setState({infoAttribute: null}, respond);
+  }
+
+  /**
+   * <p>First Reply <a href="/type/details/5e7694ce7fc0e1501c57f7cb" rel="noopener noreferrer" target="_blank">Completed Item</a></p><p><br></p>
+   * gets translated to 
+   * <p>First Reply <a href="/type/details/5e7694ce7fc0e1501c57f7cb" rel="noopener noreferrer" target="_blank">Completed Item</a></p>
+   */
+  cleanWYSIWYG = (str) => {
+    if (str.endsWith("<p><br></p>")) {
+      str = str.substring(0, str.length - 11);
+    }
+    return str;
+  }
+
   submitAttributeThroughAPI = () => {
     // Need to upsert the attribute, and then move forward
 
@@ -817,7 +851,7 @@ class Page extends Component {
             const type = {
               _id: theType._id,
               Name: theType.Name,
-              Description: theType.Description,
+              Description: this.cleanWYSIWYG(theType.Description),
               SuperIDs: theType.SuperIDs,
               // AttributesArr: this.props.selectedType.AttributesArr,
               Attributes: theType.Attributes,
@@ -1041,9 +1075,13 @@ class Page extends Component {
               })
             });
             let attributes = [...thing.Attributes, ...newAttributes];
+            attributes.forEach(a => {
+              if (a.FromTypeIDs === undefined) {
+                a.FromTypeIDs = [];
+              }
+            });
             thing.Attributes = attributes;
             thing.AttributesArr = [];
-            console.log(this.props.attributesByID);
             thing.Attributes.forEach(a => {
               // if (a.attrID !== undefined) {
               const attr = this.props.attributesByID[a.attrID];
@@ -1123,6 +1161,8 @@ class Page extends Component {
       id = null;
     if (this.state._id !== id) {
       this.load(id);
+      return (<span>Loading...</span>);
+    } else if (!this.state.loaded) {
       return (<span>Loading...</span>);
     } else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;
@@ -1330,6 +1370,22 @@ class Page extends Component {
                       </Select>
                     </FormControl>
                   </ListItem>
+                  <ListItem>
+                    Or you can also remove this attribute from {this.props.selectedThing.Name}
+                  </ListItem>
+                  <ListItem>
+                    <Tooltip title={`Delete Attribute`}>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        disabled={this.state.waiting}
+                        onClick={this.deleteInfoAttribute}
+                      >
+                        <Delete />
+                      </Button>
+                    </Tooltip>
+                  </ListItem>
                 </List>
               </Grid>
               <Grid item>{this.state.message}</Grid>
@@ -1422,27 +1478,14 @@ class Page extends Component {
                   </ListItem>
                 </List>
               </Grid>
-              <Grid item container spacing={1} direction="row">
-                <Grid item xs={6}>
-                  {/* <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    disabled={this.state.waiting}
-                    onClick={this.saveNewThing}
-                  >
-                    {this.state.waiting ? "Please Wait" : "Submit"}
-                  </Button> */}
-                </Grid>
-                <Grid item xs={6}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    onClick={e => {this.setState({infoAttribute: null})}}
-                  >
-                    Cancel
-                  </Button>
-                </Grid>
+              <Grid item>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={e => {this.setState({infoAttribute: null})}}
+                >
+                  Cancel
+                </Button>
               </Grid>
             </Grid>
           );
@@ -1552,20 +1595,19 @@ class Page extends Component {
             this.props.addThing(thing);
           }}
           onSave={newThing => {
+            // Need to put it on putThingOnAttribute
+            const thing = this.props.selectedThing;
+            const attr = thing.AttributesArr.filter(a => a.attrID === this.state.putThingOnAttribute.attrID)[0];
+            if (attr.AttributeType === "Type") {
+              attr.Value = newThing._id;
+            }
+            else {
+              // The only way it can be here is if it's List and ListType is Type
+              attr.ListValues.push(newThing._id);
+            }
+            this.props.updateSelectedThing(thing);
             this.setState({
               thingModalOpen: false
-            }, _ => {
-              // Need to put it on putThingOnAttribute
-              const thing = this.props.selectedThing;
-              const attr = thing.AttributesArr.filter(a => a.attrID === this.state.putThingOnAttribute.attrID)[0];
-              if (attr.AttributeType === "Type") {
-                attr.Value = newThing._id;
-              }
-              else {
-                // The only way it can be here is if it's List and ListType is Type
-                attr.ListValues.push(newThing._id);
-              }
-              this.props.updateSelectedThing(thing);
             });
           }}
           api={this.api}
@@ -1767,59 +1809,117 @@ class Page extends Component {
                   {this.state.fieldValidation.Attributes.message}
                 </FormHelperText>
               </Grid>
-              <Grid item>
-                <div className="float-right">
-                  { ((this.state.majorType === null && this.props.things.length > 0) || (this.state.majorType !== null && this.props.things.filter(t => t.TypeIDs.includes(this.state.majorType._id)).length > 0)) && 
+              { ((this.state.majorType === null && this.props.things.length > 0) || (this.state.majorType !== null && this.props.things.filter(t => t.TypeIDs.includes(this.state.majorType._id)).length > 0)) ? 
+                <Grid item container spacing={1} direction="row">
+                  <Grid item xs={12} sm={3}>
                     <Button
-                      variant="contained" color="primary"
+                      variant="contained" 
+                      color="primary"
+                      fullWidth
                       disabled={this.state.waiting}
                       onClick={e => {this.onSubmit("next")}}
                       type="submit"
                     >
                       {this.state.waiting ? "Please Wait" : "Submit and Edit Next"}
                     </Button>
-                  }
-                  <Button
-                    variant="contained" color="primary"
-                    style={{marginLeft: "4px"}}
-                    disabled={this.state.waiting}
-                    onClick={e => {this.onSubmit("add")}}
-                    type="submit"
-                  >
-                    {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
-                  </Button>
-                  <Button
-                    variant="contained" color="primary"
-                    style={{marginLeft: "4px"}}
-                    className="w200"
-                    disabled={this.state.waiting}
-                    onClick={e => {this.onSubmit("")}}
-                    type="submit"
-                  >
-                    {this.state.waiting ? "Please Wait" : "Submit"}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    style={{marginLeft: "4px"}}
-                    disabled={this.state.waiting}
-                    onClick={_ => {
-                      if (this.props.selectedThing._id === null) {
-                        this.setState({
-                          redirectTo: `/world/details/${this.props.selectedWorldID}`
-                        });
-                      }
-                      else {
-                        this.setState({
-                          redirectTo: `/thing/details/${this.props.selectedThing._id}`
-                        });
-                      }
-                    }}
-                    type="button"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </Grid>
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <Button
+                      variant="contained" 
+                      color="primary"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={e => {this.onSubmit("add")}}
+                      type="submit"
+                    >
+                      {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <Button
+                      variant="contained" 
+                      color="primary"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={e => {this.onSubmit("")}}
+                      type="submit"
+                    >
+                      {this.state.waiting ? "Please Wait" : "Submit"}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={_ => {
+                        if (this.props.selectedThing._id === null) {
+                          this.setState({
+                            redirectTo: `/world/details/${this.props.selectedWorldID}`
+                          });
+                        }
+                        else {
+                          this.setState({
+                            redirectTo: `/thing/details/${this.props.selectedThing._id}`
+                          });
+                        }
+                      }}
+                      type="button"
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
+                </Grid>
+              :
+                <Grid item container spacing={1} direction="row">
+                  <Grid item xs={12} sm={4}>
+                    <Button
+                      variant="contained" 
+                      color="primary"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={e => {this.onSubmit("add")}}
+                      type="submit"
+                    >
+                      {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Button
+                      variant="contained" 
+                      color="primary"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={e => {this.onSubmit("")}}
+                      type="submit"
+                    >
+                      {this.state.waiting ? "Please Wait" : "Submit"}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={_ => {
+                        if (this.props.selectedThing._id === null) {
+                          this.setState({
+                            redirectTo: `/world/details/${this.props.selectedWorldID}`
+                          });
+                        }
+                        else {
+                          this.setState({
+                            redirectTo: `/thing/details/${this.props.selectedThing._id}`
+                          });
+                        }
+                      }}
+                      type="button"
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
+                </Grid>
+              }
               <Grid item>{this.state.message}</Grid>
               <Grid item>
                 {this.state.errors.map((e, key) => {
