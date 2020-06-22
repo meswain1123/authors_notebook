@@ -7,3 +7,4 @@ node_modules/
 !.elasticbeanstalk/*.global.yml
 .env
 temp.json
+temp.html
