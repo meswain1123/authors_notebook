@@ -70,7 +70,7 @@ const addTypeToList = (type, types, attributesByID, typeIDs) => {
 const removeTypeFromList = (type, types, attributesByID, typeIDs) => {
   const index = typeIDs.indexOf(type._id);
   if (index > -1) {
-    typeIDs.splice(index);
+    typeIDs.splice(index, 1);
     const subTypes = types.filter(t=>t.SuperIDs.includes(type._id));
     for (let i = 0; i < subTypes.length; i++) {
       let subType = subTypes[i];

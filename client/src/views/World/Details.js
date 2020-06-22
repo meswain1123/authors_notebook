@@ -425,7 +425,7 @@ class Page extends Component {
                 this.props.setThings(res.things);
 
                 let templateIDs = [...this.state.selectedTemplateIDs];
-                templateIDs.splice(0);
+                templateIDs.splice(0, 1);
                 this.setState({ selectedTemplateIDs: templateIDs });
               });
             } else {
@@ -448,7 +448,7 @@ class Page extends Component {
             this.props.setThings(res.things);
 
             let templateIDs = [...this.state.selectedTemplateIDs];
-            templateIDs.splice(0);
+            templateIDs.splice(0, 1);
             this.setState({ selectedTemplateIDs: templateIDs });
           });
         } else {
@@ -533,7 +533,8 @@ class Page extends Component {
                   <h2>{this.props.selectedWorld.Name}</h2>
                 </Grid>
                 <Grid item>
-                  {this.props.selectedWorld.Description}
+                  <div  dangerouslySetInnerHTML={{__html: this.props.selectedWorld.Description}} />
+                  {/* {this.props.selectedWorld.Description} */}
                 </Grid>
                 <Grid item>
                   <Box display={{ xs: 'none', sm: 'block' }}>

@@ -245,6 +245,18 @@ class Page extends Component {
     this.validateForm(respond);
   }
 
+  /**
+   * <p>First Reply <a href="/type/details/5e7694ce7fc0e1501c57f7cb" rel="noopener noreferrer" target="_blank">Completed Item</a></p><p><br></p>
+   * gets translated to 
+   * <p>First Reply <a href="/type/details/5e7694ce7fc0e1501c57f7cb" rel="noopener noreferrer" target="_blank">Completed Item</a></p>
+   */
+  cleanWYSIWYG = (str) => {
+    if (str.endsWith("<p><br></p>")) {
+      str = str.substring(0, str.length - 11);
+    }
+    return str;
+  }
+
   submitThroughAPI = () => {
     const superIDs = this.props.selectedType.Supers.map(s => {
       return s._id;
@@ -280,7 +292,7 @@ class Page extends Component {
         _id: this.state._id,
         Name: this.props.selectedType.Name.trim(),
         PluralName: this.props.selectedType.PluralName === undefined ? "" : this.props.selectedType.PluralName.trim(),
-        Description: this.props.selectedType.Description,
+        Description: this.cleanWYSIWYG(this.props.selectedType.Description),
         SuperIDs: superIDs,
         // AttributesArr: this.props.selectedType.AttributesArr,
         Attributes: typeAttributes,
@@ -1212,59 +1224,117 @@ class Page extends Component {
                   }
                 })}
               </Grid>
-              <Grid item>
-                <div className="float-right">
-                  { this.props.types.length > 0 &&
+              { this.props.types.length > 0 ?
+                <Grid item container spacing={1} direction="row">
+                  <Grid item xs={12} sm={3}>
                     <Button
-                      variant="contained" color="primary"
+                      variant="contained" 
+                      color="primary"
+                      fullWidth
                       disabled={this.state.waiting}
                       onClick={e => {this.onSubmit("next")}}
                       type="submit"
                     >
                       {this.state.waiting ? "Please Wait" : "Submit and Edit Next"}
                     </Button>
-                  }
-                  <Button
-                    variant="contained" color="primary"
-                    style={{marginLeft: "4px"}}
-                    disabled={this.state.waiting}
-                    onClick={e => {this.onSubmit("add")}}
-                    type="submit"
-                  >
-                    {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
-                  </Button>
-                  <Button
-                    variant="contained" color="primary"
-                    style={{marginLeft: "4px"}}
-                    className="w-200"
-                    disabled={this.state.waiting}
-                    onClick={e => {this.onSubmit("")}}
-                    type="submit"
-                  >
-                    {this.state.waiting ? "Please Wait" : "Submit"}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    style={{marginLeft: "4px"}}
-                    disabled={this.state.waiting}
-                    onClick={_ => {
-                      if (this.props.selectedType._id === null) {
-                        this.setState({
-                          redirectTo: `/world/details/${this.props.selectedWorldID}`
-                        });
-                      }
-                      else {
-                        this.setState({
-                          redirectTo: `/type/details/${this.props.selectedType._id}`
-                        });
-                      }
-                    }}
-                    type="button"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </Grid>
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <Button
+                      variant="contained" 
+                      color="primary"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={e => {this.onSubmit("add")}}
+                      type="submit"
+                    >
+                      {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <Button
+                      variant="contained" 
+                      color="primary"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={e => {this.onSubmit("")}}
+                      type="submit"
+                    >
+                      {this.state.waiting ? "Please Wait" : "Submit"}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={_ => {
+                        if (this.props.selectedType._id === null) {
+                          this.setState({
+                            redirectTo: `/world/details/${this.props.selectedWorldID}`
+                          });
+                        }
+                        else {
+                          this.setState({
+                            redirectTo: `/type/details/${this.props.selectedType._id}`
+                          });
+                        }
+                      }}
+                      type="button"
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
+                </Grid>
+              : 
+                <Grid item container spacing={1} direction="row">
+                  <Grid item xs={12} sm={4}>
+                    <Button
+                      variant="contained" 
+                      color="primary"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={e => {this.onSubmit("add")}}
+                      type="submit"
+                    >
+                      {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Button
+                      variant="contained" 
+                      color="primary"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={e => {this.onSubmit("")}}
+                      type="submit"
+                    >
+                      {this.state.waiting ? "Please Wait" : "Submit"}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      disabled={this.state.waiting}
+                      onClick={_ => {
+                        if (this.props.selectedType._id === null) {
+                          this.setState({
+                            redirectTo: `/world/details/${this.props.selectedWorldID}`
+                          });
+                        }
+                        else {
+                          this.setState({
+                            redirectTo: `/type/details/${this.props.selectedType._id}`
+                          });
+                        }
+                      }}
+                      type="button"
+                    >
+                      Cancel
+                    </Button>
+                  </Grid>
+                </Grid>
+              }
               <Grid item style={{color:"red"}}>{this.state.message}</Grid>
             </Grid>
           }
