@@ -84,6 +84,9 @@ class Control extends Component {
                 if (this.props.onChange !== undefined) {
                   this.props.onChange(e);
                 }
+                if (this.props.onBlur !== undefined) {
+                  this.props.onBlur(e);
+                }
               }}
               onKeyDown={e => {
                 if (this.props.onKeyPress !== undefined) {
@@ -92,7 +95,7 @@ class Control extends Component {
               }}
               onBlur={e => {
                 if (this.props.onBlur !== undefined) {
-                  this.props.onBlur(this.state.value.trim());
+                  this.props.onBlur(this.state.value);
                 }
               }}
               // labelWidth={this.props.labelWidth}
