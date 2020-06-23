@@ -15,6 +15,7 @@ import {
   setAPI
 } from "./redux/actions/index";
 import API from "./smartAPI";
+import './assets/css/quill.snow.css';
 
 const mapStateToProps = state => {
   return {
