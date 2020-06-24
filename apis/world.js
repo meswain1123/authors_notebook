@@ -424,11 +424,13 @@ router
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
+        console.log(world);
         if (world === null || (world.Owner !== req.session.userID && world.Collaborators.filter(c=>c.userID === req.session.userID && c.editPermission).length === 0)) {
           res.send({ error: "Problem with creating the Type" });
         }
         else {
           function gotType(type) {
+            console.log(type);
             if (type.error == undefined || type.error != "Type not found") {
               res.send({ error: "This world already has a Type by that name." });
             } else {
@@ -443,7 +445,7 @@ router
           db.getTypeByName(gotType, req.body.type.worldID, req.body.type.Name);
         }
       }
-
+      console.log(req.body);
       db.getWorld(gotWorld, req.session.userID, req.body.type.worldID);
     }
   })

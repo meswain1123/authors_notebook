@@ -296,7 +296,7 @@ function rootReducer(state = initialState, action) {
         });
         sessionStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
         return Object.assign({}, state, {
-          selectedWorldID: action.payload,
+          selectedWorldID: action.payload._id,
           selectedWorld: world,
           // attributes: [],
           attributesByID: {},
@@ -334,7 +334,7 @@ function rootReducer(state = initialState, action) {
         });
         sessionStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
         return Object.assign({}, state, {
-          selectedWorldID: action.payload,
+          selectedWorldID: action.payload._id,
           selectedWorld: world,
           // attributes: [],
           attributesByID: {},

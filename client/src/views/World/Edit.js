@@ -262,8 +262,8 @@ class Page extends Component {
       });
     }
     else {
+      this.props.selectWorld(this.state._id);
       this.api.selectWorld(this.state._id).then(res => {
-        this.props.selectWorld(this.state._id);
         this.api.getWorld(this.props.selectedWorldID).then(res => {
           this.props.setAttributes(res.attributes);
           this.props.setTypes(res.types);
