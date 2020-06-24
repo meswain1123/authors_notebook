@@ -60,6 +60,12 @@ const saveComment = (text, props, changeWaiting, comments, changeComments, chang
 
 const prepComment = (comment, allUsers) => {
   comment.user = allUsers.filter(u => u._id === comment.userID)[0];
+  if (comment.user === undefined || comment.user === null) {
+    comment.user = {
+      _id: comment.userID,
+      username: "Unknown"
+    }
+  }
   comment.time = new Date(comment.time);
   comment.voteSum = Object.values(comment.votes).reduce((total, vote) => total + vote, 0);
   comment.replies.forEach(r => {

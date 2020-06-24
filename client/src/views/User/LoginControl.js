@@ -221,6 +221,11 @@ class Control extends Component {
               username: { valid: true, message: "" }
             },
             waiting: false
+          }, _ => {
+            this.api.getAllUsers(true).then(users => {
+              this.props.setAllUsers(users);
+              // this.setState({allUsers: res});
+            });
           });
         }
         else {
