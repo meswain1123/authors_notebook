@@ -102,7 +102,7 @@ class Page extends Component {
           this.props.setTypes(res2.types);
           this.props.setThings(res2.things);
 
-          this.setState({ waiting: false, redirectTo: `/world/details/${this.props.selectedWorldID}`});
+          this.setState({ waiting: false, redirectTo: `/project/details/${this.props.selectedWorldID}`});
         });
       }
       else {
@@ -112,7 +112,7 @@ class Page extends Component {
       }
       // const things = this.props.things.filter(t=>t._id!==this.state._id);
       // this.props.setThings(things);
-      // this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`})
+      // this.setState({redirectTo: `/project/details/${this.props.selectedWorldID}`})
     });
   }
 
@@ -268,7 +268,7 @@ class Page extends Component {
                       <Tooltip title={`Back to ${this.props.selectedWorld.Name}`}>
                         <Fab size="small"
                           color="primary"
-                          onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
+                          onClick={ _ => {this.setState({redirectTo:`/project/details/${this.props.selectedWorldID}`})}}
                         >
                           <ArrowBack />
                         </Fab>

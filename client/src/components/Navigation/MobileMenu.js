@@ -197,7 +197,7 @@ class Menu extends Component {
               {followingWorlds.map((w, key) => (
                 <ListItem key={key} className="curvedButton">
                   <NavLink
-                    to={`/world/details/${w._id}`}
+                    to={`/project/details/${w._id}`}
                     onClick={_ => {
                       this.props.toggleMenu();
                     }}
@@ -225,7 +225,7 @@ class Menu extends Component {
               {otherWorlds.map((w, key) => (
                 <ListItem key={key} className="curvedButton">
                   <NavLink
-                    to={`/world/details/${w._id}`}
+                    to={`/project/details/${w._id}`}
                     onClick={_ => {
                       this.props.toggleMenu();
                     }}
@@ -258,7 +258,7 @@ class Menu extends Component {
     return followingWorlds.map((w, key) => (
       <ListItem key={key} className="curvedButton">
         <NavLink
-          to={`/world/details/${w._id}`}
+          to={`/project/details/${w._id}`}
           onClick={_ => {
             this.props.toggleMenu();
           }}
@@ -286,7 +286,7 @@ class Menu extends Component {
           : this.props.worlds.map((w, key) => (
               <ListItem key={key} className="curvedButton">
                 <NavLink
-                  to={`/world/details/${w._id}`}
+                  to={`/project/details/${w._id}`}
                   onClick={_ => {
                     this.props.toggleMenu();
                   }}
@@ -311,8 +311,8 @@ class Menu extends Component {
       <List>
         {this.links()}
         <ListItem>
-          <ListItemText display="none" primary={"Public Worlds"} />
-          <Tooltip title={`Browse Public Worlds`}>
+          <ListItemText display="none" primary={"Public Projects"} />
+          <Tooltip title={`Browse Public Projects`}>
             <Fab
               size="small"
               color="primary"
@@ -327,13 +327,13 @@ class Menu extends Component {
         {this.publicWorlds()}
         { this.props.user !== null &&
           <ListItem>
-            <ListItemText primary={"My Worlds"} />
+            <ListItemText primary={"My Projects"} />
           </ListItem>
         }
         { this.props.user !== null &&
           <ListItem className="curvedButton">
             <NavLink 
-            to={`/world/create`}
+            to={`/project/create`}
             onClick={_ => {
               this.props.toggleMenu();
             }}

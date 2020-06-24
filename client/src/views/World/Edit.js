@@ -117,16 +117,16 @@ class Page extends Component {
       case "Name":
         valid = value.match(/^[a-zA-Z0-9 ]*$/i) !== null;
         if (!valid)
-          message = "Only Letters, Numbers, and Spaces allowed in World Names";
+          message = "Only Letters, Numbers, and Spaces allowed in Project Names";
         else if (value.length < 4) {
           valid = false;
-          message = "World Name is too short";
+          message = "Project Name is too short";
         } else {
           valid =
             this.props.worlds.filter(
               w => w.Name === value && w._id !== this.state._id
             ).length === 0;
-          if (!valid) message = "This World Name is already in use";
+          if (!valid) message = "This Project Name is already in use";
         }
         break;
       case "inviteEmail":
@@ -202,7 +202,7 @@ class Page extends Component {
             if (this.state.tempSelectedTemplateIDs === undefined || this.state.tempSelectedTemplateIDs.length === 0) {
               this.setState({
                 waiting: false,
-                redirectTo: `/world/details/${res.worldID}`
+                redirectTo: `/project/details/${res.worldID}`
               });
             } else {
               this.setState({
@@ -227,7 +227,7 @@ class Page extends Component {
             if (this.state.tempSelectedTemplateIDs === undefined || this.state.tempSelectedTemplateIDs.length === 0) {
               this.setState({
                 waiting: false,
-                redirectTo: `/world/details/${this.props.selectedWorldID}`
+                redirectTo: `/project/details/${this.props.selectedWorldID}`
               });
             } else {
               this.setState({
@@ -498,7 +498,7 @@ class Page extends Component {
                 if (templateIDs.length === 0) {
                   this.setState({
                     waiting: false,
-                    redirectTo: `/world/details/${this.props.selectedWorldID}`,
+                    redirectTo: `/project/details/${this.props.selectedWorldID}`,
                     selectedTemplateIDs: templateIDs 
                   });
                 }
@@ -530,7 +530,7 @@ class Page extends Component {
             if (templateIDs.length === 0) {
               this.setState({
                 waiting: false,
-                redirectTo: `/world/details/${this.props.selectedWorldID}`,
+                redirectTo: `/project/details/${this.props.selectedWorldID}`,
                 selectedTemplateIDs: templateIDs 
               });
             }
@@ -600,7 +600,7 @@ class Page extends Component {
                 <Tooltip title={`Back to ${this.props.selectedWorld.Name} Details`}>
                   <Fab size="small"
                     color="primary"
-                    onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
+                    onClick={ _ => {this.setState({redirectTo:`/project/details/${this.props.selectedWorldID}`})}}
                   >
                     <ArrowBack />
                   </Fab>
@@ -609,7 +609,7 @@ class Page extends Component {
             </Grid>
             <Grid item xs={11}>
               <h2>
-                {this.state._id === null ? "Create New World" : "Edit World"}
+                {this.state._id === null ? "Create New Project" : "Edit Project"}
               </h2>
             </Grid>
           </Grid>
@@ -726,7 +726,7 @@ class Page extends Component {
                 disabled={this.state.waiting}
                 onClick={_ => {
                   this.setState({
-                    redirectTo: this.state._id === null ? `/` : `/world/details/${this.state._id}`
+                    redirectTo: this.state._id === null ? `/` : `/project/details/${this.state._id}`
                   });
                 }}
                 type="button"

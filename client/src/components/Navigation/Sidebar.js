@@ -176,7 +176,7 @@ class Bar extends Component {
               {
                 followingWorlds.map((w, key) => 
                   <ListItem key={key} className="curvedButton">
-                    <NavLink to={`/world/details/${w._id}`} className="MySmallerButton" activeClassName="active">
+                    <NavLink to={`/project/details/${w._id}`} className="MySmallerButton" activeClassName="active">
                       <ListItem button>
                         <ListItemText primary={w.Name} className="marginLeft" />
                       </ListItem>
@@ -196,7 +196,7 @@ class Bar extends Component {
               {
                 otherWorlds.map((w, key) => 
                   <ListItem key={key} className="curvedButton">
-                    <NavLink to={`/world/details/${w._id}`} className="MySmallerButton" activeClassName="active">
+                    <NavLink to={`/project/details/${w._id}`} className="MySmallerButton" activeClassName="active">
                       <ListItem button>
                         <ListItemText primary={w.Name} className="marginLeft" />
                       </ListItem>
@@ -221,7 +221,7 @@ class Bar extends Component {
     return (
       followingWorlds.map((w, key) => 
         <ListItem key={key} className="curvedButton">
-          <NavLink to={`/world/details/${w._id}`} className="MyButton" activeClassName="active">
+          <NavLink to={`/project/details/${w._id}`} className="MyButton" activeClassName="active">
             <ListItem button>
               <ListItemText primary={w.Name} className="marginLeft" />
             </ListItem>
@@ -240,7 +240,7 @@ class Bar extends Component {
           ? ""
           : this.props.worlds.map((w, key) => 
               <ListItem key={key} className="curvedButton">
-                <NavLink to={`/world/details/${w._id}`} className="MyButton" activeClassName="active">
+                <NavLink to={`/project/details/${w._id}`} className="MyButton" activeClassName="active">
                   <ListItem button>
                     <ListItemText primary={w.Name} className="marginLeft" />
                   </ListItem>
@@ -258,8 +258,8 @@ class Bar extends Component {
         <Divider light />
         {this.links()}
         <ListItem>
-          <ListItemText display="none" primary={"Public Worlds"} />
-          <Tooltip title={`Browse Public Worlds`}>
+          <ListItemText display="none" primary={"Public Projects"} />
+          <Tooltip title={`Browse Public Projects`}>
             <Fab
               size="small"
               color="primary"
@@ -274,12 +274,12 @@ class Bar extends Component {
         {this.publicWorlds()}
         { this.props.user !== null &&
           <ListItem>
-            <ListItemText primary={"My Worlds"} />
+            <ListItemText primary={"My Projects"} />
           </ListItem>
         }
         { this.props.user !== null &&
           <ListItem className="curvedButton">
-            <NavLink to={`/world/create`} className="MyButton" activeClassName="active">
+            <NavLink to={`/project/create`} className="MyButton" activeClassName="active">
               <ListItem button>
                 <Add />
                 <ListItemText primary={"Create New"} />

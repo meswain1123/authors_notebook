@@ -170,7 +170,7 @@ class Page extends Component {
         return (
           <Grid container spacing={1}>
             <Grid item xs={12}>
-              Okay.  Well, we hope you enjoy working on other worlds.
+              Okay.  Well, we hope you enjoy working on other projects.
             </Grid>
           </Grid>
         );

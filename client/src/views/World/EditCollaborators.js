@@ -395,7 +395,7 @@ class Page extends Component {
               <Tooltip title={`Back to ${this.props.selectedWorld.Name} Details`}>
                 <Fab size="small"
                   color="primary"
-                  onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
+                  onClick={ _ => {this.setState({redirectTo:`/project/details/${this.props.selectedWorldID}`})}}
                 >
                   <ArrowBack />
                 </Fab>

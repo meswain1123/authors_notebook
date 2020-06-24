@@ -477,7 +477,7 @@ class Page extends Component {
               } else {
                 this.setState({
                   waiting: false,
-                  redirectTo: `/world/details/${this.props.selectedWorld._id}`
+                  redirectTo: `/project/details/${this.props.selectedWorld._id}`
                 });
               }
             });
@@ -528,7 +528,7 @@ class Page extends Component {
               } else {
                 this.setState({
                   waiting: false,
-                  redirectTo: `/world/details/${this.props.selectedWorld._id}`
+                  redirectTo: `/project/details/${this.props.selectedWorld._id}`
                 });
               }
             });
@@ -1638,7 +1638,7 @@ class Page extends Component {
                   <Tooltip title={`Back to ${this.props.selectedWorld.Name}`}>
                     <Fab size="small"
                       color="primary"
-                      onClick={ _ => {this.setState({redirectTo:`/world/details/${this.props.selectedWorldID}`})}}
+                      onClick={ _ => {this.setState({redirectTo:`/project/details/${this.props.selectedWorldID}`})}}
                     >
                       <ArrowBack />
                     </Fab>
@@ -1855,7 +1855,7 @@ class Page extends Component {
                       onClick={_ => {
                         if (this.props.selectedThing._id === null) {
                           this.setState({
-                            redirectTo: `/world/details/${this.props.selectedWorldID}`
+                            redirectTo: `/project/details/${this.props.selectedWorldID}`
                           });
                         }
                         else {
@@ -1904,7 +1904,7 @@ class Page extends Component {
                       onClick={_ => {
                         if (this.props.selectedThing._id === null) {
                           this.setState({
-                            redirectTo: `/world/details/${this.props.selectedWorldID}`
+                            redirectTo: `/project/details/${this.props.selectedWorldID}`
                           });
                         }
                         else {

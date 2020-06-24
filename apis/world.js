@@ -424,13 +424,11 @@ router
       res.send({ error: "Session lost.  Please log in again." });
     } else {
       function gotWorld(world) {
-        console.log(world);
         if (world === null || (world.Owner !== req.session.userID && world.Collaborators.filter(c=>c.userID === req.session.userID && c.editPermission).length === 0)) {
           res.send({ error: "Problem with creating the Type" });
         }
         else {
           function gotType(type) {
-            console.log(type);
             if (type.error == undefined || type.error != "Type not found") {
               res.send({ error: "This world already has a Type by that name." });
             } else {
@@ -445,7 +443,6 @@ router
           db.getTypeByName(gotType, req.body.type.worldID, req.body.type.Name);
         }
       }
-      console.log(req.body);
       db.getWorld(gotWorld, req.session.userID, req.body.type.worldID);
     }
   })
@@ -588,7 +585,6 @@ router
     if (req.session.userID == undefined) {
       res.send({ error: "Session lost.  Please log in again." });
     } else if (req.body.template.worldID != undefined) {
-      console.log(req.body.template);
       function gotAttributes(attributes) {
         function gotTypes(types) {
           const template = {
@@ -641,20 +637,22 @@ router
                 }
                 templateType.Attributes.push(attr);
               });
-              type.Defaults.forEach(d => {
-                const templateAttr = attrMap[d.attrID];
-                if (templateAttr !== undefined) {
-                  // We don't need to worry about adding it because it was already added during the Attributes step
-                  const def = {...d};
-                  def.attrID = templateAttr.attrID;
-                  if (templateAttr.AttributeType === "Type" || (templateAttr.AttributeType === "List" && templateAttr.ListType === "Type")) {
-                    // Only Types and Attributes go into Templates, so Defaults of Defined Type attributes don't go into Templates
-                    def.DefaultValue = "";
-                    def.DefaultListValues = [];
+              if (type.Defaults !== undefined) {
+                type.Defaults.forEach(d => {
+                  const templateAttr = attrMap[d.attrID];
+                  if (templateAttr !== undefined) {
+                    // We don't need to worry about adding it because it was already added during the Attributes step
+                    const def = {...d};
+                    def.attrID = templateAttr.attrID;
+                    if (templateAttr.AttributeType === "Type" || (templateAttr.AttributeType === "List" && templateAttr.ListType === "Type")) {
+                      // Only Types and Attributes go into Templates, so Defaults of Defined Type attributes don't go into Templates
+                      def.DefaultValue = "";
+                      def.DefaultListValues = [];
+                    }
+                    templateType.Defaults.push(def);
                   }
-                  templateType.Defaults.push(def);
-                }
-              });
+                });
+              }
               template.Types.push(templateType);
               typeMap[id] = templateType;
             }

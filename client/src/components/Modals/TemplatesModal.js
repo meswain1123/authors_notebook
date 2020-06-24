@@ -17,9 +17,9 @@ export default function TemplatesModal(props) {
     <Grid container spacing={1} direction="column">
       <Grid item>
         Click a template to view its contents.
-        Select the templates you want to import into your world.
+        Select the templates you want to import into your project.
         Any which have types or attributes with the same names 
-        (either with each other or with what you already have in your world), 
+        (either with each other or with what you already have in your project), 
         we will try to merge them if possible.  
         If it's not, then we will append the names of them with 
         the names of the templates they came from, and you can 

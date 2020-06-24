@@ -121,11 +121,11 @@ class Page extends Component {
             this.props.setThings(res2.things);
 
             this.setState({
-              redirectTo: `/world/details/${this.props.selectedWorldID}`,
+              redirectTo: `/project/details/${this.props.selectedWorldID}`,
             });
           });
           // this.getWorld().then(res2 => {
-          //   this.setState({redirectTo: `/world/details/${this.props.selectedWorldID}`});
+          //   this.setState({redirectTo: `/project/details/${this.props.selectedWorldID}`});
           // });
         } else {
           this.setState({ waiting: false, message: res.error }, () => {
@@ -284,7 +284,7 @@ class Page extends Component {
                           color="primary"
                           onClick={(_) => {
                             this.setState({
-                              redirectTo: `/world/details/${this.props.selectedWorldID}`,
+                              redirectTo: `/project/details/${this.props.selectedWorldID}`,
                             });
                           }}
                         >

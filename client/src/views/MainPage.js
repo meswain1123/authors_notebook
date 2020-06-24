@@ -68,12 +68,12 @@ class Page extends Component {
             
             {/* <Route exact path="/test/:testtext" component={Test} /> */}
             <Route exact path="/discussion" component={GeneralDiscussionPage} />
-            <Route exact path="/world/details/:id" component={WorldDetailsPage} />
-            <Route exact path="/world/create" component={WorldEditPage} />
-            <Route exact path="/world/edit/:id" component={WorldEditPage} />
-            <Route exact path="/world/collaborators/:id" component={EditCollaboratorsPage} />
-            <Route exact path="/world/collaborate/:worldID/:collabID" component={CollaboratePage} />
-            {/* <Route exact path="/world/delete/:id" component={WorldDeletePage} /> */}
+            <Route exact path="/project/details/:id" component={WorldDetailsPage} />
+            <Route exact path="/project/create" component={WorldEditPage} />
+            <Route exact path="/project/edit/:id" component={WorldEditPage} />
+            <Route exact path="/project/collaborators/:id" component={EditCollaboratorsPage} />
+            <Route exact path="/project/collaborate/:worldID/:collabID" component={CollaboratePage} />
+            {/* <Route exact path="/project/delete/:id" component={WorldDeletePage} /> */}
             <Route exact path="/type/create" component={TypeEditPage} />
             <Route exact path="/type/details/:id" component={TypeDetailsPage} />
             <Route exact path="/type/edit/:id" component={TypeEditPage} />

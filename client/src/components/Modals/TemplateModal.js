@@ -100,7 +100,7 @@ export default function TemplateModal(props) {
   return (
     <Grid container spacing={1} direction="column">
       <Grid item>
-        Create a template for use in other worlds based on this one.
+        Create a template for use in other projects based on this one.
         The template will be usable by any user.
       </Grid>
       <Grid item>

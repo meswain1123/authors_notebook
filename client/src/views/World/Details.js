@@ -202,7 +202,7 @@ class Page extends Component {
 
   respondToInvite = () => {
     const invite = this.props.selectedWorld.Collaborators.filter(c=> c.userID === this.props.user._id && c.type === "invite")[0];
-    this.setState({ redirectTo: `/world/collaborate/${this.props.selectedWorldID}/${invite.collabID}` });
+    this.setState({ redirectTo: `/project/collaborate/${this.props.selectedWorldID}/${invite.collabID}` });
   }
 
   updateTemplates = () => {
@@ -551,7 +551,7 @@ class Page extends Component {
                           <Grid item xs={4} sm={12}>
                             <Tooltip title={`Edit ${this.props.selectedWorld.Name}`}>
                               <Fab size="small" color="primary"
-                                onClick={ _ => {this.setState({redirectTo:`/world/edit/${this.props.selectedWorldID}`})}}
+                                onClick={ _ => {this.setState({redirectTo:`/project/edit/${this.props.selectedWorldID}`})}}
                               >
                                 <Edit />
                               </Fab>
@@ -560,7 +560,7 @@ class Page extends Component {
                           <Grid item xs={4} sm={12}>
                             <Tooltip title={`Edit Collaborators`}>
                               <Fab size="small" color="primary"
-                                onClick={ _ => {this.setState({redirectTo:`/world/collaborators/${this.props.selectedWorldID}`})}}
+                                onClick={ _ => {this.setState({redirectTo:`/project/collaborators/${this.props.selectedWorldID}`})}}
                               >
                               <People />
                               </Fab>
