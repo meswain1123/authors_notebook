@@ -243,6 +243,9 @@ class Page extends Component {
 
   load = (id) => {
     setTimeout(() => {
+      if (this.props.selectedWorldID !== id) {
+        this.props.selectWorld(id);
+      }
       this.setState({
         _id: id,
         redirectTo: null,

@@ -128,96 +128,64 @@ export default function CommentsControl(props) {
           No comments yet
         </Grid>
       }
-      <Grid item>
-        { (props.user !== null && (props.world.Owner === props.user._id || (props.world.Collaborators !== undefined && props.world.Collaborators.filter(c=> c.userID === props.user._id && c.type === "collab").length === 0))) ?
-          // <FormControl variant="outlined" fullWidth>
-          //   <InputLabel htmlFor={`text_field_comments`}>New Comment</InputLabel>
-          //   <OutlinedInput
-          //     id={`text_field_comments`}
-          //     name={`text_field_comments`}
-          //     type="text"
-          //     autoComplete="Off"
-          //     multiline
-          //     value={value}
-          //     onChange={e => {
-          //       changeValue(e.target.value);
-          //     }}
-          //     labelWidth={110}
-          //     fullWidth
-          //   />
-          // </FormControl>
-          <TextBox 
-            Value={value} 
-            fieldName="New Comment" 
-            multiline={true}
-            onChange={comment => {
-              changeValue(comment);
-            }}
-            onBlur={comment => {
-              changeValue(comment);
-            }}
-            options={props.suggestions}
-            labelWidth={110}
-          />
-        : (props.user !== null && props.objectType === "General") ?
-          // <FormControl variant="outlined" fullWidth>
-          //   <InputLabel htmlFor={`text_field_comments`}>New Discussion</InputLabel>
-          //   <OutlinedInput
-          //     id={`text_field_comments`}
-          //     name={`text_field_comments`}
-          //     type="text"
-          //     autoComplete="Off"
-          //     multiline
-          //     value={value}
-          //     onChange={e => {
-          //       changeValue(e.target.value);
-          //     }}
-          //     labelWidth={115}
-          //     fullWidth
-          //   />
-          // </FormControl>
-          <TextBox 
-            Value={value} 
-            fieldName="New Discussion" 
-            multiline={true}
-            // onChange={e => {
-            // }}
-            onBlur={desc => {
-              changeValue(desc);
-            }}
-            options={props.suggestions}
-            labelWidth={110}
-          />
-        : (props.user === null && props.objectType === "General") ?
-          <FormControl variant="outlined" fullWidth>
-            <InputLabel htmlFor="fake_comments_label">
-              You have to log in to start a discussion
-            </InputLabel>
-            <OutlinedInput
-              id="fake_comments_label"
-              name="fake_comments_label"
-              type="text"
-              autoComplete="Off"
-              disabled={true}
-              fullWidth
+      { !waiting &&
+        <Grid item>
+          { (props.user !== null && (props.world.Owner === props.user._id || (props.world.Collaborators !== undefined && props.world.Collaborators.filter(c=> c.userID === props.user._id && c.type === "collab").length === 0))) ?
+            <TextBox 
+              Value={value} 
+              fieldName="New Comment" 
+              multiline={true}
+              onChange={comment => {
+                changeValue(comment);
+              }}
+              onBlur={comment => {
+                changeValue(comment);
+              }}
+              options={props.suggestions}
+              labelWidth={110}
             />
-          </FormControl>
-        :
-          <FormControl variant="outlined" fullWidth>
-            <InputLabel htmlFor="fake_comments_label">
-              You have to log in to leave comments
-            </InputLabel>
-            <OutlinedInput
-              id="fake_comments_label"
-              name="fake_comments_label"
-              type="text"
-              autoComplete="Off"
-              disabled={true}
-              fullWidth
+          : (props.user !== null && props.objectType === "General") ?
+            <TextBox 
+              Value={value} 
+              fieldName="New Discussion" 
+              multiline={true}
+              onBlur={desc => {
+                changeValue(desc);
+              }}
+              options={props.suggestions}
+              labelWidth={110}
             />
-          </FormControl>
-        }
-      </Grid>
+          : (props.user === null && props.objectType === "General") ?
+            <FormControl variant="outlined" fullWidth>
+              <InputLabel htmlFor="fake_comments_label">
+                You have to log in to start a discussion
+              </InputLabel>
+              <OutlinedInput
+                id="fake_comments_label"
+                name="fake_comments_label"
+                type="text"
+                autoComplete="Off"
+                disabled={true}
+                fullWidth
+              />
+            </FormControl>
+          :
+            <FormControl variant="outlined" fullWidth>
+              <InputLabel htmlFor="fake_comments_label">
+                You have to log in to leave comments
+              </InputLabel>
+              <OutlinedInput
+                id="fake_comments_label"
+                name="fake_comments_label"
+                type="text"
+                autoComplete="Off"
+                disabled={true}
+                fullWidth
+              />
+            </FormControl>
+          }
+        </Grid>
+      }
       <Grid item>
         <Button
           fullWidth

@@ -431,7 +431,9 @@ function rootReducer(state = initialState, action) {
           // attributes: [],
           attributesByID: {},
           attributesByName: {},
-          collabSuggestions
+          collabSuggestions,
+          thingSuggestions: [],
+          typeSuggestions: []
         });
       } else {
         return Object.assign({}, state, {
@@ -439,7 +441,9 @@ function rootReducer(state = initialState, action) {
           selectedWorld: world,
           // attributes: [],
           attributesByID: {},
-          attributesByName: {}
+          attributesByName: {},
+          thingSuggestions: [],
+          typeSuggestions: []
         });
       }
     } else {
@@ -452,7 +456,9 @@ function rootReducer(state = initialState, action) {
         // attributes: [],
         attributesByID: {},
         attributesByName: {},
-        collabSuggestions: []
+        collabSuggestions: [],
+        thingSuggestions: [],
+        typeSuggestions: []
       });
     }
   } else if (action.type === SET_ATTRIBUTES) {
