@@ -24,7 +24,9 @@ import {
 } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
 import TemplateModal from "../../components/Modals/TemplateModal";
-import TemplatesModal from "../../components/Modals/TemplatesModal";
+// import TemplatesModal from "../../components/Modals/TemplatesModal";
+import ImportTemplatesControl from "../../components/WorldTemplateControls/ImportTemplatesControl";
+import ImportingTemplatesControl from "../../components/WorldTemplateControls/ImportingTemplatesControl";
 import CommentsControl from "../../components/Inputs/CommentsControl";
 
 const mapStateToProps = state => {
@@ -494,31 +496,45 @@ class Page extends Component {
       );
     } else if (this.state.importMode) {
       return (
-        <TemplatesModal 
+        <ImportTemplatesControl 
           templates={this.props.templates} 
           onSubmit={selectedTemplateIDs => {
-            this.setState({ selectedTemplateIDs, importMode: false });
-            // console.log(selectedTemplateIDs);
-            // this.updateTemplates();
+            setTimeout(() => {
+              this.setState(
+                { 
+                  selectedTemplateIDs, 
+                  importMode: false 
+                }
+              );
+            }, 500);
           }}
           onCancel={_ => {
             this.setState({ importMode: false });
-          }} />
+          }} 
+        />
       );
     } else if (this.state.selectedTemplateIDs.length > 0) {
-      setTimeout(() => {
-        this.importSelectedTemplates();
-      }, 500);
       return (
-        <span>Importing {this.props.templates.filter(t => t._id === this.state.selectedTemplateIDs[0] )[0].Name}.  Please Wait.</span>
+        <ImportingTemplatesControl 
+          templateID={this.state.selectedTemplateIDs[0]} 
+          onComplete={_ => {
+            this.api.getWorld(id, true).then(res => {
+              this.props.setAttributes(res.attributes);
+              this.props.setTypes(res.types);
+              this.props.setThings(res.things);
+
+              setTimeout(() => {
+                const selectedTemplateIDs = [...this.state.selectedTemplateIDs];
+                selectedTemplateIDs.shift();
+                this.setState({ selectedTemplateIDs });
+              }, 500);
+            });
+          }}
+          onCancel={_ => {
+            this.setState({ selectedTemplateIDs: [] });
+          }}
+        />
       );
-    // } else if (this.props.allUsers.length === 0) {
-    //   setTimeout(() => {
-    //     this.api.getAllUsers().then(res => {
-    //       this.props.setAllUsers(res);
-    //     });
-    //   }, 500);
-    //   return (<span>Loading</span>);
     } else {
       const suggestions = [...this.props.typeSuggestions, ...this.props.thingSuggestions];
       return (

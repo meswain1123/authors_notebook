@@ -662,6 +662,13 @@ router
               a.DefinedType = typeMap[a.DefinedType].typeID;
             }
           });
+          template.Types.forEach(t => {
+            const SuperIDs = [];
+            t.SuperIDs.forEach(s => {
+              SuperIDs.push(typeMap[s].typeID)
+            });
+            t.SuperIDs = SuperIDs;
+          });
           function respond(message) {
             res.send(message);
           }
