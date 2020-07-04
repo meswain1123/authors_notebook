@@ -1675,273 +1675,275 @@ class Page extends Component {
                   </ListItem>
                 </Grid>
               </Grid>
-              <Grid item>
-                { this.state.loaded &&  
-                  <TextBox 
-                    Value={this.props.selectedThing.Name} 
-                    fieldName="Name" 
-                    message={this.state.fieldValidation.Name.message}
-                    onBlur={name => {
-                      const thing = this.props.selectedThing;
-                      thing.Name = name;
-                      this.props.updateSelectedThing(thing);
-                      this.validateForm();
-                      // this.setState({ Name: name }, this.validateForm);
-                    }}
-                    labelWidth={43}/>
-                }
-              </Grid>
-              <Grid item>
-                { this.state.loaded &&  
-                  <TextBox 
-                    Value={this.props.selectedThing.Description} 
-                    fieldName="Description" 
-                    multiline={true}
-                    onBlur={desc => {
-                      const thing = this.props.selectedThing;
-                      thing.Description = desc;
-                      this.props.updateSelectedThing(thing);
-                      // this.setState({ Description: desc });
-                    }}
-                    options={suggestions}
-                    labelWidth={82}/>
-                }
-              </Grid>
-              <Grid item>
-                { !this.state.resetting &&
-                  <Multiselect
-                    placeholder="Types"
-                    options={this.props.types}
-                    selectedValues={this.props.selectedThing.Types}
-                    onSelect={this.addType}
-                    onRemove={this.removeType}
-                    displayValue="Name"
-                  />
-                }
-              </Grid>
-              <Grid item container spacing={1} direction="column">
-                <Grid item>
-                  <span>Attributes&nbsp;
-                    <Tooltip title={`Add New Attribute`}>
-                      <Fab size="small"
-                        color="primary"
-                        onClick={ _ => {
-                          this.setState({ infoAttribute: {
-                            index: this.props.selectedThing.AttributesArr.length,
-                            Name: "",
-                            AttributeType: "Text",
-                            Options: [],
-                            DefinedType: "",
-                            ListType: "",
-                            attrID: null,
-                            Value: "",
-                            ListValues: [],
-                            FromTypeIDs: [],
-                            TypeIDs: []
-                          }});
+              { !this.state.resetting &&
+                <Grid item container spacing={1} direction="column">
+                  <Grid item>
+                    { this.state.loaded && 
+                      <TextBox 
+                        Value={this.props.selectedThing.Name} 
+                        fieldName="Name" 
+                        message={this.state.fieldValidation.Name.message}
+                        onBlur={name => {
+                          const thing = this.props.selectedThing;
+                          thing.Name = name;
+                          this.props.updateSelectedThing(thing);
+                          this.validateForm();
+                          // this.setState({ Name: name }, this.validateForm);
                         }}
-                      >
-                        <Add />
-                      </Fab>
-                    </Tooltip>
-                    <Tooltip title={`Browse Additional Attributes`}>
-                      <Fab
-                        size="small"
-                        color="primary"
-                        onClick={e => {
-                          this.setState({ browseAttributes: !this.state.browseAttributes });
+                        labelWidth={43}/>
+                    }
+                  </Grid>
+                  <Grid item>
+                    { this.state.loaded &&  
+                      <TextBox 
+                        Value={this.props.selectedThing.Description} 
+                        fieldName="Description" 
+                        multiline={true}
+                        onBlur={desc => {
+                          const thing = this.props.selectedThing;
+                          thing.Description = desc;
+                          this.props.updateSelectedThing(thing);
+                          // this.setState({ Description: desc });
                         }}
-                      >
-                        <Search />
-                      </Fab>
-                    </Tooltip>
-                  </span>
-                </Grid>
-                { this.state.browseAttributes && 
-                  <Grid item container spacing={1} direction="row">
-                    <Grid item xs={12} sm={6}>
-                      <FormControl variant="outlined" fullWidth>
-                        <InputLabel htmlFor="browseForAttributes" id="browseForAttributes-label">
-                          Browse Additional Attributes
-                        </InputLabel>
-                        <Select
-                          labelId="browseForAttributes-label"
-                          id="browseForAttributes"
-                          value={this.state.browseAttributesSelected}
-                          onChange={e => {
-                            this.setState({ browseAttributesSelected: e.target.value });
-                          }}
+                        options={suggestions}
+                        labelWidth={82}/>
+                    }
+                  </Grid>
+                  <Grid item>
+                    <Multiselect
+                      placeholder="Types"
+                      options={this.props.types}
+                      selectedValues={this.props.selectedThing.Types}
+                      onSelect={this.addType}
+                      onRemove={this.removeType}
+                      displayValue="Name"
+                    />
+                  </Grid>
+                  <Grid item container spacing={1} direction="column">
+                    <Grid item>
+                      <span>Attributes&nbsp;
+                        <Tooltip title={`Add New Attribute`}>
+                          <Fab size="small"
+                            color="primary"
+                            onClick={ _ => {
+                              this.setState({ infoAttribute: {
+                                index: this.props.selectedThing.AttributesArr.length,
+                                Name: "",
+                                AttributeType: "Text",
+                                Options: [],
+                                DefinedType: "",
+                                ListType: "",
+                                attrID: null,
+                                Value: "",
+                                ListValues: [],
+                                FromTypeIDs: [],
+                                TypeIDs: []
+                              }});
+                            }}
+                          >
+                            <Add />
+                          </Fab>
+                        </Tooltip>
+                        <Tooltip title={`Browse Additional Attributes`}>
+                          <Fab
+                            size="small"
+                            color="primary"
+                            onClick={e => {
+                              this.setState({ browseAttributes: !this.state.browseAttributes });
+                            }}
+                          >
+                            <Search />
+                          </Fab>
+                        </Tooltip>
+                      </span>
+                    </Grid>
+                    { this.state.browseAttributes && 
+                      <Grid item container spacing={1} direction="row">
+                        <Grid item xs={12} sm={6}>
+                          <FormControl variant="outlined" fullWidth>
+                            <InputLabel htmlFor="browseForAttributes" id="browseForAttributes-label">
+                              Browse Additional Attributes
+                            </InputLabel>
+                            <Select
+                              labelId="browseForAttributes-label"
+                              id="browseForAttributes"
+                              value={this.state.browseAttributesSelected}
+                              onChange={e => {
+                                this.setState({ browseAttributesSelected: e.target.value });
+                              }}
+                              fullWidth
+                              labelWidth={200}
+                            >
+                              {additionalAttributes.map((attr, i) => {
+                                return (<MenuItem key={i} value={attr._id}>{attr.Name}</MenuItem>);
+                              })}
+                            </Select>
+                          </FormControl>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Button
+                            variant="contained" color="primary"
+                            disabled={ this.state.browseAttributesSelected === "" }
+                            onClick={e => {this.addSelectedAttribute();}}
+                            type="submit"
+                          >
+                            Add Attribute
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    }
+                    { this.state.loaded &&
+                      <AttributesControl 
+                        addNewThing={attribute => {
+                          this.setState({ 
+                            thingModalOpen: true,
+                            newThingType: this.props.types.filter(t => t._id === attribute.DefinedType)[0],
+                            putThingOnAttribute: attribute
+                          });
+                        }} 
+                        onInfo={e => {
+                          this.setState({ infoAttribute: e});
+                        }} />
+                    }
+                    <FormHelperText>
+                      {this.state.fieldValidation.Attributes.message}
+                    </FormHelperText>
+                  </Grid>
+                  { ((this.state.majorType === null && this.props.things.length > 0) || (this.state.majorType !== null && this.props.things.filter(t => t.TypeIDs.includes(this.state.majorType._id)).length > 0)) ? 
+                    <Grid item container spacing={1} direction="row">
+                      <Grid item xs={12} sm={3}>
+                        <Button
+                          variant="contained" 
+                          color="primary"
                           fullWidth
-                          labelWidth={200}
+                          disabled={this.state.waiting}
+                          onClick={e => {this.onSubmit("next")}}
+                          type="submit"
                         >
-                          {additionalAttributes.map((attr, i) => {
-                            return (<MenuItem key={i} value={attr._id}>{attr.Name}</MenuItem>);
-                          })}
-                        </Select>
-                      </FormControl>
+                          {this.state.waiting ? "Please Wait" : "Submit and Edit Next"}
+                        </Button>
+                      </Grid>
+                      <Grid item xs={12} sm={3}>
+                        <Button
+                          variant="contained" 
+                          color="primary"
+                          fullWidth
+                          disabled={this.state.waiting}
+                          onClick={e => {this.onSubmit("add")}}
+                          type="submit"
+                        >
+                          {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
+                        </Button>
+                      </Grid>
+                      <Grid item xs={12} sm={3}>
+                        <Button
+                          variant="contained" 
+                          color="primary"
+                          fullWidth
+                          disabled={this.state.waiting}
+                          onClick={e => {this.onSubmit("")}}
+                          type="submit"
+                        >
+                          {this.state.waiting ? "Please Wait" : "Submit"}
+                        </Button>
+                      </Grid>
+                      <Grid item xs={12} sm={3}>
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          disabled={this.state.waiting}
+                          onClick={_ => {
+                            if (this.props.selectedThing._id === null) {
+                              this.setState({
+                                redirectTo: `/project/details/${this.props.selectedWorldID}`
+                              });
+                            }
+                            else {
+                              this.setState({
+                                redirectTo: `/thing/details/${this.props.selectedThing._id}`
+                              });
+                            }
+                          }}
+                          type="button"
+                        >
+                          Cancel
+                        </Button>
+                      </Grid>
                     </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Button
-                        variant="contained" color="primary"
-                        disabled={ this.state.browseAttributesSelected === "" }
-                        onClick={e => {this.addSelectedAttribute();}}
-                        type="submit"
-                      >
-                        Add Attribute
-                      </Button>
+                  :
+                    <Grid item container spacing={1} direction="row">
+                      <Grid item xs={12} sm={4}>
+                        <Button
+                          variant="contained" 
+                          color="primary"
+                          fullWidth
+                          disabled={this.state.waiting}
+                          onClick={e => {this.onSubmit("add")}}
+                          type="submit"
+                        >
+                          {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
+                        </Button>
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Button
+                          variant="contained" 
+                          color="primary"
+                          fullWidth
+                          disabled={this.state.waiting}
+                          onClick={e => {this.onSubmit("")}}
+                          type="submit"
+                        >
+                          {this.state.waiting ? "Please Wait" : "Submit"}
+                        </Button>
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          disabled={this.state.waiting}
+                          onClick={_ => {
+                            if (this.props.selectedThing._id === null) {
+                              this.setState({
+                                redirectTo: `/project/details/${this.props.selectedWorldID}`
+                              });
+                            }
+                            else {
+                              this.setState({
+                                redirectTo: `/thing/details/${this.props.selectedThing._id}`
+                              });
+                            }
+                          }}
+                          type="button"
+                        >
+                          Cancel
+                        </Button>
+                      </Grid>
                     </Grid>
+                  }
+                  <Grid item>{this.state.message}</Grid>
+                  <Grid item>
+                    {this.state.errors.map((e, key) => {
+                      return (<div key={key}>{e}</div>);
+                    })}
                   </Grid>
-                }
-                { !this.state.resetting && this.state.loaded &&
-                  <AttributesControl 
-                    addNewThing={attribute => {
-                      this.setState({ 
-                        thingModalOpen: true,
-                        newThingType: this.props.types.filter(t => t._id === attribute.DefinedType)[0],
-                        putThingOnAttribute: attribute
-                      });
-                    }} 
-                    onInfo={e => {
-                      this.setState({ infoAttribute: e});
-                    }} />
-                }
-                <FormHelperText>
-                  {this.state.fieldValidation.Attributes.message}
-                </FormHelperText>
-              </Grid>
-              { ((this.state.majorType === null && this.props.things.length > 0) || (this.state.majorType !== null && this.props.things.filter(t => t.TypeIDs.includes(this.state.majorType._id)).length > 0)) ? 
-                <Grid item container spacing={1} direction="row">
-                  <Grid item xs={12} sm={3}>
-                    <Button
-                      variant="contained" 
-                      color="primary"
-                      fullWidth
-                      disabled={this.state.waiting}
-                      onClick={e => {this.onSubmit("next")}}
-                      type="submit"
-                    >
-                      {this.state.waiting ? "Please Wait" : "Submit and Edit Next"}
-                    </Button>
-                  </Grid>
-                  <Grid item xs={12} sm={3}>
-                    <Button
-                      variant="contained" 
-                      color="primary"
-                      fullWidth
-                      disabled={this.state.waiting}
-                      onClick={e => {this.onSubmit("add")}}
-                      type="submit"
-                    >
-                      {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
-                    </Button>
-                  </Grid>
-                  <Grid item xs={12} sm={3}>
-                    <Button
-                      variant="contained" 
-                      color="primary"
-                      fullWidth
-                      disabled={this.state.waiting}
-                      onClick={e => {this.onSubmit("")}}
-                      type="submit"
-                    >
-                      {this.state.waiting ? "Please Wait" : "Submit"}
-                    </Button>
-                  </Grid>
-                  <Grid item xs={12} sm={3}>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      disabled={this.state.waiting}
-                      onClick={_ => {
-                        if (this.props.selectedThing._id === null) {
-                          this.setState({
-                            redirectTo: `/project/details/${this.props.selectedWorldID}`
-                          });
-                        }
-                        else {
-                          this.setState({
-                            redirectTo: `/thing/details/${this.props.selectedThing._id}`
-                          });
-                        }
-                      }}
-                      type="button"
-                    >
-                      Cancel
-                    </Button>
-                  </Grid>
-                </Grid>
-              :
-                <Grid item container spacing={1} direction="row">
-                  <Grid item xs={12} sm={4}>
-                    <Button
-                      variant="contained" 
-                      color="primary"
-                      fullWidth
-                      disabled={this.state.waiting}
-                      onClick={e => {this.onSubmit("add")}}
-                      type="submit"
-                    >
-                      {this.state.waiting ? "Please Wait" : "Submit and Create Another"}
-                    </Button>
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Button
-                      variant="contained" 
-                      color="primary"
-                      fullWidth
-                      disabled={this.state.waiting}
-                      onClick={e => {this.onSubmit("")}}
-                      type="submit"
-                    >
-                      {this.state.waiting ? "Please Wait" : "Submit"}
-                    </Button>
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      disabled={this.state.waiting}
-                      onClick={_ => {
-                        if (this.props.selectedThing._id === null) {
-                          this.setState({
-                            redirectTo: `/project/details/${this.props.selectedWorldID}`
-                          });
-                        }
-                        else {
-                          this.setState({
-                            redirectTo: `/thing/details/${this.props.selectedThing._id}`
-                          });
-                        }
-                      }}
-                      type="button"
-                    >
-                      Cancel
-                    </Button>
+                  <Grid item>
+                    {Object.keys(this.state.fieldValidation).map((fieldName, i) => {
+                      if (
+                        this.state.fieldValidation[fieldName] !== undefined &&
+                        this.state.fieldValidation[fieldName].message.length > 0
+                      ) {
+                        return (
+                          <p className="redFont" key={i}>
+                            {this.state.fieldValidation[fieldName].message}
+                          </p>
+                        );
+                      } else {
+                        return "";
+                      }
+                    })}
                   </Grid>
                 </Grid>
               }
-              <Grid item>{this.state.message}</Grid>
-              <Grid item>
-                {this.state.errors.map((e, key) => {
-                  return (<div key={key}>{e}</div>);
-                })}
-              </Grid>
-              <Grid item>
-                {Object.keys(this.state.fieldValidation).map((fieldName, i) => {
-                  if (
-                    this.state.fieldValidation[fieldName] !== undefined &&
-                    this.state.fieldValidation[fieldName].message.length > 0
-                  ) {
-                    return (
-                      <p className="redFont" key={i}>
-                        {this.state.fieldValidation[fieldName].message}
-                      </p>
-                    );
-                  } else {
-                    return "";
-                  }
-                })}
-              </Grid>
             </Grid>
           }
         </Grid>

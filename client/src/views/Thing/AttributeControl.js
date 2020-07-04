@@ -150,6 +150,7 @@ export default function AttributeControl(props) {
               }}
               labelWidth={props.attribute.Name.length * 9}
               fullWidth
+              multiline
             />
             <FormHelperText>{props.message}</FormHelperText>
           </FormControl>
@@ -287,9 +288,10 @@ export default function AttributeControl(props) {
             {props.attribute.ListType === "Text" ? (
               <ChipInput
                 placeholder={props.attribute.Name}
-                variant="outlined"
+                variant="outlined" fullWidth
                 defaultValue={props.attribute.ListValues}
                 onChange={chips => handleTextListChange(chips, props)}
+                blurBehavior="add"
               />
             ) : props.attribute.ListType === "Options" ? (
               <Multiselect
