@@ -406,8 +406,6 @@ class Page extends Component {
       return s._id;
     });
     
-    console.log(this.state);
-    
     const thing = {
       _id: this.state._id,
       Name: this.props.selectedThing.Name.trim(),

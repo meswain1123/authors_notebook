@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import {
   notFromLogin
 } from "../redux/actions/index";
-// import MediaCard from "../components/Displays/MediaCard";
+import MediaCard from "../components/Displays/MediaCard";
 // import ContentEditableBox from "../components/Inputs/ContentEditableBox";
 
 const mapStateToProps = state => {
@@ -39,12 +39,8 @@ class Page extends Component {
         <div>
           <h3>Author's Notebook</h3>
 
-          {/* <div class="editable" value="" id="text_field_New Comment" name="text_field_New Comment" type="text" autocomplete="Off" contenteditable="true">;lkjsdfa sfsdfasd /fasdfkjsdf likuh</div> */}
-
-          {/* <ContentEditableBox /> */}
-
-          {/* <MediaCard title="ANB Basics Tutorial" description="This video explains the basics of how to use the website and its tools.  It covers the basic concepts, creating a world, navigation, creating types, creating attributes, and creating things." /> */}
-
+          <MediaCard title="Getting Started" description="This video explains the basics of how to use the website and its tools.  It covers the basic concepts, navigation, creating a project, importing templates, creating types, creating attributes, and creating things." />
+{/* 
           <p>
             This is something that I've been wanting to build for a while. It's
             purpose is to provide a place for keeping track of various aspects of
@@ -317,7 +313,7 @@ class Page extends Component {
               edited Types or Things and recent comments which may be of
               interest to the user.
             </p>
-          </div>
+          </div> */}
         </div>
       );
     }

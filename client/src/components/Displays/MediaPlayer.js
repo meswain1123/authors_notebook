@@ -9,15 +9,14 @@ import ReactPlayer from 'react-player'; // npm install react-player --save
 
 export default function MediaPlayer(props) {
   console.log(props);
-  return <ReactPlayer url='https://www.youtube.com/watch?v=ysz5S6PUM-U' />
-  // const opts = {
-  //   height: '390',
-  //   width: '640',
-  //   playerVars: {
-  //     // https://developers.google.com/youtube/player_parameters
-  //     autoplay: 1,
-  //   },
-  // };
-
-  // return <YouTube videoId="2g811Eo7K8U" opts={opts} onReady={_onReady} />;
+  return (
+    <ReactPlayer
+      // className='react-player fixed-bottom'
+      url= 'https://youtu.be/kksVfoN2bR8'
+      // width='100%'
+      // height='100%'
+      // controls = {true}
+    />
+  );
+  // <ReactPlayer url='https://www.youtube.com/watch?v=ysz5S6PUM-U' />;
 }
