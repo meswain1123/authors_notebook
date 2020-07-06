@@ -182,16 +182,28 @@ class Page extends Component {
       this.props.notFromLogin();
     }
     if (this.state.templateMode || this.state.importMode) {
-      this.setState({ templateMode: false, importMode: false });
-    }
-    setTimeout(() => {
-      this.props.selectWorld(id);
-      this.api.getWorld(id).then(res => {
-        this.props.setAttributes(res.attributes);
-        this.props.setTypes(res.types);
-        this.props.setThings(res.things);
+      this.setState({ 
+        loading: true, templateMode: false, importMode: false 
+      }, _ => {
+        this.props.selectWorld(id);
+        this.api.getWorld(id).then(res => {
+          this.props.setAttributes(res.attributes);
+          this.props.setTypes(res.types);
+          this.props.setThings(res.things);
+          this.setState({ loading: false });
+        });
       });
-    }, 500);
+    } else {
+      this.setState({ loading: true }, _ => {
+        this.props.selectWorld(id);
+        this.api.getWorld(id).then(res => {
+          this.props.setAttributes(res.attributes);
+          this.props.setTypes(res.types);
+          this.props.setThings(res.things);
+          this.setState({ loading: false });
+        });
+      });
+    }
   }
 
   requestToCollaborate = () => {
@@ -464,6 +476,8 @@ class Page extends Component {
     const { id } = this.props.match.params;
     if ((this.props.worlds.length > 0 || this.props.publicWorlds.length > 0) && (this.props.selectedWorldID === null || this.props.selectedWorldID !== id)) {
       this.load(id);
+      return (<span>Loading</span>);
+    } else if (this.state.loading) {
       return (<span>Loading</span>);
     } else if (this.state.redirectTo !== null) {
       return <Redirect to={this.state.redirectTo} />;

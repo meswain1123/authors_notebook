@@ -298,9 +298,12 @@ function rootReducer(state = initialState, action) {
         return Object.assign({}, state, {
           selectedWorldID: action.payload._id,
           selectedWorld: world,
-          // attributes: [],
           attributesByID: {},
           attributesByName: {},
+          types: [],
+          things: [],
+          selectedType: null,
+          selectedThing: null,
           collabSuggestions,
           worlds,
           publicWorlds
@@ -309,9 +312,12 @@ function rootReducer(state = initialState, action) {
         return Object.assign({}, state, {
           selectedWorldID: action.payload,
           selectedWorld: world,
-          // attributes: [],
           attributesByID: {},
           attributesByName: {},
+          types: [],
+          things: [],
+          selectedType: null,
+          selectedThing: null,
           worlds,
           publicWorlds
         });
@@ -336,9 +342,12 @@ function rootReducer(state = initialState, action) {
         return Object.assign({}, state, {
           selectedWorldID: action.payload._id,
           selectedWorld: world,
-          // attributes: [],
           attributesByID: {},
           attributesByName: {},
+          types: [],
+          things: [],
+          selectedType: null,
+          selectedThing: null,
           collabSuggestions,
           worlds: state.worlds.concat(action.payload)
         });
@@ -346,9 +355,12 @@ function rootReducer(state = initialState, action) {
         return Object.assign({}, state, {
           selectedWorldID: action.payload,
           selectedWorld: world,
-          // attributes: [],
           attributesByID: {},
           attributesByName: {},
+          types: [],
+          things: [],
+          selectedType: null,
+          selectedThing: null,
           worlds: state.worlds.concat(action.payload)
         });
       }
@@ -428,9 +440,12 @@ function rootReducer(state = initialState, action) {
         return Object.assign({}, state, {
           selectedWorldID: action.payload,
           selectedWorld: world,
-          // attributes: [],
           attributesByID: {},
           attributesByName: {},
+          types: [],
+          things: [],
+          selectedType: null,
+          selectedThing: null,
           collabSuggestions,
           thingSuggestions: [],
           typeSuggestions: []
@@ -439,9 +454,12 @@ function rootReducer(state = initialState, action) {
         return Object.assign({}, state, {
           selectedWorldID: action.payload,
           selectedWorld: world,
-          // attributes: [],
           attributesByID: {},
           attributesByName: {},
+          types: [],
+          things: [],
+          selectedType: null,
+          selectedThing: null,
           thingSuggestions: [],
           typeSuggestions: []
         });
@@ -453,9 +471,12 @@ function rootReducer(state = initialState, action) {
       return Object.assign({}, state, {
         selectedWorldID: action.payload,
         selectedWorld: null,
-        // attributes: [],
         attributesByID: {},
         attributesByName: {},
+        types: [],
+        things: [],
+        selectedType: null,
+        selectedThing: null,
         collabSuggestions: [],
         thingSuggestions: [],
         typeSuggestions: []
