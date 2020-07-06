@@ -545,6 +545,11 @@ class AutocompleteTextField extends React.Component {
               this.props.onBlur(this.state.value.trim());
             }
           }}
+          onBlur2={_ => {
+            if (this.props.onBlur !== undefined) {
+              this.props.onBlur(this.state.value.trim());
+            }
+          }}
           onKeyDown={this.handleKeyDown}
           ref={this.refInput}
         />

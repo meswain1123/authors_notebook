@@ -57,6 +57,10 @@ class Control extends Component {
   }
   // 0123456789112345678921234567893123456789412345678951234567896123456789712345678981234567899123456789
   // pizza <span id='type_5e75999efb4bae172d3fa0ef' style="color: blue">y/Component</span> lasagna 
+
+  getValue = () => {
+    return this.state.value;
+  }
   
   render() {
     // const [value, changeValue] = useState(props.Value === undefined || props.Value === null ? "" : props.Value);
@@ -84,9 +88,9 @@ class Control extends Component {
                 if (this.props.onChange !== undefined) {
                   this.props.onChange(e);
                 }
-                if (this.props.onBlur !== undefined) {
-                  this.props.onBlur(e);
-                }
+                // if (this.props.onBlur !== undefined) {
+                //   this.props.onBlur(e);
+                // }
               }}
               onKeyDown={e => {
                 if (this.props.onKeyPress !== undefined) {
@@ -94,6 +98,7 @@ class Control extends Component {
                 }
               }}
               onBlur={e => {
+                console.log(e);
                 if (this.props.onBlur !== undefined) {
                   this.props.onBlur(this.state.value);
                 }

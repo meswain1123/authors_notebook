@@ -399,7 +399,8 @@ class Page extends Component {
                                   }}
                                 />
                               : attribute.AttributeType === "List" ?
-                                attribute.ListValues.map(
+                                <span>{attribute.Name}:&nbsp;
+                                { attribute.ListValues.map(
                                   (listValue, i) => {
                                     return(
                                       <span key={i}>
@@ -409,6 +410,8 @@ class Page extends Component {
                                       </span>
                                     );
                                   })
+                                }
+                                </span>
                               : 
                                 <span>{attribute.Name}:&nbsp;{attribute.Value}</span>
                               }

@@ -413,6 +413,10 @@ class ReactQuill extends React.Component {
         onKeyPress={this.props.onKeyPress}
         onKeyDown={this.props.onKeyDown}
         onKeyUp={this.props.onKeyUp}
+        onBlur={_ => {
+          if (this.props.onBlur2 !== undefined)
+            this.props.onBlur2();
+        }}
       >
         {this.renderEditingArea()}
       </div>

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, createRef } from 'react';
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import {
@@ -106,6 +106,7 @@ class Page extends Component {
       majorType: null
     };
     this.api = API.getInstance();
+    this.refDescription = createRef();
   }
 
   componentDidMount() {
@@ -404,6 +405,9 @@ class Page extends Component {
     const typeIDs = this.props.selectedThing.Types.map(s => {
       return s._id;
     });
+    
+    console.log(this.state);
+    
     const thing = {
       _id: this.state._id,
       Name: this.props.selectedThing.Name.trim(),
