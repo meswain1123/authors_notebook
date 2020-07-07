@@ -73,26 +73,23 @@ function rootReducer(state = initialState, action) {
       indexExpandedPanel: action.payload
     });
   } else if (action.type === LOAD_FROM_STORAGE) {
-    let user = JSON.parse(sessionStorage.getItem("user"));
+    let user = JSON.parse(localStorage.getItem("user"));
     if (user !== undefined && user !== null && user.body !== undefined && user.body.user !== undefined)
       user = user.body.user;
     else 
       user = null;
-    // const worlds = JSON.parse(sessionStorage.getItem("worlds"));
-    // const publicWorlds = JSON.parse(sessionStorage.getItem("publicWorlds"));
-    const selectedWorld = JSON.parse(sessionStorage.getItem("selectedWorld"));
-    const selectedWorldID = sessionStorage.getItem("selectedWorldID");
-    const types = JSON.parse(sessionStorage.getItem("types"));
-    const things = JSON.parse(sessionStorage.getItem("things"));
-    const followingWorlds = JSON.parse(sessionStorage.getItem("followingWorlds"));
-    // const attributes = JSON.parse(sessionStorage.getItem("attributes"));
-    const attributesByID = JSON.parse(sessionStorage.getItem("attributesByID"));
-    const attributesByName = JSON.parse(sessionStorage.getItem("attributesByName"));
-    const worldSuggestions = JSON.parse(sessionStorage.getItem("worldSuggestions"));
-    const userSuggestions = JSON.parse(sessionStorage.getItem("userSuggestions"));
-    const collabSuggestions = JSON.parse(sessionStorage.getItem("collabSuggestions"));
-    const typeSuggestions = JSON.parse(sessionStorage.getItem("typeSuggestions"));
-    const thingSuggestions = JSON.parse(sessionStorage.getItem("thingSuggestions"));
+    const selectedWorld = JSON.parse(localStorage.getItem("selectedWorld"));
+    const selectedWorldID = localStorage.getItem("selectedWorldID");
+    const types = JSON.parse(localStorage.getItem("types"));
+    const things = JSON.parse(localStorage.getItem("things"));
+    const followingWorlds = JSON.parse(localStorage.getItem("followingWorlds"));
+    const attributesByID = JSON.parse(localStorage.getItem("attributesByID"));
+    const attributesByName = JSON.parse(localStorage.getItem("attributesByName"));
+    const worldSuggestions = JSON.parse(localStorage.getItem("worldSuggestions"));
+    const userSuggestions = JSON.parse(localStorage.getItem("userSuggestions"));
+    const collabSuggestions = JSON.parse(localStorage.getItem("collabSuggestions"));
+    const typeSuggestions = JSON.parse(localStorage.getItem("typeSuggestions"));
+    const thingSuggestions = JSON.parse(localStorage.getItem("thingSuggestions"));
     
     return Object.assign({}, state, {
       user: user,
@@ -121,14 +118,12 @@ function rootReducer(state = initialState, action) {
       articles: state.articles.concat(action.payload)
     });
   } else if (action.type === LOGIN) {
-    // sessionStorage.setItem("user", JSON.stringify(action.payload));
-    sessionStorage.setItem("followingWorlds", JSON.stringify(action.payload.followingWorlds));
+    localStorage.setItem("followingWorlds", JSON.stringify(action.payload.followingWorlds));
     return Object.assign({}, state, {
       user: action.payload, 
       followingWorlds: action.payload.followingWorlds
     });
   } else if (action.type === LOGOUT) {
-    // sessionStorage.removeItem("user");
     return Object.assign({}, state, {
       user: null
     });
@@ -138,35 +133,25 @@ function rootReducer(state = initialState, action) {
     });
   } else if (action.type === SET_WORLDS) {
     if (action.payload !== undefined && action.payload.error === undefined){
-      // sessionStorage.setItem("worlds", JSON.stringify(action.payload));
       if (state.selectedWorldID !== null && state.selectedWorld === null) {
         const worldArr = action.payload.filter(
           world => world._id === state.selectedWorldID
         );
         if (worldArr.length > 0) {
           let world = worldArr[0];
-          sessionStorage.setItem("selectedWorld", JSON.stringify(world));
+          localStorage.setItem("selectedWorld", JSON.stringify(world));
           return Object.assign({}, state, {
             worlds: action.payload,
             selectedWorld: world,
-            // attributes: [],
-            // attributesByID: {},
-            // attributesByName: {}
           });
         } else {
           return Object.assign({}, state, {
             worlds: action.payload,
-            // attributes: [],
-            // attributesByID: {},
-            // attributesByName: {}
           });
         }
       } else {
         return Object.assign({}, state, {
           worlds: action.payload,
-          // attributes: [],
-          // attributesByID: {},
-          // attributesByName: {}
         });
       }
     }
@@ -175,24 +160,22 @@ function rootReducer(state = initialState, action) {
     }
   } else if (action.type === SET_PUBLIC_WORLDS) {
     if (action.payload.error === undefined) {
-      // sessionStorage.setItem("publicWorlds", JSON.stringify(action.payload));
       const worldSuggestions = [];
       action.payload.forEach(w => {
-        // worldSuggestions.push(`${w.Name}-${w._id}`);
         worldSuggestions.push({
           _id: w._id,
           suggestionType: "world",
           Display: `${w.Name}`
         });
       });
-      sessionStorage.setItem("worldSuggestions", JSON.stringify(worldSuggestions));
+      localStorage.setItem("worldSuggestions", JSON.stringify(worldSuggestions));
       if (state.selectedWorldID !== null && state.selectedWorld === null) {
         const worldArr = action.payload.filter(
           world => world._id === state.selectedWorldID
         );
         if (worldArr.length > 0) {
           let world = worldArr[0];
-          sessionStorage.setItem("selectedWorld", JSON.stringify(world));
+          localStorage.setItem("selectedWorld", JSON.stringify(world));
           
           return Object.assign({}, state, {
             publicWorlds: action.payload,
@@ -232,7 +215,7 @@ function rootReducer(state = initialState, action) {
         Display: `${u.username}`
       });
     });
-    sessionStorage.setItem("userSuggestions", JSON.stringify(userSuggestions));
+    localStorage.setItem("userSuggestions", JSON.stringify(userSuggestions));
     if (state.selectedWorld !== null){
       const collabSuggestions = [];
       action.payload.forEach(u => {
@@ -245,7 +228,7 @@ function rootReducer(state = initialState, action) {
           });
         }
       });
-      sessionStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
+      localStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
       return Object.assign({}, state, {
         allUsers: action.payload,
         userSuggestions,
@@ -261,15 +244,11 @@ function rootReducer(state = initialState, action) {
     if (action.payload.Public) {
       const worlds = state.worlds.concat(action.payload);
       const publicWorlds = state.publicWorlds.concat(action.payload);
-      // sessionStorage.setItem("worlds", JSON.stringify(worlds));
-      // sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
       return Object.assign({}, state, {
         worlds,
         publicWorlds
       });
     } else {
-      // const worlds = state.worlds.concat(action.payload);
-      // sessionStorage.setItem("worlds", JSON.stringify(worlds));
       return Object.assign({}, state, {
         worlds: state.worlds.concat(action.payload)
       });
@@ -280,8 +259,8 @@ function rootReducer(state = initialState, action) {
       const publicWorlds = state.publicWorlds.concat(action.payload);
       
       const world = action.payload;
-      sessionStorage.setItem("selectedWorldID", action.payload._id);
-      sessionStorage.setItem("selectedWorld", JSON.stringify(world));
+      localStorage.setItem("selectedWorldID", action.payload._id);
+      localStorage.setItem("selectedWorld", JSON.stringify(world));
       if (state.allUsers.length > 0) {
         const collabSuggestions = [];
         state.allUsers.forEach(u => {
@@ -294,7 +273,7 @@ function rootReducer(state = initialState, action) {
             });
           }
         });
-        sessionStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
+        localStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
         return Object.assign({}, state, {
           selectedWorldID: action.payload._id,
           selectedWorld: world,
@@ -324,8 +303,8 @@ function rootReducer(state = initialState, action) {
       }
     } else {
       const world = action.payload;
-      sessionStorage.setItem("selectedWorldID", action.payload._id);
-      sessionStorage.setItem("selectedWorld", JSON.stringify(world));
+      localStorage.setItem("selectedWorldID", action.payload._id);
+      localStorage.setItem("selectedWorld", JSON.stringify(world));
       if (state.allUsers.length > 0) {
         const collabSuggestions = [];
         state.allUsers.forEach(u => {
@@ -338,7 +317,7 @@ function rootReducer(state = initialState, action) {
             });
           }
         });
-        sessionStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
+        localStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
         return Object.assign({}, state, {
           selectedWorldID: action.payload._id,
           selectedWorld: world,
@@ -375,7 +354,6 @@ function rootReducer(state = initialState, action) {
     world.Public = action.payload.Public;
     world.AcceptingCollaborators = action.payload.AcceptingCollaborators;
     world.Collaborators = action.payload.Collaborators;
-    // sessionStorage.setItem("worlds", JSON.stringify(worlds));
     if (world.Public) {
       if (wasPublic) {
         // It was already public so we just need to update the name
@@ -386,7 +364,6 @@ function rootReducer(state = initialState, action) {
         // It's been changed to public, so we need to add it
         publicWorlds = publicWorlds.concat(world);
       }
-      // sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
       return Object.assign({}, state, {
         worlds,
         publicWorlds
@@ -395,7 +372,6 @@ function rootReducer(state = initialState, action) {
       if (wasPublic) {
         // It used to be public, so we need to remove it
         publicWorlds = publicWorlds.filter(t => t._id !== world._id);
-        // sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
         return Object.assign({}, state, {
           worlds,
           publicWorlds
@@ -412,7 +388,6 @@ function rootReducer(state = initialState, action) {
     let publicWorlds = [...state.publicWorlds];
     const world = publicWorlds.filter(t => t._id === action.payload._id)[0];
     world.Collaborators = action.payload.Collaborators;
-    // sessionStorage.setItem("publicWorlds", JSON.stringify(publicWorlds));
     return Object.assign({}, state, {
       publicWorlds
     });
@@ -422,13 +397,12 @@ function rootReducer(state = initialState, action) {
       world = state.publicWorlds.filter(world => world._id === action.payload);
     if (world.length > 0) {
       world = world[0];
-      sessionStorage.setItem("selectedWorldID", action.payload);
-      sessionStorage.setItem("selectedWorld", JSON.stringify(world));
+      localStorage.setItem("selectedWorldID", action.payload);
+      localStorage.setItem("selectedWorld", JSON.stringify(world));
       if (state.allUsers.length > 0) {
         const collabSuggestions = [];
         state.allUsers.forEach(u => {
           if (world.Owner === u._id || (world.Collaborators !== undefined && world.Collaborators !== null && world.Collaborators.filter(c => c.userID === u._id).length > 0)) {
-            // collabSuggestions.push(`${u.username}-${u._id}`);
             collabSuggestions.push({
               _id: u._id,
               suggestionType: "user",
@@ -436,7 +410,7 @@ function rootReducer(state = initialState, action) {
             });
           }
         });
-        sessionStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
+        localStorage.setItem("collabSuggestions", JSON.stringify(collabSuggestions));
         return Object.assign({}, state, {
           selectedWorldID: action.payload,
           selectedWorld: world,
@@ -465,9 +439,9 @@ function rootReducer(state = initialState, action) {
         });
       }
     } else {
-      sessionStorage.setItem("selectedWorldID", action.payload);
-      sessionStorage.removeItem("selectedWorld");
-      sessionStorage.removeItem("collabSuggestions");
+      localStorage.setItem("selectedWorldID", action.payload);
+      localStorage.removeItem("selectedWorld");
+      localStorage.removeItem("collabSuggestions");
       return Object.assign({}, state, {
         selectedWorldID: action.payload,
         selectedWorld: null,
@@ -490,12 +464,10 @@ function rootReducer(state = initialState, action) {
       attributesByName[attribute.Name] = attribute;
     });
     
-    // sessionStorage.setItem("attributes", JSON.stringify(action.payload));
-    sessionStorage.setItem("attributesByID", JSON.stringify(attributesByID));
-    sessionStorage.setItem("attributesByName", JSON.stringify(attributesByName));
+    localStorage.setItem("attributesByID", JSON.stringify(attributesByID));
+    localStorage.setItem("attributesByName", JSON.stringify(attributesByName));
 
     return Object.assign({}, state, {
-      // attributes: action.payload,
       attributesByID: attributesByID,
       attributesByName: attributesByName
     });
@@ -507,9 +479,8 @@ function rootReducer(state = initialState, action) {
       attributesByName[attribute.Name] = attribute;
     });
     
-    // sessionStorage.setItem("attributes", JSON.stringify(action.payload));
-    sessionStorage.setItem("attributesByID", JSON.stringify(attributesByID));
-    sessionStorage.setItem("attributesByName", JSON.stringify(attributesByName));
+    localStorage.setItem("attributesByID", JSON.stringify(attributesByID));
+    localStorage.setItem("attributesByName", JSON.stringify(attributesByName));
 
     return Object.assign({}, state, {
       // attributes: action.payload,
@@ -525,9 +496,8 @@ function rootReducer(state = initialState, action) {
       attributesByName[attribute.Name] = attribute;
     });
     
-    // sessionStorage.setItem("attributes", JSON.stringify(attributes));
-    sessionStorage.setItem("attributesByID", JSON.stringify(attributesByID));
-    sessionStorage.setItem("attributesByName", JSON.stringify(attributesByName));
+    localStorage.setItem("attributesByID", JSON.stringify(attributesByID));
+    localStorage.setItem("attributesByName", JSON.stringify(attributesByName));
     
     return Object.assign({}, state, {
       // attributes: attributes,
@@ -535,7 +505,7 @@ function rootReducer(state = initialState, action) {
       attributesByName: attributesByName
     });
   } else if (action.type === SET_TYPES) {
-    sessionStorage.setItem("types", JSON.stringify(action.payload));
+    localStorage.setItem("types", JSON.stringify(action.payload));
     const typeSuggestions = [];
     action.payload.forEach(t => {
       // typeSuggestions.push(`${t.Name}-${t._id}`);
@@ -545,14 +515,14 @@ function rootReducer(state = initialState, action) {
         Display: `${t.Name}`
       });
     });
-    sessionStorage.setItem("typeSuggestions", JSON.stringify(typeSuggestions));
+    localStorage.setItem("typeSuggestions", JSON.stringify(typeSuggestions));
     return Object.assign({}, state, {
       types: action.payload,
       typeSuggestions
     });
   } else if (action.type === ADD_TYPE) {
     const types = state.types.concat(action.payload);
-    sessionStorage.setItem("types", JSON.stringify(types));
+    localStorage.setItem("types", JSON.stringify(types));
     const typeSuggestions = [];
     types.forEach(t => {
       // typeSuggestions.push(`${t.Name}-${t._id}`);
@@ -562,13 +532,13 @@ function rootReducer(state = initialState, action) {
         Display: `${t.Name}`
       });
     });
-    sessionStorage.setItem("typeSuggestions", JSON.stringify(typeSuggestions));
+    localStorage.setItem("typeSuggestions", JSON.stringify(typeSuggestions));
     return Object.assign({}, state, {
       types,
       typeSuggestions
     });
   } else if (action.type === SET_THINGS) {
-    sessionStorage.setItem("things", JSON.stringify(action.payload));
+    localStorage.setItem("things", JSON.stringify(action.payload));
     
     const thingSuggestions = [];
     action.payload.forEach(t => {
@@ -587,14 +557,14 @@ function rootReducer(state = initialState, action) {
         });
       });
     });
-    sessionStorage.setItem("thingSuggestions", JSON.stringify(thingSuggestions));
+    localStorage.setItem("thingSuggestions", JSON.stringify(thingSuggestions));
     return Object.assign({}, state, {
       things: action.payload, 
       thingSuggestions
     });
   } else if (action.type === ADD_THING) {
     const things = state.things.concat(action.payload);
-    sessionStorage.setItem("things", JSON.stringify(things));
+    localStorage.setItem("things", JSON.stringify(things));
     const thingSuggestions = [];
     things.forEach(t => {
       // thingSuggestions.push(`${t.Name}-${t._id}`);
@@ -612,7 +582,7 @@ function rootReducer(state = initialState, action) {
         });
       });
     });
-    sessionStorage.setItem("thingSuggestions", JSON.stringify(thingSuggestions));
+    localStorage.setItem("thingSuggestions", JSON.stringify(thingSuggestions));
     
     return Object.assign({}, state, {
       things: things
@@ -632,7 +602,7 @@ function rootReducer(state = initialState, action) {
     type.Supers = action.payload.Supers;
     type.AttributesArr = action.payload.AttributesArr;
     type.Attributes = action.payload.Attributes;
-    sessionStorage.setItem("types", JSON.stringify(types));
+    localStorage.setItem("types", JSON.stringify(types));
     return Object.assign({}, state, {
       types: types
     });
@@ -654,7 +624,7 @@ function rootReducer(state = initialState, action) {
     thing.Description = action.payload.Description;
     thing.Types = action.payload.Types;
     thing.Attributes = action.payload.Attributes;
-    sessionStorage.setItem("things", JSON.stringify(things));
+    localStorage.setItem("things", JSON.stringify(things));
     return Object.assign({}, state, {
       things: things
     });
@@ -676,7 +646,7 @@ function rootReducer(state = initialState, action) {
       width: action.payload
     });
   } else if (action.type === SET_FOLLOWING_WORLDS) {
-    sessionStorage.setItem("followingWorlds", JSON.stringify(action.payload));
+    localStorage.setItem("followingWorlds", JSON.stringify(action.payload));
     return Object.assign({}, state, {
       followingWorlds: action.payload
     });

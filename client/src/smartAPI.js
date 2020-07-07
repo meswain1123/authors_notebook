@@ -93,7 +93,7 @@ class APIClass {
           body: user,
           expiresAt: "never"
         };
-        sessionStorage.setItem("loginUser", JSON.stringify(sessionObj));
+        localStorage.setItem("loginUser", JSON.stringify(sessionObj));
       }
       const response = await this.postData("/api/user/login", user);
       return this.processResponse(response, null, "user", stayLoggedIn);
@@ -109,7 +109,7 @@ class APIClass {
   logout = async user => {
     if (this.real) {
       await this.postData("/api/user/logout");
-      sessionStorage.removeItem("user");
+      localStorage.removeItem("user");
     }
   };
 
@@ -1026,7 +1026,7 @@ class APIClass {
           expiresAt,
           body
         };
-        sessionStorage.setItem(sessionName, JSON.stringify(sessionObj));
+        localStorage.setItem(sessionName, JSON.stringify(sessionObj));
       }
       return body;
     };
@@ -1044,7 +1044,7 @@ class APIClass {
   }
 
   getSessionData = (sessionName) => {
-    const sessionStr = sessionStorage.getItem(sessionName);
+    const sessionStr = localStorage.getItem(sessionName);
     if (sessionStr !== null) {
       const sessionObj = JSON.parse(sessionStr);
       if (sessionObj.expiresAt !== undefined && 
