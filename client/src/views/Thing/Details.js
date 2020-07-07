@@ -17,7 +17,8 @@ import {
   setAllUsers,
   notFromLogin,
   toggleLogin,
-  logout
+  logout,
+  selectWorld
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 import ThingTable from "../../components/Displays/ThingTable";
@@ -51,7 +52,8 @@ function mapDispatchToProps(dispatch) {
     setAllUsers: allUsers => dispatch(setAllUsers(allUsers)),
     notFromLogin: () => dispatch(notFromLogin({})),
     toggleLogin: () => dispatch(toggleLogin({})),
-    logout: () => dispatch(logout({}))
+    logout: () => dispatch(logout({})),
+    selectWorld: worldID => dispatch(selectWorld(worldID))
   };
 }
 class Page extends Component {
@@ -146,48 +148,59 @@ class Page extends Component {
       this.props.notFromLogin();
     }
     const id = this.state._id;
-    this.api.getWorld(this.props.selectedWorldID).then(res => {
-      this.props.setAttributes(res.attributes);
-      this.props.setTypes(res.types);
-      this.props.setThings(res.things);
-      
-      if (id !== undefined) {
-        let thing = res.things.filter(t => t._id === id);
-        if (thing.length === 0) {
-          this.setState({ message: "Invalid Thing ID", loaded: true });
-        }
-        else {
-          thing = thing[0];
-          thing.AttributesArr = [];
-          thing.Attributes.forEach(a => {
-            const attr = this.props.attributesByID[a.attrID];
-            thing.AttributesArr.push({
-              index: thing.AttributesArr.length,
-              Name: attr.Name,
-              AttributeType: attr.AttributeType,
-              Options: attr.Options,
-              DefinedType: attr.DefinedType,
-              ListType: attr.ListType,
-              attrID: a.attrID,
-              Value: a.Value,
-              ListValues: a.ListValues,
-              TypeIDs: attr.TypeIDs
-            });
-          });
-          this.props.updateSelectedThing(thing);
-          if (this.state.majorType === null) {
-            let majorType = thing.Types.filter(t=>t.Major);
-            if (majorType.length > 0) {
-              majorType = majorType[0];
-              
-              this.setState({
-                Name: thing.Name,
-                Description: thing.Description,
-                _id: id,
-                Types: thing.Types,
-                majorType,
-                loaded: true
+    if (this.props.selectedWorldID) {
+      this.api.getWorld(this.props.selectedWorldID).then(res => {
+        this.props.setAttributes(res.attributes);
+        this.props.setTypes(res.types);
+        this.props.setThings(res.things);
+        
+        if (id !== undefined) {
+          let thing = res.things.filter(t => t._id === id);
+          if (thing.length === 0) {
+            this.setState({ message: "Invalid Thing ID", loaded: true });
+          }
+          else {
+            thing = thing[0];
+            thing.AttributesArr = [];
+            thing.Attributes.forEach(a => {
+              const attr = this.props.attributesByID[a.attrID];
+              thing.AttributesArr.push({
+                index: thing.AttributesArr.length,
+                Name: attr.Name,
+                AttributeType: attr.AttributeType,
+                Options: attr.Options,
+                DefinedType: attr.DefinedType,
+                ListType: attr.ListType,
+                attrID: a.attrID,
+                Value: a.Value,
+                ListValues: a.ListValues,
+                TypeIDs: attr.TypeIDs
               });
+            });
+            this.props.updateSelectedThing(thing);
+            if (this.state.majorType === null) {
+              let majorType = thing.Types.filter(t=>t.Major);
+              if (majorType.length > 0) {
+                majorType = majorType[0];
+                
+                this.setState({
+                  Name: thing.Name,
+                  Description: thing.Description,
+                  _id: id,
+                  Types: thing.Types,
+                  majorType,
+                  loaded: true
+                });
+              }
+              else {
+                this.setState({
+                  Name: thing.Name,
+                  Description: thing.Description,
+                  _id: id,
+                  Types: thing.Types,
+                  loaded: true
+                });
+              }
             }
             else {
               this.setState({
@@ -199,28 +212,96 @@ class Page extends Component {
               });
             }
           }
-          else {
-            this.setState({
-              Name: thing.Name,
-              Description: thing.Description,
-              _id: id,
-              Types: thing.Types,
-              loaded: true
-            });
-          }
+        } else {
+          this.props.updateSelectedThing({
+            _id: null,
+            Name: "",
+            Description: "",
+            Types: [],
+            Attributes: [],
+            AttributesArr: []
+          });
+          this.setState({ loaded: true });
         }
-      } else {
-        this.props.updateSelectedThing({
-          _id: null,
-          Name: "",
-          Description: "",
-          Types: [],
-          Attributes: [],
-          AttributesArr: []
-        });
-        this.setState({ loaded: true });
-      }
-    });
+      });
+    } else {
+      this.api.getWorldByThingID(id).then((res) => {
+        this.props.selectWorld(res.worldID);
+        this.props.setAttributes(res.attributes);
+        this.props.setTypes(res.types);
+        this.props.setThings(res.things);
+        
+        if (id !== undefined) {
+          let thing = res.things.filter(t => t._id === id);
+          if (thing.length === 0) {
+            this.setState({ message: "Invalid Thing ID", loaded: true });
+          }
+          else {
+            thing = thing[0];
+            thing.AttributesArr = [];
+            thing.Attributes.forEach(a => {
+              const attr = this.props.attributesByID[a.attrID];
+              thing.AttributesArr.push({
+                index: thing.AttributesArr.length,
+                Name: attr.Name,
+                AttributeType: attr.AttributeType,
+                Options: attr.Options,
+                DefinedType: attr.DefinedType,
+                ListType: attr.ListType,
+                attrID: a.attrID,
+                Value: a.Value,
+                ListValues: a.ListValues,
+                TypeIDs: attr.TypeIDs
+              });
+            });
+            this.props.updateSelectedThing(thing);
+            if (this.state.majorType === null) {
+              let majorType = thing.Types.filter(t=>t.Major);
+              if (majorType.length > 0) {
+                majorType = majorType[0];
+                
+                this.setState({
+                  Name: thing.Name,
+                  Description: thing.Description,
+                  _id: id,
+                  Types: thing.Types,
+                  majorType,
+                  loaded: true
+                });
+              }
+              else {
+                this.setState({
+                  Name: thing.Name,
+                  Description: thing.Description,
+                  _id: id,
+                  Types: thing.Types,
+                  loaded: true
+                });
+              }
+            }
+            else {
+              this.setState({
+                Name: thing.Name,
+                Description: thing.Description,
+                _id: id,
+                Types: thing.Types,
+                loaded: true
+              });
+            }
+          }
+        } else {
+          this.props.updateSelectedThing({
+            _id: null,
+            Name: "",
+            Description: "",
+            Types: [],
+            Attributes: [],
+            AttributesArr: []
+          });
+          this.setState({ loaded: true });
+        }
+      });
+    }
   }
 
   render() {

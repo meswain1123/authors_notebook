@@ -25,7 +25,8 @@ import {
   notFromLogin,
   addThing,
   toggleLogin,
-  logout
+  logout,
+  selectWorld
 } from "../../redux/actions/index";
 import API from "../../smartAPI";
 import TextBox from "../../components/Inputs/TextBox";
@@ -66,7 +67,8 @@ function mapDispatchToProps(dispatch) {
     notFromLogin: () => dispatch(notFromLogin({})),
     addThing: thing => dispatch(addThing(thing)),
     toggleLogin: () => dispatch(toggleLogin({})),
-    logout: () => dispatch(logout({}))
+    logout: () => dispatch(logout({})),
+    selectWorld: worldID => dispatch(selectWorld(worldID))
   };
 }
 class Page extends Component {
@@ -637,102 +639,202 @@ class Page extends Component {
       });
     }
     else {
-      this.api.getWorld(this.props.selectedWorldID).then(res => {
-        this.props.setAttributes(res.attributes);
-        this.props.setTypes(res.types);
-        this.props.setThings(res.things);
-        if (id !== null) {
-          let type = res.types.filter(t => t._id === id);
-          if (type.length > 0) {
-            type = type[0];
+      if (this.props.selectedWorldID) {
+        this.api.getWorld(this.props.selectedWorldID).then(res => {
+          this.props.setAttributes(res.attributes);
+          this.props.setTypes(res.types);
+          this.props.setThings(res.things);
+          if (id !== null) {
+            let type = res.types.filter(t => t._id === id);
+            if (type.length > 0) {
+              type = type[0];
 
-            const supers = this.props.types.filter(t =>
-              type.SuperIDs.includes(t._id)
-            );
-            type.Supers = supers;
-            this.props.updateSelectedType(type);
-            this.setState({
-              // Name: type.Name,
-              // Description: type.Description,
-              _id: id,
-              // Supers: supers,
-              // Major: type.Major,
-              loaded: true,
-              message: ""
-            });
-          }
-          else {
-            this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
-              this.props.setAttributes(res2.attributes);
-              this.props.setTypes(res2.types);
-              this.props.setThings(res2.things);
-              if (id !== null) {
-                let type = res2.types.filter(t => t._id === id);
-                if (type.length > 0) {
-                  type = type[0];
-      
-                  const supers = this.props.types.filter(t =>
-                    type.SuperIDs.includes(t._id)
-                  );
-                  type.Supers = supers;
-                  this.props.updateSelectedType(type);
-                  this.setState({
-                    // Name: type.Name,
-                    // Description: type.Description,
-                    _id: id,
-                    // Supers: supers,
-                    // Major: type.Major,
-                    loaded: true,
-                    message: ""
+              const supers = this.props.types.filter(t =>
+                type.SuperIDs.includes(t._id)
+              );
+              type.Supers = supers;
+              this.props.updateSelectedType(type);
+              this.setState({
+                // Name: type.Name,
+                // Description: type.Description,
+                _id: id,
+                // Supers: supers,
+                // Major: type.Major,
+                loaded: true,
+                message: ""
+              });
+            }
+            else {
+              this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
+                this.props.setAttributes(res2.attributes);
+                this.props.setTypes(res2.types);
+                this.props.setThings(res2.things);
+                if (id !== null) {
+                  let type = res2.types.filter(t => t._id === id);
+                  if (type.length > 0) {
+                    type = type[0];
+        
+                    const supers = this.props.types.filter(t =>
+                      type.SuperIDs.includes(t._id)
+                    );
+                    type.Supers = supers;
+                    this.props.updateSelectedType(type);
+                    this.setState({
+                      // Name: type.Name,
+                      // Description: type.Description,
+                      _id: id,
+                      // Supers: supers,
+                      // Major: type.Major,
+                      loaded: true,
+                      message: ""
+                    });
+                  }
+                  else {
+                    // I had it get here with an ID from Cosmere, when I was supposed to be looking at a Type from Ozzie.
+                    // Need to figure out how it got the wrong ID.
+                    this.setState({ 
+                      message: `Invalid ID: ${id}`, 
+                      loaded: true 
+                    });
+                  }
+                } else {
+                  this.props.updateSelectedType({
+                    _id: null,
+                    Name: "",
+                    PluralName: "",
+                    Description: "",
+                    Supers: [],
+                    SuperIDs: [],
+                    AttributesArr: [],
+                    Attributes: [],
+                    Major: false,
+                    DefaultsHash: {}
                   });
-                }
-                else {
-                  // I had it get here with an ID from Cosmere, when I was supposed to be looking at a Type from Ozzie.
-                  // Need to figure out how it got the wrong ID.
                   this.setState({ 
-                    message: `Invalid ID: ${id}`, 
+                    message: "", 
                     loaded: true 
                   });
                 }
-              } else {
-                this.props.updateSelectedType({
-                  _id: null,
-                  Name: "",
-                  PluralName: "",
-                  Description: "",
-                  Supers: [],
-                  SuperIDs: [],
-                  AttributesArr: [],
-                  Attributes: [],
-                  Major: false,
-                  DefaultsHash: {}
-                });
-                this.setState({ 
-                  message: "", 
-                  loaded: true 
-                });
-              }
+              });
+            }
+          } else {
+            this.props.updateSelectedType({
+              _id: null,
+              Name: "",
+              PluralName: "",
+              Description: "",
+              Supers: [],
+              SuperIDs: [],
+              AttributesArr: [],
+              Attributes: [],
+              Major: false,
+              DefaultsHash: {}
+            });
+            this.setState({ 
+              message: "",
+              loaded: true 
             });
           }
-        } else {
-          this.props.updateSelectedType({
-            _id: null,
-            Name: "",
-            PluralName: "",
-            Description: "",
-            Supers: [],
-            SuperIDs: [],
-            AttributesArr: [],
-            Attributes: [],
-            Major: false,
-            DefaultsHash: {}
-          });
-          this.setState({ 
-            message: "",
-            loaded: true 
-          });
-        }
-      });
+        });
+      } else {
+        this.api.getWorldByTypeID(id).then((res) => {
+          this.props.selectWorld(res.worldID);
+          this.props.setAttributes(res.attributes);
+          this.props.setTypes(res.types);
+          this.props.setThings(res.things);
+          if (id !== null) {
+            let type = res.types.filter(t => t._id === id);
+            if (type.length > 0) {
+              type = type[0];
+
+              const supers = this.props.types.filter(t =>
+                type.SuperIDs.includes(t._id)
+              );
+              type.Supers = supers;
+              this.props.updateSelectedType(type);
+              this.setState({
+                // Name: type.Name,
+                // Description: type.Description,
+                _id: id,
+                // Supers: supers,
+                // Major: type.Major,
+                loaded: true,
+                message: ""
+              });
+            }
+            else {
+              this.api.getWorld(this.props.selectedWorldID, true).then(res2 => {
+                this.props.setAttributes(res2.attributes);
+                this.props.setTypes(res2.types);
+                this.props.setThings(res2.things);
+                if (id !== null) {
+                  let type = res2.types.filter(t => t._id === id);
+                  if (type.length > 0) {
+                    type = type[0];
+        
+                    const supers = this.props.types.filter(t =>
+                      type.SuperIDs.includes(t._id)
+                    );
+                    type.Supers = supers;
+                    this.props.updateSelectedType(type);
+                    this.setState({
+                      // Name: type.Name,
+                      // Description: type.Description,
+                      _id: id,
+                      // Supers: supers,
+                      // Major: type.Major,
+                      loaded: true,
+                      message: ""
+                    });
+                  }
+                  else {
+                    // I had it get here with an ID from Cosmere, when I was supposed to be looking at a Type from Ozzie.
+                    // Need to figure out how it got the wrong ID.
+                    this.setState({ 
+                      message: `Invalid ID: ${id}`, 
+                      loaded: true 
+                    });
+                  }
+                } else {
+                  this.props.updateSelectedType({
+                    _id: null,
+                    Name: "",
+                    PluralName: "",
+                    Description: "",
+                    Supers: [],
+                    SuperIDs: [],
+                    AttributesArr: [],
+                    Attributes: [],
+                    Major: false,
+                    DefaultsHash: {}
+                  });
+                  this.setState({ 
+                    message: "", 
+                    loaded: true 
+                  });
+                }
+              });
+            }
+          } else {
+            this.props.updateSelectedType({
+              _id: null,
+              Name: "",
+              PluralName: "",
+              Description: "",
+              Supers: [],
+              SuperIDs: [],
+              AttributesArr: [],
+              Attributes: [],
+              Major: false,
+              DefaultsHash: {}
+            });
+            this.setState({ 
+              message: "",
+              loaded: true 
+            });
+          }
+        });
+      }
     }
   }
 

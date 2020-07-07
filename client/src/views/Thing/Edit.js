@@ -12,7 +12,8 @@ import {
   setThings,
   notFromLogin,
   toggleLogin,
-  logout
+  logout,
+  selectWorld
 } from "../../redux/actions/index";
 import { 
   Button, FormControl, 
@@ -67,7 +68,8 @@ function mapDispatchToProps(dispatch) {
     setThings: things => dispatch(setThings(things)),
     notFromLogin: () => dispatch(notFromLogin({})),
     toggleLogin: () => dispatch(toggleLogin({})),
-    logout: () => dispatch(logout({}))
+    logout: () => dispatch(logout({})),
+    selectWorld: worldID => dispatch(selectWorld(worldID))
   };
 }
 class Page extends Component {
@@ -1017,102 +1019,109 @@ class Page extends Component {
   }
 
   finishLoading = () => {
-    this.api.getWorld(this.props.selectedWorldID).then(res => {
-      this.props.setAttributes(res.attributes);
-      this.props.setTypes(res.types);
-      this.props.setThings(res.things);
-      
-      if (this.props.fromLogin) {
-        this.props.notFromLogin();
-        this.setState({
-          // _id: id,
-          loaded: true,
-          message: ""
-        });
-      }
-      else {
-        if (this.state._id !== null) {
-          // We're editing an existing Thing
-          let thing = res.things.filter(t => t._id === this.state._id);
-          if (thing.length === 0) {
-            this.setState({ message: "Invalid ID" });
-          }
-          else {
-            thing = thing[0];
-            // const things = this.props.things.filter(
-            //   t => t._id !== thing._id
-            // );
-            let Types = [];
-            thing.TypeIDs.forEach(tID=> {
-              Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
-            });
-            let newAttributes = [];
-            Types.forEach(type=> {
-              for (let i = 0; i < type.Attributes.length; i++) {
-                const attribute = {...type.Attributes[i]};
-                let existing = thing.Attributes.filter(a=>a.attrID === attribute.attrID);
-                if (existing.length === 0) {
-                  attribute.FromTypeIDs = [type._id];
-                  attribute.index = thing.Attributes.length + newAttributes.length;
-                  newAttributes.push(attribute);
-                }
-                else {
-                  existing = existing[0];
-                  if (existing.FromTypeIDs === undefined || existing.FromTypeIDs === null)
-                    existing.FromTypeIDs = [];
-                  existing.FromTypeIDs.push(type._id);
-                }
-              }
-            });
-            Types.forEach(type=> {
-              newAttributes.forEach(attribute => {
-                if (type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
-                  attribute.Value = "";
-                  attribute.ListValues = [];
-                }
-                else {
-                  attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
-                  attribute.ListValues = type.DefaultsHash[attribute.attrID].DefaultListValues;
-                }
-              })
-            });
-            let attributes = [...thing.Attributes, ...newAttributes];
-            attributes.forEach(a => {
-              if (a.FromTypeIDs === undefined) {
-                a.FromTypeIDs = [];
-              }
-            });
-            thing.Attributes = attributes;
-            thing.AttributesArr = [];
-            thing.Attributes.forEach(a => {
-              // if (a.attrID !== undefined) {
-              const attr = this.props.attributesByID[a.attrID];
-              thing.AttributesArr.push({
-                index: thing.AttributesArr.length,
-                Name: attr.Name,
-                AttributeType: attr.AttributeType,
-                Options: attr.Options,
-                DefinedType: attr.DefinedType,
-                ListType: attr.ListType,
-                attrID: a.attrID,
-                Value: a.Value,
-                ListValues: a.ListValues,
-                FromTypeIDs: a.FromTypeIDs,
-                TypeIDs: attr.TypeIDs
+    if (this.props.selectedWorldID) {
+      this.api.getWorld(this.props.selectedWorldID).then(res => {
+        this.props.setAttributes(res.attributes);
+        this.props.setTypes(res.types);
+        this.props.setThings(res.things);
+        
+        if (this.props.fromLogin) {
+          this.props.notFromLogin();
+          this.setState({
+            // _id: id,
+            loaded: true,
+            message: ""
+          });
+        }
+        else {
+          if (this.state._id !== null) {
+            // We're editing an existing Thing
+            let thing = res.things.filter(t => t._id === this.state._id);
+            if (thing.length === 0) {
+              this.setState({ message: "Invalid ID" });
+            }
+            else {
+              thing = thing[0];
+              // const things = this.props.things.filter(
+              //   t => t._id !== thing._id
+              // );
+              let Types = [];
+              thing.TypeIDs.forEach(tID=> {
+                Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
               });
-              // }
-            });
-            thing.Types = Types;
-            this.props.updateSelectedThing(thing);
-            if (this.state.majorType === null) {
-              let majorType = thing.Types.filter(t=>t.Major);
-              if (majorType.length > 0) {
-                majorType = majorType[0];
-                
-                this.setState({
-                  loaded: true,
-                  majorType
+              let newAttributes = [];
+              Types.forEach(type=> {
+                for (let i = 0; i < type.Attributes.length; i++) {
+                  const attribute = {...type.Attributes[i]};
+                  let existing = thing.Attributes.filter(a=>a.attrID === attribute.attrID);
+                  if (existing.length === 0) {
+                    attribute.FromTypeIDs = [type._id];
+                    attribute.index = thing.Attributes.length + newAttributes.length;
+                    newAttributes.push(attribute);
+                  }
+                  else {
+                    existing = existing[0];
+                    if (existing.FromTypeIDs === undefined || existing.FromTypeIDs === null)
+                      existing.FromTypeIDs = [];
+                    existing.FromTypeIDs.push(type._id);
+                  }
+                }
+              });
+              Types.forEach(type=> {
+                newAttributes.forEach(attribute => {
+                  if (type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
+                    attribute.Value = "";
+                    attribute.ListValues = [];
+                  }
+                  else {
+                    attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
+                    attribute.ListValues = type.DefaultsHash[attribute.attrID].DefaultListValues;
+                  }
+                })
+              });
+              let attributes = [...thing.Attributes, ...newAttributes];
+              attributes.forEach(a => {
+                if (a.FromTypeIDs === undefined) {
+                  a.FromTypeIDs = [];
+                }
+              });
+              thing.Attributes = attributes;
+              thing.AttributesArr = [];
+              thing.Attributes.forEach(a => {
+                // if (a.attrID !== undefined) {
+                const attr = this.props.attributesByID[a.attrID];
+                thing.AttributesArr.push({
+                  index: thing.AttributesArr.length,
+                  Name: attr.Name,
+                  AttributeType: attr.AttributeType,
+                  Options: attr.Options,
+                  DefinedType: attr.DefinedType,
+                  ListType: attr.ListType,
+                  attrID: a.attrID,
+                  Value: a.Value,
+                  ListValues: a.ListValues,
+                  FromTypeIDs: a.FromTypeIDs,
+                  TypeIDs: attr.TypeIDs
                 });
+                // }
+              });
+              thing.Types = Types;
+              this.props.updateSelectedThing(thing);
+              if (this.state.majorType === null) {
+                let majorType = thing.Types.filter(t=>t.Major);
+                if (majorType.length > 0) {
+                  majorType = majorType[0];
+                  
+                  this.setState({
+                    loaded: true,
+                    majorType
+                  });
+                }
+                else {
+                  this.setState({
+                    loaded: true
+                  });
+                }
               }
               else {
                 this.setState({
@@ -1120,41 +1129,176 @@ class Page extends Component {
                 });
               }
             }
+          } else {
+            let { id } = this.props.match.params;
+            if (id !== undefined && id.includes("type_id_")) {
+              // We're creating it from a type rather than from blank
+              const typeID = id.substring(8);
+              let type = this.props.types.filter(t=> t._id === typeID);
+              if (type.length > 0) {
+                type = type[0];
+                this.createThingFromType(type);
+              }
+              else {
+                this.setState({ message: "Invalid Type", loaded: true });
+              }
+            }
             else {
-              this.setState({
-                loaded: true
+              // We're creating a new thing from blank.
+              this.props.updateSelectedThing({
+                _id: null,
+                Name: "",
+                Description: "",
+                Types: [],
+                Attributes: [],
+                AttributesArr: []
               });
+              this.setState({ loaded: true });
             }
-          }
-        } else {
-          let { id } = this.props.match.params;
-          if (id !== undefined && id.includes("type_id_")) {
-            // We're creating it from a type rather than from blank
-            const typeID = id.substring(8);
-            let type = this.props.types.filter(t=> t._id === typeID);
-            if (type.length > 0) {
-              type = type[0];
-              this.createThingFromType(type);
-            }
-            else {
-              this.setState({ message: "Invalid Type", loaded: true });
-            }
-          }
-          else {
-            // We're creating a new thing from blank.
-            this.props.updateSelectedThing({
-              _id: null,
-              Name: "",
-              Description: "",
-              Types: [],
-              Attributes: [],
-              AttributesArr: []
-            });
-            this.setState({ loaded: true });
           }
         }
-      }
-    });
+      });
+    } else {
+      this.api.getWorldByThingID(this.state._id).then((res) => {
+        this.props.selectWorld(res.worldID);
+        this.props.setAttributes(res.attributes);
+        this.props.setTypes(res.types);
+        this.props.setThings(res.things);
+        
+        if (this.props.fromLogin) {
+          this.props.notFromLogin();
+          this.setState({
+            // _id: id,
+            loaded: true,
+            message: ""
+          });
+        }
+        else {
+          if (this.state._id !== null) {
+            // We're editing an existing Thing
+            let thing = res.things.filter(t => t._id === this.state._id);
+            if (thing.length === 0) {
+              this.setState({ message: "Invalid ID" });
+            }
+            else {
+              thing = thing[0];
+              // const things = this.props.things.filter(
+              //   t => t._id !== thing._id
+              // );
+              let Types = [];
+              thing.TypeIDs.forEach(tID=> {
+                Types = Types.concat(this.props.types.filter(t2=>t2._id === tID));
+              });
+              let newAttributes = [];
+              Types.forEach(type=> {
+                for (let i = 0; i < type.Attributes.length; i++) {
+                  const attribute = {...type.Attributes[i]};
+                  let existing = thing.Attributes.filter(a=>a.attrID === attribute.attrID);
+                  if (existing.length === 0) {
+                    attribute.FromTypeIDs = [type._id];
+                    attribute.index = thing.Attributes.length + newAttributes.length;
+                    newAttributes.push(attribute);
+                  }
+                  else {
+                    existing = existing[0];
+                    if (existing.FromTypeIDs === undefined || existing.FromTypeIDs === null)
+                      existing.FromTypeIDs = [];
+                    existing.FromTypeIDs.push(type._id);
+                  }
+                }
+              });
+              Types.forEach(type=> {
+                newAttributes.forEach(attribute => {
+                  if (type.DefaultsHash[attribute.attrID] === undefined || type.DefaultsHash[attribute.attrID].DefaultValue === undefined) {
+                    attribute.Value = "";
+                    attribute.ListValues = [];
+                  }
+                  else {
+                    attribute.Value = type.DefaultsHash[attribute.attrID].DefaultValue;
+                    attribute.ListValues = type.DefaultsHash[attribute.attrID].DefaultListValues;
+                  }
+                })
+              });
+              let attributes = [...thing.Attributes, ...newAttributes];
+              attributes.forEach(a => {
+                if (a.FromTypeIDs === undefined) {
+                  a.FromTypeIDs = [];
+                }
+              });
+              thing.Attributes = attributes;
+              thing.AttributesArr = [];
+              thing.Attributes.forEach(a => {
+                // if (a.attrID !== undefined) {
+                const attr = this.props.attributesByID[a.attrID];
+                thing.AttributesArr.push({
+                  index: thing.AttributesArr.length,
+                  Name: attr.Name,
+                  AttributeType: attr.AttributeType,
+                  Options: attr.Options,
+                  DefinedType: attr.DefinedType,
+                  ListType: attr.ListType,
+                  attrID: a.attrID,
+                  Value: a.Value,
+                  ListValues: a.ListValues,
+                  FromTypeIDs: a.FromTypeIDs,
+                  TypeIDs: attr.TypeIDs
+                });
+                // }
+              });
+              thing.Types = Types;
+              this.props.updateSelectedThing(thing);
+              if (this.state.majorType === null) {
+                let majorType = thing.Types.filter(t=>t.Major);
+                if (majorType.length > 0) {
+                  majorType = majorType[0];
+                  
+                  this.setState({
+                    loaded: true,
+                    majorType
+                  });
+                }
+                else {
+                  this.setState({
+                    loaded: true
+                  });
+                }
+              }
+              else {
+                this.setState({
+                  loaded: true
+                });
+              }
+            }
+          } else {
+            let { id } = this.props.match.params;
+            if (id !== undefined && id.includes("type_id_")) {
+              // We're creating it from a type rather than from blank
+              const typeID = id.substring(8);
+              let type = this.props.types.filter(t=> t._id === typeID);
+              if (type.length > 0) {
+                type = type[0];
+                this.createThingFromType(type);
+              }
+              else {
+                this.setState({ message: "Invalid Type", loaded: true });
+              }
+            }
+            else {
+              // We're creating a new thing from blank.
+              this.props.updateSelectedThing({
+                _id: null,
+                Name: "",
+                Description: "",
+                Types: [],
+                Attributes: [],
+                AttributesArr: []
+              });
+              this.setState({ loaded: true });
+            }
+          }
+        }
+      });
+    }
   }
 
   render() {

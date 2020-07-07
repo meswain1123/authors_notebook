@@ -391,6 +391,188 @@ class APIClass {
     }
   };
 
+  getWorldByTypeID = async (typeID, refresh = false) => {
+    try {
+      let worldID = await this.getWorldIDByTypeID(typeID);
+      worldID = worldID.worldID;
+      console.log(worldID);
+      let attributes = await this.getAttributesForWorld(worldID, refresh);
+      attributes = attributes.attributes;
+      let types = await this.getTypesForWorld(worldID, refresh);
+      types = types.types;
+      let things = await this.getThingsForWorld(worldID, refresh);
+      things = things.things;
+
+      // Now connect them all as is appropriate.
+      const attributesByID = {};
+      const attributesByName = {};
+      attributes.forEach(attribute => {
+        attribute.TypeIDs = [];
+        attributesByID[attribute._id] = attribute;
+        attributesByName[attribute.Name] = attribute;
+      });
+      types.forEach(t=> {
+        t.Supers = [];
+        t.SuperIDs.forEach(sID=> {
+          t.Supers = t.Supers.concat(types.filter(t2=>t2._id === sID));
+        });
+        t.AttributesArr = [];
+        t.Attributes.forEach(a => {
+          const attr = attributesByID[a.attrID];
+          if (attr === undefined) {
+          }
+          else {
+            attr.TypeIDs.push(t._id);
+            t.AttributesArr.push({
+              index: t.AttributesArr.length,
+              Name: attr.Name.trim(),
+              AttributeType: attr.AttributeType,
+              Options: attr.Options,
+              DefinedType: attr.DefinedType,
+              ListType: attr.ListType,
+              attrID: a.attrID,
+              TypeIDs: attr.TypeIDs
+            });
+          }
+        });
+        const defHash = {};
+        if (t.Defaults !== undefined) {
+          t.Defaults.forEach(def => {
+            defHash[def.attrID] = def;
+          });
+        }
+        t.DefaultsHash = defHash;
+      });
+      things.forEach(t=> {
+        t.Types = [];
+        t.TypeIDs.forEach(tID=> {
+          t.Types = t.Types.concat(types.filter(t2=>t2._id === tID));
+        });
+      });
+      return {
+        worldID,
+        attributes,
+        attributesByID,
+        attributesByName,
+        types,
+        things
+      };
+    }
+    catch (error) {
+      console.log(error);
+      return { error };
+    }
+  };
+
+  getWorldIDByTypeID = async (typeID) => {
+    if (this.real) {
+      const response = await this.fetchData(
+        `/api/world/getWorldIDByTypeID/${typeID}`
+      );
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData(
+          `/api/world/getWorldIDByTypeID/${typeID}`
+        );
+        return this.processResponse(response, null);
+      }
+      return this.processResponse(response, retry);
+    } else {
+      return [{ _id: -1, worldID: -1, Name: "Character" }];
+    }
+  };
+
+  getWorldByThingID = async (thingID, refresh = false) => {
+    try {
+      let worldID = await this.getWorldIDByThingID(thingID);
+      worldID = worldID.worldID;
+      console.log(worldID);
+      let attributes = await this.getAttributesForWorld(worldID, refresh);
+      attributes = attributes.attributes;
+      let types = await this.getTypesForWorld(worldID, refresh);
+      types = types.types;
+      let things = await this.getThingsForWorld(worldID, refresh);
+      things = things.things;
+
+      // Now connect them all as is appropriate.
+      const attributesByID = {};
+      const attributesByName = {};
+      attributes.forEach(attribute => {
+        attribute.TypeIDs = [];
+        attributesByID[attribute._id] = attribute;
+        attributesByName[attribute.Name] = attribute;
+      });
+      types.forEach(t=> {
+        t.Supers = [];
+        t.SuperIDs.forEach(sID=> {
+          t.Supers = t.Supers.concat(types.filter(t2=>t2._id === sID));
+        });
+        t.AttributesArr = [];
+        t.Attributes.forEach(a => {
+          const attr = attributesByID[a.attrID];
+          if (attr === undefined) {
+          }
+          else {
+            attr.TypeIDs.push(t._id);
+            t.AttributesArr.push({
+              index: t.AttributesArr.length,
+              Name: attr.Name.trim(),
+              AttributeType: attr.AttributeType,
+              Options: attr.Options,
+              DefinedType: attr.DefinedType,
+              ListType: attr.ListType,
+              attrID: a.attrID,
+              TypeIDs: attr.TypeIDs
+            });
+          }
+        });
+        const defHash = {};
+        if (t.Defaults !== undefined) {
+          t.Defaults.forEach(def => {
+            defHash[def.attrID] = def;
+          });
+        }
+        t.DefaultsHash = defHash;
+      });
+      things.forEach(t=> {
+        t.Types = [];
+        t.TypeIDs.forEach(tID=> {
+          t.Types = t.Types.concat(types.filter(t2=>t2._id === tID));
+        });
+      });
+      return {
+        worldID,
+        attributes,
+        attributesByID,
+        attributesByName,
+        types,
+        things
+      };
+    }
+    catch (error) {
+      console.log(error);
+      return { error };
+    }
+  };
+
+  getWorldIDByThingID = async (thingID) => {
+    if (this.real) {
+      const response = await this.fetchData(
+        `/api/world/getWorldIDByThingID/${thingID}`
+      );
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.fetchData(
+          `/api/world/getWorldIDByThingID/${thingID}`
+        );
+        return this.processResponse(response, null);
+      }
+      return this.processResponse(response, retry);
+    } else {
+      return [{ _id: -1, worldID: -1, Name: "Character" }];
+    }
+  };
+
   createWorld = async (world) => {
     if (this.real) {
       const response = await this.postData("/api/world/createWorld", { world: world });

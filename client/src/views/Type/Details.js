@@ -12,6 +12,7 @@ import {
   notFromLogin,
   toggleLogin,
   logout,
+  selectWorld
 } from "../../redux/actions/index";
 import { Edit, Delete, Add, ArrowBack } from "@material-ui/icons";
 import {
@@ -77,6 +78,7 @@ function mapDispatchToProps(dispatch) {
     notFromLogin: () => dispatch(notFromLogin({})),
     toggleLogin: () => dispatch(toggleLogin({})),
     logout: () => dispatch(logout({})),
+    selectWorld: worldID => dispatch(selectWorld(worldID))
   };
 }
 class Page extends Component {
@@ -155,35 +157,69 @@ class Page extends Component {
     }
     const id = this.state._id;
     if (id !== undefined) {
-      this.api.getWorld(this.props.selectedWorldID).then((res) => {
-        this.props.setAttributes(res.attributes);
-        this.props.setTypes(res.types);
-        this.props.setThings(res.things);
+      if (this.props.selectedWorldID) {
+        this.api.getWorld(this.props.selectedWorldID).then((res) => {
+          this.props.setAttributes(res.attributes);
+          this.props.setTypes(res.types);
+          this.props.setThings(res.things);
 
-        if (id !== null) {
-          let type = res.types.filter((t) => t._id === id);
-          if (type.length > 0) {
-            type = type[0];
+          if (id !== null) {
+            let type = res.types.filter((t) => t._id === id);
+            if (type.length > 0) {
+              type = type[0];
 
-            this.props.updateSelectedType(type);
-            this.setState({ loaded: true });
+              this.props.updateSelectedType(type);
+              this.setState({ loaded: true });
+            } else {
+              this.setState({ message: "Invalid ID", loaded: true });
+            }
           } else {
-            this.setState({ message: "Invalid ID", loaded: true });
+            this.props.updateSelectedType({
+              _id: null,
+              Name: "",
+              Description: "",
+              Supers: [],
+              SuperIDs: [],
+              AttributesArr: [],
+              Attributes: [],
+              Major: false,
+              DefaultsHash: {},
+            });
           }
-        } else {
-          this.props.updateSelectedType({
-            _id: null,
-            Name: "",
-            Description: "",
-            Supers: [],
-            SuperIDs: [],
-            AttributesArr: [],
-            Attributes: [],
-            Major: false,
-            DefaultsHash: {},
-          });
-        }
-      });
+        });
+      } else {
+        this.api.getWorldByTypeID(id).then((res) => {
+          console.log(res);
+          this.props.selectWorld(res.worldID);
+          this.props.setAttributes(res.attributes);
+          this.props.setTypes(res.types);
+          this.props.setThings(res.things);
+
+          if (id !== null) {
+            let type = res.types.filter((t) => t._id === id);
+            if (type.length > 0) {
+              type = type[0];
+
+              this.props.updateSelectedType(type);
+              this.setState({ loaded: true });
+            } else {
+              this.setState({ message: "Invalid ID", loaded: true });
+            }
+          } else {
+            this.props.updateSelectedType({
+              _id: null,
+              Name: "",
+              Description: "",
+              Supers: [],
+              SuperIDs: [],
+              AttributesArr: [],
+              Attributes: [],
+              Major: false,
+              DefaultsHash: {},
+            });
+          }
+        });
+      }
     } else {
       this.props.updateSelectedType({
         _id: null,

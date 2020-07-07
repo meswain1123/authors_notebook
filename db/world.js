@@ -303,6 +303,38 @@ function getWorld(respond, userID, worldID) {
   }
 }
 
+function getTypeByID(respond, typeID) {
+  try {
+    const db = client.db(dbName);
+    db.collection("type")
+      .find({ _id: ObjectID(typeID) })
+      .toArray(function(err, docs) {
+        if (err) respond({ error: `Error: ${err}.` });
+        else if (docs == null || docs.length == 0) respond(null);
+        else respond(docs[0]);
+      });
+  } catch (err) {
+    console.log(err);
+    respond(err);
+  }
+}
+
+function getThingByID(respond, thingID) {
+  try {
+    const db = client.db(dbName);
+    db.collection("thing")
+      .find({ _id: ObjectID(thingID) })
+      .toArray(function(err, docs) {
+        if (err) respond({ error: `Error: ${err}.` });
+        else if (docs == null || docs.length == 0) respond(null);
+        else respond(docs[0]);
+      });
+  } catch (err) {
+    console.log(err);
+    respond(err);
+  }
+}
+
 function getWorldForCollab(respond, worldID) {
   try {
     const db = client.db(dbName);
@@ -767,6 +799,8 @@ module.exports = {
   getWorldsForUser,
   getPublicWorlds,
   getWorld,
+  getTypeByID,
+  getThingByID,
   getWorldForCollab,
   createWorld,
   deleteWorld,

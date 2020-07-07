@@ -23,6 +23,18 @@ router
       db.getWorldsForUser(respond, req.session.userID);
     }
   })
+  .get("/getWorldIDByTypeID/:typeID", function(req, res) {
+    function respond(type) {
+      res.send({ worldID: type.worldID });
+    }
+    db.getTypeByID(respond, req.params.typeID);
+  })
+  .get("/getWorldIDByThingID/:thingID", function(req, res) {
+    function respond(thing) {
+      res.send({ worldID: thing.worldID });
+    }
+    db.getThingByID(respond, req.params.thingID);
+  })
   .get("/getPublicWorlds", function(req, res) {
     function respond(worlds) {
       res.send({worlds});
