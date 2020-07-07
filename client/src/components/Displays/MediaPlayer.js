@@ -13,7 +13,7 @@ export default function MediaPlayer(props) {
     <ReactPlayer
       // className='react-player fixed-bottom'
       url= 'https://youtu.be/kksVfoN2bR8'
-      // width='100%'
+      width='100%'
       // height='100%'
       // controls = {true}
     />
