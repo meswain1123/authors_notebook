@@ -599,93 +599,179 @@ router
     } else if (req.body.template.worldID != undefined) {
       function gotAttributes(attributes) {
         function gotTypes(types) {
-          const template = {
-            Name: req.body.template.Name,
-            Types: [],
-            Attributes: []
-          };
-          const typeMap = {
-            // realID: {
-            //   typeID: "template type id",
-            //   Name: "The actual Type object in template"
-            // }
-          };
-          const attrMap = {
-            // realID: {
-            //   attrID: "template attr id",
-            //   Name: "The actual Attribute object in template"
-            // }
-          };
-          // req.body.template comes with a list of typeIDs.  
-          // add all those types into a template, along with their attributes.  
-          // Utilize mappings for converting old ids to template ids
-          req.body.template.typeIDs.forEach(id => {
-            let type = types.filter(t => t._id.toString() === id);
-            if (type.length > 0) {
-              type = type[0];
-              const templateType = {...type};
-              delete templateType._id;
-              delete templateType.worldID;
-              delete templateType.ReferenceIDs;
-              delete templateType.AttributesArr;
-              templateType.typeID = uuid.v1();
-              templateType.Attributes = [];
-              templateType.Defaults = [];
-              type.Attributes.forEach(a => {
-                const attr = {...a};
-                if (attrMap[a.attrID] === undefined) {
-                  let templateAttr = attributes.filter(a => a._id.toString() === attr.attrID);
-                  if (templateAttr.length > 0) {
-                    templateAttr = {...templateAttr[0]};
-                    delete templateAttr._id;
-                    delete templateAttr.worldID;
-                    templateAttr.attrID = uuid.v1();
-                    attr.attrID = templateAttr.attrID;
-                    template.Attributes.push(templateAttr);
-                    attrMap[a.attrID] = templateAttr;
-                  }
-                } else {
-                  attr.attrID = attrMap[a.attrID].attrID;
-                }
-                templateType.Attributes.push(attr);
-              });
-              if (type.Defaults !== undefined) {
-                type.Defaults.forEach(d => {
-                  const templateAttr = attrMap[d.attrID];
-                  if (templateAttr !== undefined) {
-                    // We don't need to worry about adding it because it was already added during the Attributes step
-                    const def = {...d};
-                    def.attrID = templateAttr.attrID;
-                    if (templateAttr.AttributeType === "Type" || (templateAttr.AttributeType === "List" && templateAttr.ListType === "Type")) {
-                      // Only Types and Attributes go into Templates, so Defaults of Defined Type attributes don't go into Templates
-                      def.DefaultValue = "";
-                      def.DefaultListValues = [];
+          function gotThings(things) {
+            const template = {
+              Name: req.body.template.Name,
+              Types: [],
+              Things: [],
+              Attributes: []
+            };
+            const typeMap = {
+              // realID: {
+              //   typeID: "template type id",
+              //   Name: "The actual Type object in template"
+              // }
+            };
+            const thingMap = {
+              // realID: {
+              //   typeID: "template thing id",
+              //   Name: "The actual Thing object in template"
+              // }
+            };
+            const attrMap = {
+              // realID: {
+              //   attrID: "template attr id",
+              //   Name: "The actual Attribute object in template"
+              // }
+            };
+            // TODO: It needs to do equivalent of dumb imports first
+            // req.body.template comes with a list of typeIDs.  
+            // add all those types into a template, along with their attributes.  
+            // Utilize mappings for converting old ids to template ids
+            req.body.template.typeIDs.forEach(id => {
+              let type = types.filter(t => t._id.toString() === id);
+              if (type.length > 0) {
+                type = type[0];
+                const templateType = {...type};
+                delete templateType._id;
+                delete templateType.worldID;
+                delete templateType.ReferenceIDs;
+                delete templateType.AttributesArr;
+                templateType.typeID = uuid.v1();
+                templateType.Attributes = [];
+                // templateType.Defaults = [];
+                type.Attributes.forEach(a => {
+                  const attr = {...a};
+                  if (attrMap[a.attrID] === undefined) {
+                    let templateAttr = attributes.filter(a => a._id.toString() === attr.attrID);
+                    if (templateAttr.length > 0) {
+                      templateAttr = {...templateAttr[0]};
+                      delete templateAttr._id;
+                      delete templateAttr.worldID;
+                      templateAttr.attrID = uuid.v1();
+                      attr.attrID = templateAttr.attrID;
+                      template.Attributes.push(templateAttr);
+                      attrMap[a.attrID] = templateAttr;
                     }
-                    templateType.Defaults.push(def);
+                  } else {
+                    attr.attrID = attrMap[a.attrID].attrID;
                   }
+                  templateType.Attributes.push(attr);
                 });
+                template.Types.push(templateType);
+                typeMap[id] = templateType;
               }
-              template.Types.push(templateType);
-              typeMap[id] = templateType;
-            }
-          });
-          template.Attributes.forEach(a => {
-            if (a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")) {
-              a.DefinedType = typeMap[a.DefinedType].typeID;
-            }
-          });
-          template.Types.forEach(t => {
-            const SuperIDs = [];
-            t.SuperIDs.forEach(s => {
-              SuperIDs.push(typeMap[s].typeID)
             });
-            t.SuperIDs = SuperIDs;
-          });
-          function respond(message) {
-            res.send(message);
+            req.body.template.thingIDs.forEach(id => {
+              let thing = things.filter(t => t._id.toString() === id);
+              if (thing.length > 0) {
+                thing = thing[0];
+                const templateThing = {...thing};
+                delete templateThing._id;
+                delete templateThing.worldID;
+                delete templateThing.ReferenceIDs;
+                delete templateThing.AttributesArr;
+                templateThing.thingID = uuid.v1();
+                templateThing.Attributes = [];
+                thing.Attributes.forEach(a => {
+                  const attr = {...a};
+                  if (attrMap[a.attrID] === undefined) {
+                    let templateAttr = attributes.filter(a => a._id.toString() === attr.attrID);
+                    if (templateAttr.length > 0) {
+                      templateAttr = {...templateAttr[0]};
+                      delete templateAttr._id;
+                      delete templateAttr.worldID;
+                      templateAttr.attrID = uuid.v1();
+                      attr.attrID = templateAttr.attrID;
+                      template.Attributes.push(templateAttr);
+                      attrMap[a.attrID] = templateAttr;
+                    }
+                  } else {
+                    attr.attrID = attrMap[a.attrID].attrID;
+                  }
+                  templateThing.Attributes.push(attr);
+                });
+                template.Things.push(templateThing);
+                thingMap[id] = templateThing;
+              }
+            });
+            template.Attributes.forEach(a => {
+              if (a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")) {
+                a.DefinedType = typeMap[a.DefinedType].typeID;
+              }
+            });
+            template.Things.forEach(t => {
+              const TypeIDs = [];
+              t.TypeIDs.forEach(s => {
+                TypeIDs.push(typeMap[s].typeID.toString())
+              });
+              t.TypeIDs = TypeIDs;
+              const Attributes = [];
+              t.Attributes.forEach(d => {
+                const newAttribute = {...d};
+                
+                let templateAttr = template.Attributes.filter(a => a.attrID === d.attrID);
+                if (templateAttr.length > 0) {
+                  templateAttr = templateAttr[0];
+                  if (templateAttr.AttributeType === "Type") {
+                    newAttribute.Value = thingMap[d.Value].thingID;
+                  } else if (templateAttr.AttributeType === "List" && templateAttr.ListType === "Type") {
+                    newAttribute.ListValues = [];
+                    d.ListValues.forEach(v => {
+                      newAttribute.ListValues.push(thingMap[v].thingID);
+                    });
+                  }
+                }
+                Attributes.push(newAttribute);
+              });
+              t.Attributes = Attributes;
+            });
+            template.Types.forEach(t => {
+              const SuperIDs = [];
+              t.SuperIDs.forEach(s => {
+                SuperIDs.push(typeMap[s].typeID.toString())
+              });
+              t.SuperIDs = SuperIDs;
+              const Defaults = [];
+              t.Defaults.forEach(d => {
+                const newDefault = {...d};
+                
+                let templateAttr = attrMap[d.attrID];
+                if (templateAttr !== undefined) {
+                  newDefault.attrID = templateAttr.attrID;
+                  
+                  if (templateAttr.AttributeType === "Type") {
+                    newDefault.DefaultListValues = [];
+                    const defThing = thingMap[d.DefaultValue];
+                    if (defThing === undefined) {
+                      newDefault.DefaultValue = "";
+                    } else {
+                      newDefault.DefaultValue = defThing.thingID.toString();
+                    }
+                  } else if (templateAttr.AttributeType === "List" && templateAttr.ListType === "Type") {
+                    newDefault.DefaultValue = "";
+                    newDefault.DefaultListValues = [];
+                    d.DefaultListValues.forEach(v => {
+                      const defThing = thingMap[v];
+                      if (defThing !== undefined) {
+                        newDefault.DefaultListValues.push(defThing.thingID.toString());
+                      }
+                    });
+                  }
+                }
+                if (newDefault.DefaultValue !== "" || newDefault.DefaultListValues.length > 0) {
+                  Defaults.push(newDefault);
+                }
+              });
+              t.Defaults = Defaults;
+            });
+            function respond(message) {
+              res.send(message);
+            }
+            // The Template is ready. Insert it.
+            db.createTemplate(respond, template);
           }
-          // The Template is ready. Insert it.
-          db.createTemplate(respond, template);
+          db.getThingsForWorld(gotThings, req.session.userID, req.body.template.worldID);
         }
         db.getTypesForWorld(gotTypes, req.body.template.worldID);
       }

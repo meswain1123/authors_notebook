@@ -8,7 +8,7 @@ import {
   List, ListItem,
   Checkbox, Tooltip
 } from "@material-ui/core";
-import WorldMap from "./WorldMap";
+import WorldMap from "../Displays/WorldMap";
 
 /**
  * This control displays all the templates for display (map)

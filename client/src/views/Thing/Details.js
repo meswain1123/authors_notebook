@@ -162,8 +162,11 @@ class Page extends Component {
           else {
             thing = thing[0];
             thing.AttributesArr = [];
+            console.log(thing);
             thing.Attributes.forEach(a => {
+              console.log(a);
               const attr = this.props.attributesByID[a.attrID];
+              console.log(attr);
               thing.AttributesArr.push({
                 index: thing.AttributesArr.length,
                 Name: attr.Name,

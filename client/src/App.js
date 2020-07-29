@@ -68,11 +68,11 @@ class AppLayout extends Component {
     }
     return (
       <Router>
-        {this.props.menuOpen ? 
+        {this.props.menuOpen &&
           <Box display={{ xs: 'none', sm: 'inline' }} className="Sidebar">
             <Sidebar className="" logoText={"Author's Notebook"} />
           </Box>
-        : "" }
+        }
         <Grid container>
           <Grid item xs={12}
             style={{ 

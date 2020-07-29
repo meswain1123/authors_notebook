@@ -498,6 +498,7 @@ class Page extends Component {
         <TemplateModal 
           world={this.props.selectedWorld} 
           types={this.props.types}
+          things={this.props.things}
           attributesByID={this.props.attributesByID}
           templates={this.props.templates} 
           onSave={_ => {

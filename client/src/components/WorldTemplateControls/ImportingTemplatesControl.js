@@ -258,6 +258,7 @@ class Control extends Component {
             id = res.attributes[`${a.templateAttribute.Name} From Template (${templateName})`];
             upserted = upsertUs.filter(a2 => a2.Name === `${a.templateAttribute.Name} From Template (${templateName})`);
           }
+          upserted = upserted[0];
           upserted._id = id;
           a.status = "Imported";
           a.attribute = upserted;
@@ -456,9 +457,9 @@ class Control extends Component {
         type.Defaults = [];
       }
       templateType.templateType.Defaults.forEach(d => {
-        const attribute = attributeMap[d.attrID];
-        let theDefault = type.Defaults.filter(d2 => d2.attrID === attribute._id);
-        if (theDefault.length === 0) {
+        let attribute = attributeMap[d.attrID];
+        // let theDefault = type.Defaults.filter(d2 => d2.attrID === attribute._id);
+        // if (theDefault.length === 0) {
           let DefaultValue = d.DefaultValue;
           let DefaultListValues = d.DefaultListValues;
           if (attribute.AttributeType === "Type") {
@@ -474,23 +475,27 @@ class Control extends Component {
             DefaultValue,
             DefaultListValues
           });
-        } else if (attribute.AttributeType === "List") {
-          theDefault = theDefault[0];
-          if (attribute.ListType === "Type") {
-            d.DefaultListValues.forEach(v => {
-              const id = thingMap[v]._id;
-              if (!theDefault.DefaultListValues.includes(id)) {
-                theDefault.DefaultListValues.push(id);
-              }
-            });
-          } else {
-            d.DefaultListValues.forEach(v => {
-              if (!theDefault.DefaultListValues.includes(v)) {
-                theDefault.DefaultListValues.push(v);
-              }
-            });
-          }
-        }
+        // } else if (attribute.AttributeType === "List") {
+        //   theDefault = theDefault[0];
+        //   console.log(theDefault);
+        //   console.log(thingMap);
+        //   if (attribute.ListType === "Type") {
+        //     d.DefaultListValues.forEach(v => {
+        //       console.log(v);
+        //       const id = thingMap[v]._id;
+        //       console.log(id);
+        //       if (!theDefault.DefaultListValues.includes(id)) {
+        //         theDefault.DefaultListValues.push(id);
+        //       }
+        //     });
+        //   } else {
+        //     d.DefaultListValues.forEach(v => {
+        //       if (!theDefault.DefaultListValues.includes(v)) {
+        //         theDefault.DefaultListValues.push(v);
+        //       }
+        //     });
+        //   }
+        // }
       });
       this.api.updateType(type).then(res => {
         if (res.error === undefined) {
