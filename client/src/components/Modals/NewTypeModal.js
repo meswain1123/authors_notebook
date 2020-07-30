@@ -39,7 +39,8 @@ const saveNewType = (value, props, changeName, changeMessage, changeWaiting) => 
     AttributesArr: [],
     Attributes: [],
     worldID: props.selectedWorldID,
-    Major: false,
+    Major: false, 
+    NeedsWork: true
   };
 
   // Calls API

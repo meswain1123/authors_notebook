@@ -26,7 +26,8 @@ const saveNewThing = (value, props, changeName, changeMessage, changeWaiting) =>
     TypeIDs: props.newThingType === undefined ? [] : [props.newThingType._id],
     Attributes: [],
     worldID: props.selectedWorldID,
-    ReferenceIDs: []
+    ReferenceIDs: [], 
+    NeedsWork: true
   };
 
   // Calls API

@@ -14,6 +14,8 @@ import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import {
   updateIndexExpandedPanel
 } from "../../redux/actions/index";
+import UnderConstruction from "../../assets/img/under_construction.png";
+import UnderConstructionWhite from "../../assets/img/under_construction_white.png";
 
 /* 
   This component will be used by the WorldDetails component.  It will
@@ -112,7 +114,13 @@ class Index extends Component {
                     </Button>
                   </Tooltip>
               }
-              <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Types (${this.props.types.length})`}</span>
+              <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>
+                { this.props.types.filter(t => t.NeedsWork !== undefined && t.NeedsWork).length > 0 ?
+                  <span>Types ({this.props.types.length}) ({this.props.types.filter(t => t.NeedsWork !== undefined && t.NeedsWork).length} <img style={{ height: "20px", marginBottom: "-4px" }} src={UnderConstruction} alt="Needs Work" />)</span>
+                :
+                  <span>Types ({this.props.types.length})</span>
+                }
+              </span>
               { createButtons &&
                 <Tooltip title={`Create New Type`}>
                   <Fab size="small" color="primary" style={{marginLeft: "8px"}}
@@ -135,6 +143,9 @@ class Index extends Component {
                                 <Button 
                                   fullWidth variant="contained" color="primary" 
                                   onClick={ _ => {this.setState({redirectTo:`/type/details/${type._id}`})}}>
+                                  { type.NeedsWork &&
+                                    <span><img style={{ height: "20px", marginBottom: "-4px" }} src={UnderConstructionWhite} alt="Needs Work" />&nbsp;</span>
+                                  }
                                   {type.Name}
                                 </Button>
                               </Tooltip>
@@ -188,9 +199,26 @@ class Index extends Component {
                       </Tooltip>
                     }
                     <Tooltip title={`Details for ${type.Name}`}>
-                      <Button variant="contained" color="primary" style={{ width: "180px" }}
+                      <Button variant="contained" color="primary" style={{ width: "220px" }}
                         onClick={ _ => {this.setState({redirectTo:`/type/details/${type._id}`})}}>
-                        {type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName} ({things.length})
+                        { things.filter(t => t.NeedsWork !== undefined && t.NeedsWork).length > 0 ?
+                          <span>
+                            { type.NeedsWork &&
+                              <span><img style={{ height: "20px", marginBottom: "-4px" }} src={UnderConstructionWhite} alt="Needs Work" />&nbsp;</span>
+                            }
+                            {type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName} 
+                            ({things.length}) 
+                            ({things.filter(t => t.NeedsWork !== undefined && t.NeedsWork).length} <img style={{ height: "20px", marginBottom: "-4px" }} src={UnderConstructionWhite} alt="Needs Work" />)
+                          </span>
+                        :
+                          <span>
+                            { type.NeedsWork &&
+                              <span><img style={{ height: "20px", marginBottom: "-4px" }} src={UnderConstructionWhite} alt="Needs Work" />&nbsp;</span>
+                            }
+                            {type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName} 
+                            ({things.length})
+                          </span>
+                        }
                       </Button>
                     </Tooltip>
                     { createButtons &&
@@ -223,6 +251,9 @@ class Index extends Component {
                                       <Button 
                                         fullWidth variant="contained" color="primary" 
                                         onClick={ _ => {this.setState({redirectTo:`/thing/details/${thing._id}`})}}>
+                                        { thing.NeedsWork &&
+                                          <span><img style={{ height: "20px", marginBottom: "-4px" }} src={UnderConstructionWhite} alt="Needs Work" />&nbsp;</span>
+                                        }
                                         {thing.Name}
                                       </Button>
                                     </Tooltip>
@@ -264,7 +295,13 @@ class Index extends Component {
                   </Button>
                 </Tooltip>
               }
-              <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>{`Other Things (${majorless.length})`}</span>
+              <span className={"MuiTypography-root MuiListItemText-primary MuiTypography-body1"}>
+                { majorless.filter(t => t.NeedsWork !== undefined && t.NeedsWork).length > 0 ?
+                  <span>Other Things ({majorless.length}) ({majorless.filter(t => t.NeedsWork !== undefined && t.NeedsWork).length} <img style={{ height: "20px", marginBottom: "-4px" }} src={UnderConstruction} alt="Needs Work" />)</span>
+                :
+                  <span>Other Things ({majorless.length})</span>
+                }
+              </span>
               { createButtons &&
                 <Tooltip title={`Create New Thing`}>
                   <Fab size="small" color="primary" style={{marginLeft: "8px"}}
@@ -287,6 +324,9 @@ class Index extends Component {
                                 <Button 
                                   fullWidth variant="contained" color="primary" 
                                   onClick={ _ => {this.setState({redirectTo:`/thing/details/${thing._id}`})}}>
+                                  { thing.NeedsWork &&
+                                    <span><img style={{ height: "20px", marginBottom: "-4px" }} src={UnderConstructionWhite} alt="Needs Work" />&nbsp;</span>
+                                  }
                                   {thing.Name}
                                 </Button>
                               </Tooltip>

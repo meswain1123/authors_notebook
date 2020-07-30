@@ -28,6 +28,7 @@ import {
 import { Helmet } from "react-helmet";
 import API from "../../smartAPI";
 import CommentsControl from "../../components/Inputs/CommentsControl";
+import UnderConstruction from "../../assets/img/under_construction.png";
 // import ReactQuill from '../../components/Inputs/ReactQuill';
 // import '../../assets/css/quill.read-only.css';
 
@@ -183,6 +184,7 @@ class Page extends Component {
               AttributesArr: [],
               Attributes: [],
               Major: false,
+              NeedsWork: false,
               DefaultsHash: {},
             });
           }
@@ -215,6 +217,7 @@ class Page extends Component {
               AttributesArr: [],
               Attributes: [],
               Major: false,
+              NeedsWork: false,
               DefaultsHash: {},
             });
           }
@@ -229,6 +232,7 @@ class Page extends Component {
         AttributesArr: [],
         Attributes: [],
         Major: false,
+        NeedsWork: false
       });
     }
   };
@@ -333,7 +337,16 @@ class Page extends Component {
                     </Grid>
                   </Grid>
                   <Grid item>
-                    <h3>{this.props.selectedType.Major ? "Major Type" : ""}</h3>
+                    <h3>
+                      { this.props.selectedType.NeedsWork && 
+                      <span>
+                        <img style={{ height: "50px" }} src={UnderConstruction} alt="Needs Work" /> Needs Work
+                      </span> 
+                      }
+                    </h3>
+                  </Grid>
+                  <Grid item>
+                    <h3>{this.props.selectedType.Major && "Major Type" }</h3>
                   </Grid>
                   <Grid item>
                     <div  dangerouslySetInnerHTML={{__html: this.props.selectedType.Description}} />

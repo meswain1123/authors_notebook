@@ -16,7 +16,7 @@ import {
   selectWorld
 } from "../../redux/actions/index";
 import { 
-  Button, FormControl, 
+  Button, Checkbox, FormControl, FormControlLabel,
   OutlinedInput, InputLabel, 
   FormHelperText, Grid, 
   Fab, Tooltip,
@@ -33,6 +33,7 @@ import API from "../../smartAPI";
 import NewTypeModal from "../../components/Modals/NewTypeModal";
 import NewThingModal from "../../components/Modals/NewThingModal";
 import TextBox from "../../components/Inputs/TextBox";
+import UnderConstruction from "../../assets/img/under_construction.png";
 
 /* 
   This component will take the main portion of the page and is used for
@@ -128,6 +129,7 @@ class Page extends Component {
       _id: null,
       Name: "",
       Description: "",
+      NeedsWork: false,
       Types: [],
       Attributes: []
     };
@@ -412,6 +414,7 @@ class Page extends Component {
       _id: this.state._id,
       Name: this.props.selectedThing.Name.trim(),
       Description: this.props.selectedThing.Description.trim(),
+      NeedsWork: this.props.selectedThing.NeedsWork,
       TypeIDs: typeIDs,
       // AttributesArr: this.props.selectedThing.AttributesArr,
       Attributes: [],
@@ -457,6 +460,7 @@ class Page extends Component {
                   _id: null,
                   Name: "",
                   Description: "",
+                  NeedsWork: false,
                   Types: this.state.majorType === null ? [] : [this.state.majorType],
                   Attributes: [],
                   AttributesArr: []
@@ -508,6 +512,7 @@ class Page extends Component {
                   _id: null,
                   Name: "",
                   Description: "",
+                  NeedsWork: false,
                   Types: this.state.majorType === null ? [] : [this.state.majorType],
                   Attributes: [],
                   AttributesArr: []
@@ -856,6 +861,7 @@ class Page extends Component {
               _id: theType._id,
               Name: theType.Name,
               Description: this.cleanWYSIWYG(theType.Description),
+              NeedsWork: theType.NeedsWork,
               SuperIDs: theType.SuperIDs,
               // AttributesArr: this.props.selectedType.AttributesArr,
               Attributes: theType.Attributes,
@@ -1149,6 +1155,7 @@ class Page extends Component {
                 _id: null,
                 Name: "",
                 Description: "",
+                NeedsWork: false,
                 Types: [],
                 Attributes: [],
                 AttributesArr: []
@@ -1289,6 +1296,7 @@ class Page extends Component {
                 _id: null,
                 Name: "",
                 Description: "",
+                NeedsWork: false,
                 Types: [],
                 Attributes: [],
                 AttributesArr: []
@@ -1854,6 +1862,32 @@ class Page extends Component {
                         options={suggestions}
                         labelWidth={82}/>
                     }
+                  </Grid>
+                  <Grid item>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          icon={
+                            <img style={{ opacity: "0.5", height: "30px" }} src={UnderConstruction} alt="No Work Planned" /> 
+                          } 
+                          checkedIcon={
+                            <img style={{ height: "30px" }} src={UnderConstruction} alt="Needs Work" />
+                          }
+                          checked={this.props.selectedThing.NeedsWork}
+                          onChange={ e => {
+                            const value = e.target.checked;
+                            const thing = this.props.selectedThing;
+                            thing.NeedsWork = value;
+                            this.props.updateSelectedThing(thing);
+                            // this.setState({ [name]: value });
+                            // this.handleUserInput(e);
+                          }}
+                          name="NeedsWork"
+                          color="primary"
+                        />
+                      }
+                      label="Needs Work"
+                    />
                   </Grid>
                   <Grid item>
                     <Multiselect

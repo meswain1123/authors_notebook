@@ -23,6 +23,7 @@ import {
 import API from "../../smartAPI";
 import ThingTable from "../../components/Displays/ThingTable";
 import CommentsControl from "../../components/Inputs/CommentsControl";
+import UnderConstruction from "../../assets/img/under_construction.png";
 
 const mapStateToProps = state => {
   const thing = state.app.selectedThing;
@@ -162,11 +163,8 @@ class Page extends Component {
           else {
             thing = thing[0];
             thing.AttributesArr = [];
-            console.log(thing);
             thing.Attributes.forEach(a => {
-              console.log(a);
               const attr = this.props.attributesByID[a.attrID];
-              console.log(attr);
               thing.AttributesArr.push({
                 index: thing.AttributesArr.length,
                 Name: attr.Name,
@@ -363,9 +361,16 @@ class Page extends Component {
                     </Grid>
                   </Grid>
                   <Grid item>
+                    <h3>
+                      { this.props.selectedThing.NeedsWork && 
+                      <span>
+                        <img style={{ height: "50px" }} src={UnderConstruction} alt="Needs Work" /> Needs Work
+                      </span> 
+                      }
+                    </h3>
+                  </Grid>
+                  <Grid item>
                     <div  dangerouslySetInnerHTML={{__html: this.state.Description}} />
-                    
-                    {/* {this.state.Description} */}
                   </Grid>
                 </Grid>
                 <Grid item xs={12} sm={4}>

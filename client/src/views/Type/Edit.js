@@ -9,6 +9,7 @@ import {
   Select, MenuItem,
   ListItem, ListItemText
 } from "@material-ui/core";
+import UnderConstruction from "../../assets/img/under_construction.png";
 import { Helmet } from 'react-helmet';
 import { Multiselect } from 'multiselect-react-dropdown';
 import AttributesControl from "./AttributesControl";
@@ -301,6 +302,7 @@ class Page extends Component {
         Defaults: [],
         worldID: this.props.selectedWorld._id,
         Major: this.props.selectedType.Major,
+        NeedsWork: this.props.selectedType.NeedsWork,
         ReferenceIDs: [],
         DefaultReferenceIDs: []
       };
@@ -354,6 +356,7 @@ class Page extends Component {
                     AttributesArr: [],
                     Attributes: [],
                     Major: false,
+                    NeedsWork: false,
                     DefaultsHash: {}
                   });
                   this.setState({
@@ -417,6 +420,7 @@ class Page extends Component {
                     AttributesArr: [],
                     Attributes: [],
                     Major: false,
+                    NeedsWork: false,
                     DefaultsHash: {}
                   });
                   this.setState({
@@ -708,6 +712,7 @@ class Page extends Component {
                     AttributesArr: [],
                     Attributes: [],
                     Major: false,
+                    NeedsWork: false,
                     DefaultsHash: {}
                   });
                   this.setState({ 
@@ -728,6 +733,7 @@ class Page extends Component {
               AttributesArr: [],
               Attributes: [],
               Major: false,
+              NeedsWork: false,
               DefaultsHash: {}
             });
             this.setState({ 
@@ -806,6 +812,7 @@ class Page extends Component {
                     AttributesArr: [],
                     Attributes: [],
                     Major: false,
+                    NeedsWork: false,
                     DefaultsHash: {}
                   });
                   this.setState({ 
@@ -826,6 +833,7 @@ class Page extends Component {
               AttributesArr: [],
               Attributes: [],
               Major: false,
+              NeedsWork: false,
               DefaultsHash: {}
             });
             this.setState({ 
@@ -1138,6 +1146,31 @@ class Page extends Component {
                         options={suggestions}
                       />
                     }
+                  </Grid>
+                  <Grid item>
+                    <FormControlLabel
+                      control={
+                        <Checkbox 
+                          icon={
+                            <img style={{ opacity: "0.5", height: "30px" }} src={UnderConstruction} alt="No Work Planned" /> 
+                          } 
+                          checkedIcon={
+                            <img style={{ height: "30px" }} src={UnderConstruction} alt="Needs Work" />
+                          }
+                          checked={this.props.selectedType.NeedsWork}
+                          onChange={ e => {
+                            const value = e.target.checked;
+                            const type = this.props.selectedType;
+                            type.NeedsWork = value;
+                            this.props.updateSelectedType(type);
+                            // this.setState({ [name]: value });
+                            // this.handleUserInput(e);
+                          }}
+                          name="NeedsWork"
+                        />
+                      }
+                      label="Needs Work"
+                    />
                   </Grid>
                   <Grid item>
                     <FormControlLabel
