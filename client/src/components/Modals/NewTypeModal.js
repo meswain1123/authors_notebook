@@ -40,7 +40,8 @@ const saveNewType = (value, props, changeName, changeMessage, changeWaiting) => 
     Attributes: [],
     worldID: props.selectedWorldID,
     Major: false, 
-    NeedsWork: true
+    NeedsWork: true,
+    EditUserID: this.props.user._id
   };
 
   // Calls API

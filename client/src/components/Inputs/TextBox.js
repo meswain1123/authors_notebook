@@ -98,7 +98,6 @@ class Control extends Component {
                 }
               }}
               onBlur={e => {
-                console.log(e);
                 if (this.props.onBlur !== undefined) {
                   this.props.onBlur(this.state.value);
                 }

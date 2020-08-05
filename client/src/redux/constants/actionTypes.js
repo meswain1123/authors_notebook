@@ -32,3 +32,5 @@ export const TOGGLE_LOGIN = "TOGGLE_LOGIN";
 export const NOT_FROM_LOGIN = "NOT_FROM_LOGIN";
 export const SET_FOLLOWING_WORLDS = "SET_FOLLOWING_WORLDS";
 export const SET_WIDTH = "SET_WIDTH";
+export const SET_HEIGHT = "SET_HEIGHT";
+export const SET_VIEWS = "SET_VIEWS";

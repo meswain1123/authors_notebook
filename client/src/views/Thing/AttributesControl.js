@@ -201,7 +201,8 @@ class Control extends Component {
       Description: "",
       TypeIDs: typeIDs,
       Attributes: [],
-      worldID: this.props.selectedWorldID
+      worldID: this.props.selectedWorldID,
+      EditUserID: this.props.user._id
     };
 
     // Calls API

@@ -27,7 +27,8 @@ const saveNewThing = (value, props, changeName, changeMessage, changeWaiting) =>
     Attributes: [],
     worldID: props.selectedWorldID,
     ReferenceIDs: [], 
-    NeedsWork: true
+    NeedsWork: true,
+    EditUserID: this.props.user._id
   };
 
   // Calls API

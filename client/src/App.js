@@ -12,6 +12,7 @@ import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import { 
   setWidth,
+  setHeight,
   setAPI
 } from "./redux/actions/index";
 import API from "./smartAPI";
@@ -26,6 +27,7 @@ const mapStateToProps = state => {
 function mapDispatchToProps(dispatch) {
   return {
     setWidth: width => dispatch(setWidth(width)),
+    setHeight: height => dispatch(setHeight(height)),
     setAPI: api => dispatch(setAPI(api))
   };
 }
@@ -51,6 +53,7 @@ class AppLayout extends Component {
 
   updateDimensions() {
     let w = window.innerWidth;
+    this.props.setHeight(window.innerHeight);
     if (w >= 600) {
       w -= 200;
       this.props.setWidth(w);

@@ -30,7 +30,6 @@ export default function TypeSummary(props) {
       t.thingID = t._id;
     }
   });
-  console.log(type.Defaults);
   let defaults = type.Defaults.filter(d => d.DefaultValue !== "" || d.DefaultListValues.length > 0);
   let superTypes = types.filter(t => type.SuperIDs.includes(t.typeID));
   return (

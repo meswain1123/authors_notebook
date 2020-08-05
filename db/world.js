@@ -24,62 +24,76 @@ function open() {
     // fixAttributes(); 
     // testUpdate();
     // deleteDuplicateAttributes();
+    // fixCreateEditDT();
   });
 }
 function close() {
   client.close();
 }
 
-function testUpdate() {
-  const db = client.db(dbName);
-  const typeID = "pizza";
-  db.collection("thing").updateMany(
-    {
-      TypeIDs: { "$in": [typeID]}
-    },
-    { $set: { "Attributes.$[element].FromTypeID" : null },
-      // $set: { "Defaults.$[element2].FromTypeID" : null },
-      $pull: { TypeIDs: typeID }
-    },
-    {
-      arrayFilters: [ 
-        { "element.FromTypeID": typeID }, 
-        // { "element2.FromTypeID": typeID } 
-      ]
-    }
-  );
-}
+// function fixCreateEditDT() {
+//   try {
+//     const db = client.db(dbName);
+//     db.collection("thing").updateMany({ },
+//       { $set: { "CreateDT" : new Date(), "EditDT": new Date() }
+//       }
+//     );
+//   } catch (err) {
+//     console.log(err);
+//     respond(err);
+//   }
+// }
 
-function deleteDuplicateAttributes() {
-  function gotWorlds(worlds) {
-    for (let i = 0; i < worlds.length; i++) {
-      const world = worlds[i];
-      function gotTypes(types) {
-        console.log(`Fixing Types for ${world.Name}`);
-        for (let j = 0; j < types.length; j++) {
-          const type = types[j];
-          let inheritedAttributes = []; 
-          type.SuperIDs.forEach(s => {
-            let superType = types.filter(t => t._id.toString() === s);
-            if (superType.length > 0) {
-              superType = superType[0];
-              console.log(superType);
-              inheritedAttributes = inheritedAttributes.concat(superType.Attributes.map(a => a.attrID));
-            }
-          });
-          console.log(inheritedAttributes);
-          type.Attributes = type.Attributes.filter(a => !inheritedAttributes.includes(a.attrID));
+// function testUpdate() {
+//   const db = client.db(dbName);
+//   const typeID = "pizza";
+//   db.collection("thing").updateMany(
+//     {
+//       TypeIDs: { "$in": [typeID]}
+//     },
+//     { $set: { "Attributes.$[element].FromTypeID" : null },
+//       // $set: { "Defaults.$[element2].FromTypeID" : null },
+//       $pull: { TypeIDs: typeID }
+//     },
+//     {
+//       arrayFilters: [ 
+//         { "element.FromTypeID": typeID }, 
+//         // { "element2.FromTypeID": typeID } 
+//       ]
+//     }
+//   );
+// }
+
+// function deleteDuplicateAttributes() {
+//   function gotWorlds(worlds) {
+//     for (let i = 0; i < worlds.length; i++) {
+//       const world = worlds[i];
+//       function gotTypes(types) {
+//         console.log(`Fixing Types for ${world.Name}`);
+//         for (let j = 0; j < types.length; j++) {
+//           const type = types[j];
+//           let inheritedAttributes = []; 
+//           type.SuperIDs.forEach(s => {
+//             let superType = types.filter(t => t._id.toString() === s);
+//             if (superType.length > 0) {
+//               superType = superType[0];
+//               console.log(superType);
+//               inheritedAttributes = inheritedAttributes.concat(superType.Attributes.map(a => a.attrID));
+//             }
+//           });
+//           console.log(inheritedAttributes);
+//           type.Attributes = type.Attributes.filter(a => !inheritedAttributes.includes(a.attrID));
           
-          updateType2(world._id.toString(), type);
-        }
-      }
-      getTypesForWorld(gotTypes, world._id.toString());
-    }
-    console.log(`Finished Fixing Attributes`);
-  }
+//           updateType2(world._id.toString(), type);
+//         }
+//       }
+//       getTypesForWorld(gotTypes, world._id.toString());
+//     }
+//     console.log(`Finished Fixing Attributes`);
+//   }
 
-  getWorldsForUser(gotWorlds, "5e2f89edc25e5c2ed0a1d294");
-}
+//   getWorldsForUser(gotWorlds, "5e2f89edc25e5c2ed0a1d294");
+// }
 
 // function fixDefaults() {
 //   function gotWorlds(worlds) {
@@ -118,142 +132,142 @@ function deleteDuplicateAttributes() {
 //   getWorldsForUser(gotWorlds, "5e2f89edc25e5c2ed0a1d294");
 // }
 
-function fixAttributes() {
-  function gotWorlds(worlds) {
-    for (let i = 0; i < worlds.length; i++) {
-      const world = worlds[i];
-      function gotTypes(types) {
-        console.log(`Fixing Types for ${world.Name}`);
-        const attrMap = {};
-        let allAttributes = [];
-        for (let j = 0; j < types.length; j++) {
-          const type = types[j];
-          allAttributes = allAttributes.concat(type.AttributesArr);
-        }
+// function fixAttributes() {
+//   function gotWorlds(worlds) {
+//     for (let i = 0; i < worlds.length; i++) {
+//       const world = worlds[i];
+//       function gotTypes(types) {
+//         console.log(`Fixing Types for ${world.Name}`);
+//         const attrMap = {};
+//         let allAttributes = [];
+//         for (let j = 0; j < types.length; j++) {
+//           const type = types[j];
+//           allAttributes = allAttributes.concat(type.AttributesArr);
+//         }
 
-        let pos = 0;
+//         let pos = 0;
 
-        function respond(message) {
-          console.log(message);
-          if (message !== null)
-            attrMap[allAttributes[pos].Name] = message.toString();
-          pos++;
-          if (pos === allAttributes.length) {
-            for (let j = 0; j < types.length; j++) {
-              const type = types[j];
-              type.Attributes = [];
-              type.Defaults = [];
-              for (let k = 0; k < type.AttributesArr.length; k++) {
-                const attribute = type.AttributesArr[k];
-                if (attribute.FromSupers === undefined || 
-                  attribute.FromSupers === null || 
-                  attribute.FromSupers.length === 0) {
-                  type.Attributes.push({ 
-                    attrID: attrMap[attribute.Name], 
-                    index: k 
-                  });
-                }
-                if ((attribute.DefaultValue !== undefined &&
-                  attribute.DefaultValue !== null &&
-                  attribute.DefaultValue !== "") ||
-                  (attribute.DefaultListValues !== undefined &&
-                  attribute.DefaultListValues !== null &&
-                  attribute.DefaultListValues !== [])){
-                  type.Defaults.push({ 
-                    attrID: attrMap[attribute.Name], 
-                    DefaultValue: attribute.DefaultValue, 
-                    DefaultListValues: attribute.DefaultListValues
-                  });
-                  // type.Defaults.push({ 
-                  //   attrID: attribute.attrID, 
-                  //   DefaultValue: attribute.DefaultValue, 
-                  //   DefaultListValues: attribute.DefaultListValues
-                  // });
-                }
-              }
-              updateType2(world._id.toString(), type);
-            }
+//         function respond(message) {
+//           console.log(message);
+//           if (message !== null)
+//             attrMap[allAttributes[pos].Name] = message.toString();
+//           pos++;
+//           if (pos === allAttributes.length) {
+//             for (let j = 0; j < types.length; j++) {
+//               const type = types[j];
+//               type.Attributes = [];
+//               type.Defaults = [];
+//               for (let k = 0; k < type.AttributesArr.length; k++) {
+//                 const attribute = type.AttributesArr[k];
+//                 if (attribute.FromSupers === undefined || 
+//                   attribute.FromSupers === null || 
+//                   attribute.FromSupers.length === 0) {
+//                   type.Attributes.push({ 
+//                     attrID: attrMap[attribute.Name], 
+//                     index: k 
+//                   });
+//                 }
+//                 if ((attribute.DefaultValue !== undefined &&
+//                   attribute.DefaultValue !== null &&
+//                   attribute.DefaultValue !== "") ||
+//                   (attribute.DefaultListValues !== undefined &&
+//                   attribute.DefaultListValues !== null &&
+//                   attribute.DefaultListValues !== [])){
+//                   type.Defaults.push({ 
+//                     attrID: attrMap[attribute.Name], 
+//                     DefaultValue: attribute.DefaultValue, 
+//                     DefaultListValues: attribute.DefaultListValues
+//                   });
+//                   // type.Defaults.push({ 
+//                   //   attrID: attribute.attrID, 
+//                   //   DefaultValue: attribute.DefaultValue, 
+//                   //   DefaultListValues: attribute.DefaultListValues
+//                   // });
+//                 }
+//               }
+//               updateType2(world._id.toString(), type);
+//             }
             
-            function gotThings(things) {
-              console.log(`Fixing Things for ${world.Name}`);
-              // console.log(things);
-              for (let j = 0; j < things.length; j++) {
-                const thing = things[j];
-                thing.Attributes = [];
-                for (let k = 0; k < thing.AttributesArr.length; k++) {
-                  thing.Attributes.push({ 
-                    attrID: attrMap[thing.AttributesArr[k].Name], 
-                    index: k,
-                    Value: thing.AttributesArr[k].Value,
-                    ListValues: thing.AttributesArr[k].ListValues
-                  });
-                }
-                updateThing2(world._id.toString(), thing);
-              }
-            }
+//             function gotThings(things) {
+//               console.log(`Fixing Things for ${world.Name}`);
+//               // console.log(things);
+//               for (let j = 0; j < things.length; j++) {
+//                 const thing = things[j];
+//                 thing.Attributes = [];
+//                 for (let k = 0; k < thing.AttributesArr.length; k++) {
+//                   thing.Attributes.push({ 
+//                     attrID: attrMap[thing.AttributesArr[k].Name], 
+//                     index: k,
+//                     Value: thing.AttributesArr[k].Value,
+//                     ListValues: thing.AttributesArr[k].ListValues
+//                   });
+//                 }
+//                 updateThing2(world._id.toString(), thing);
+//               }
+//             }
 
-            getThingsForWorld(gotThings, "5e2f89edc25e5c2ed0a1d294", world._id.toString());
-          }
-          else if (attrMap[allAttributes[pos].Name] !== undefined) {
-            respond(null);
-          }
-          else {
-            const attr = allAttributes[pos];
-            const newAttr = {
-              _id: null,
-              Name: attr.Name,
-              AttributeType: attr.Type,
-              Options: attr.Options,
-              DefinedType: attr.Type2,
-              ListType: attr.ListType
-            };
-            upsertAttribute(respond, world._id.toString(), newAttr);
-          }
-        }
+//             getThingsForWorld(gotThings, "5e2f89edc25e5c2ed0a1d294", world._id.toString());
+//           }
+//           else if (attrMap[allAttributes[pos].Name] !== undefined) {
+//             respond(null);
+//           }
+//           else {
+//             const attr = allAttributes[pos];
+//             const newAttr = {
+//               _id: null,
+//               Name: attr.Name,
+//               AttributeType: attr.Type,
+//               Options: attr.Options,
+//               DefinedType: attr.Type2,
+//               ListType: attr.ListType
+//             };
+//             upsertAttribute(respond, world._id.toString(), newAttr);
+//           }
+//         }
 
-        const attr1 = allAttributes[pos];
-        const newAttr1 = {
-          _id: null,
-          Name: attr1.Name,
-          AttributeType: attr1.Type,
-          Options: attr1.Options,
-          DefinedType: attr1.Type2,
-          ListType: attr1.ListType
-        };
-        upsertAttribute(respond, world._id.toString(), newAttr1);
-      }
-      getTypesForWorld(gotTypes, world._id.toString());
-    }
-    console.log(`Finished Fixing Attributes`);
-  }
+//         const attr1 = allAttributes[pos];
+//         const newAttr1 = {
+//           _id: null,
+//           Name: attr1.Name,
+//           AttributeType: attr1.Type,
+//           Options: attr1.Options,
+//           DefinedType: attr1.Type2,
+//           ListType: attr1.ListType
+//         };
+//         upsertAttribute(respond, world._id.toString(), newAttr1);
+//       }
+//       getTypesForWorld(gotTypes, world._id.toString());
+//     }
+//     console.log(`Finished Fixing Attributes`);
+//   }
 
-  getWorldsForUser(gotWorlds, "5e2f89edc25e5c2ed0a1d294");
-}
+//   getWorldsForUser(gotWorlds, "5e2f89edc25e5c2ed0a1d294");
+// }
 
-function updateType2(worldID, type) {
-  const db = client.db(dbName);
+// function updateType2(worldID, type) {
+//   const db = client.db(dbName);
 
-  db.collection("type").updateOne(
-    { 
-      _id: type._id, worldID: worldID
-    },
-    { $set: type }
-  );
-}
-function updateThing2(worldID, thing) {
-  const db = client.db(dbName);
-  // console.log(worldID);
-  // console.log(thing);
+//   db.collection("type").updateOne(
+//     { 
+//       _id: type._id, worldID: worldID
+//     },
+//     { $set: type }
+//   );
+// }
+// function updateThing2(worldID, thing) {
+//   const db = client.db(dbName);
+//   // console.log(worldID);
+//   // console.log(thing);
 
-  const response = db.collection("thing").updateOne(
-    { 
-      worldID: worldID, 
-      _id: thing._id
-    },
-    { $set: thing }
-  );
-  // console.log(response);
-}
+//   const response = db.collection("thing").updateOne(
+//     { 
+//       worldID: worldID, 
+//       _id: thing._id
+//     },
+//     { $set: thing }
+//   );
+//   // console.log(response);
+// }
 
 function getWorldsForUser(respond, userID) {
   try {
@@ -793,6 +807,37 @@ function updateComment(respond, comment) {
   respond({ message: `Comment updated!` });
 }
 
+function getViews(respond, worldID, userID) {
+  try {
+    const db = client.db(dbName);
+    db.collection("view")
+      .find({ worldID, userID })
+      .toArray(function(err, docs) {
+        if (err) respond({ error: `Error: ${err}.` });
+        else respond(docs);
+      });
+  } catch (err) {
+    console.log(err);
+    respond(err);
+  }
+}
+
+function upsertView(respond, view) {
+  const db = client.db(dbName);
+
+  db.collection("view").updateOne(
+    { 
+      userID: view.userID,
+      worldID: view.worldID,
+      objectType: view.objectType,
+      objectID: view.objectID
+    },
+    { $set: { ViewDT : `${new Date()}` } },
+    { upsert: true }
+  );
+  respond({ message: `View updated!` });
+}
+
 module.exports = {
   open,
   close,
@@ -829,5 +874,7 @@ module.exports = {
   createTemplate,
   getComments,
   addComment,
-  updateComment
+  updateComment,
+  getViews,
+  upsertView
 };

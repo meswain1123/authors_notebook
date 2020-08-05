@@ -206,7 +206,7 @@ class Index extends Component {
                             { type.NeedsWork &&
                               <span><img style={{ height: "20px", marginBottom: "-4px" }} src={UnderConstructionWhite} alt="Needs Work" />&nbsp;</span>
                             }
-                            {type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName} 
+                            {type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s ` : `${type.PluralName} `}
                             ({things.length}) 
                             ({things.filter(t => t.NeedsWork !== undefined && t.NeedsWork).length} <img style={{ height: "20px", marginBottom: "-4px" }} src={UnderConstructionWhite} alt="Needs Work" />)
                           </span>
@@ -215,7 +215,7 @@ class Index extends Component {
                             { type.NeedsWork &&
                               <span><img style={{ height: "20px", marginBottom: "-4px" }} src={UnderConstructionWhite} alt="Needs Work" />&nbsp;</span>
                             }
-                            {type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s` : type.PluralName} 
+                            {type.PluralName === undefined || type.PluralName === "" ? `${type.Name}s ` : `${type.PluralName} `} 
                             ({things.length})
                           </span>
                         }

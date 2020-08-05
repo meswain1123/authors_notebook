@@ -322,6 +322,7 @@ class Control extends Component {
         Attributes: [],
         worldID: this.props.selectedWorldID,
         Major: type.templateType.Major,
+        EditUserID: this.props.user._id
       };
       this.api.createType(dumbType).then(res => {
         if (res.error === undefined) {
@@ -355,7 +356,8 @@ class Control extends Component {
       worldID: this.props.selectedWorldID,
       TypeIDs: [],
       Attributes: [],
-      ReferenceIDs: []
+      ReferenceIDs: [],
+      EditUserID: this.props.user._id
     };
     this.api.createThing(dumbThing).then(res => {
       if (res.error === undefined) {

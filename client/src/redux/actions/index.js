@@ -30,7 +30,9 @@ import {
   NOT_FROM_LOGIN,
   SET_FOLLOWING_WORLDS,
   SET_WIDTH,
-  UPDATE_INDEX_EXPANDED_PANEL
+  SET_HEIGHT,
+  UPDATE_INDEX_EXPANDED_PANEL,
+  SET_VIEWS
 } from "../constants/actionTypes";
 
 export function updateIndexExpandedPanel(payload) {
@@ -128,4 +130,10 @@ export function setFollowingWorlds(payload) {
 }
 export function setWidth(payload) {
   return { type: SET_WIDTH, payload };
+}
+export function setHeight(payload) {
+  return { type: SET_HEIGHT, payload };
+}
+export function setViews(payload) {
+  return { type: SET_VIEWS, payload };
 }

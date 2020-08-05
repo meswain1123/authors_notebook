@@ -34,8 +34,6 @@ export default function WorldMap(props) {
     }
     attributesByID[a.attrID] = a;
   });
-  console.log(props);
-  console.log(attributesByID);
   if (props.Types !== undefined) {
     dingus.Types = [...props.Types];
     dingus.Types.forEach(t => {

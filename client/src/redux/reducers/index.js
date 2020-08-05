@@ -31,7 +31,9 @@ import {
   TOGGLE_LOGIN,
   NOT_FROM_LOGIN,
   SET_FOLLOWING_WORLDS,
-  SET_WIDTH
+  SET_WIDTH,
+  SET_HEIGHT,
+  SET_VIEWS
 } from "../constants/actionTypes";
 
 const initialState = {
@@ -59,13 +61,15 @@ const initialState = {
   loginOpen: false,
   fromLogin: false,
   width: 0,
+  height: 0,
   templates: [],
   allUsers: [],
   userSuggestions: [],
   collabSuggestions: [],
   worldSuggestions: [],
   typeSuggestions: [],
-  thingSuggestions: []
+  thingSuggestions: [],
+  views: []
 };
 function rootReducer(state = initialState, action) {
   if (action.type === UPDATE_INDEX_EXPANDED_PANEL) {
@@ -645,10 +649,18 @@ function rootReducer(state = initialState, action) {
     return Object.assign({}, state, {
       width: action.payload
     });
+  } else if (action.type === SET_HEIGHT) {
+    return Object.assign({}, state, {
+      height: action.payload
+    });
   } else if (action.type === SET_FOLLOWING_WORLDS) {
     localStorage.setItem("followingWorlds", JSON.stringify(action.payload));
     return Object.assign({}, state, {
       followingWorlds: action.payload
+    });
+  } else if (action.type === SET_VIEWS) {
+    return Object.assign({}, state, {
+      views: action.payload
     });
   }
   return state;

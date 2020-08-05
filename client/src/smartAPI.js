@@ -327,9 +327,9 @@ class APIClass {
       let attributes = await this.getAttributesForWorld(worldID, refresh);
       attributes = attributes.attributes;
       let types = await this.getTypesForWorld(worldID, refresh);
-      types = types.types;
+      // types = types.types;
       let things = await this.getThingsForWorld(worldID, refresh);
-      things = things.things;
+      // things = things.things;
 
       // Now connect them all as is appropriate.
       const attributesByID = {};
@@ -395,13 +395,12 @@ class APIClass {
     try {
       let worldID = await this.getWorldIDByTypeID(typeID);
       worldID = worldID.worldID;
-      console.log(worldID);
       let attributes = await this.getAttributesForWorld(worldID, refresh);
       attributes = attributes.attributes;
       let types = await this.getTypesForWorld(worldID, refresh);
-      types = types.types;
+      // types = types.types;
       let things = await this.getThingsForWorld(worldID, refresh);
-      things = things.things;
+      // things = things.things;
 
       // Now connect them all as is appropriate.
       const attributesByID = {};
@@ -486,13 +485,12 @@ class APIClass {
     try {
       let worldID = await this.getWorldIDByThingID(thingID);
       worldID = worldID.worldID;
-      console.log(worldID);
       let attributes = await this.getAttributesForWorld(worldID, refresh);
       attributes = attributes.attributes;
       let types = await this.getTypesForWorld(worldID, refresh);
-      types = types.types;
+      // types = types.types;
       let things = await this.getThingsForWorld(worldID, refresh);
-      things = things.things;
+      // things = things.things;
 
       // Now connect them all as is appropriate.
       const attributesByID = {};
@@ -894,7 +892,8 @@ class APIClass {
         );
         return this.processResponse(response, null, `types_${worldID}`);
       }
-      return this.processResponse(response, retry, `types_${worldID}`);
+      const data = await this.processResponse(response, retry, `types_${worldID}`);
+      return this.cleanEditDT(data.types);
     } else {
       return [{ _id: -1, worldID: -1, Name: "Character" }];
     }
@@ -994,10 +993,17 @@ class APIClass {
         );
         return this.processResponse(response, null, `things_${worldID}`);
       }
-      return this.processResponse(response, retry, `things_${worldID}`);
+      const data = await this.processResponse(response, retry, `things_${worldID}`);
+      return this.cleanEditDT(data.things);
     } else {
       return [{ _id: -1, worldID: -1, Name: "Alice" }];
     }
+  };
+  cleanEditDT = (list) => {
+    list.forEach(t => {
+      t.EditDT = Date.parse(t.EditDT);
+    });
+    return list;
   };
 
   getThing = async (worldID, thingID) => {
@@ -1106,6 +1112,41 @@ class APIClass {
     }
   }
 
+  // Views
+  getViews = async (worldID, userID) => {
+    if (this.real) {
+      const response = await this.fetchData(`/api/world/getViews/${worldID}/${userID}`);
+      const tempViews = await this.processResponse(response);
+      console.log(tempViews);
+      tempViews.forEach(v => {
+        v.ViewDT = Date.parse(v.ViewDT);
+      });
+      return tempViews;
+    } else {
+      return {
+        _id: -1,
+        worldID: -1,
+        Types: [-1],
+        Name: "Alice",
+        Description: ""
+      };
+    }
+  }
+
+  upsertView = async (view) => {
+    if (this.real) {
+      const response = await this.postData("/api/world/upsertView", { view });
+      const retry = async () => {
+        await this.relogin();
+        const response = await this.postData("/api/world/upsertView", { view });
+        return this.processResponse(response);
+      }
+      return this.processResponse(response, retry);
+    } else {
+      return -1;
+    }
+  }
+
   // Core API Calls
   fetchData = async (path, options = {}) => {
     return await fetch(`${path}`, {
@@ -1190,6 +1231,7 @@ class APIClass {
   };
 
   processResponse = async (response, retry = null, sessionName = null, noExpiry = false) => {
+    // return this.processResponseProgress(response, retry, sessionName, noExpiry);
     const body = await response.json();
     if (response.status !== 200) { 
       throw Error(body.message);
@@ -1211,7 +1253,67 @@ class APIClass {
         localStorage.setItem(sessionName, JSON.stringify(sessionObj));
       }
       return body;
-    };
+    }
+  };
+
+  processResponseProgress = async (response, retry = null, sessionName = null, noExpiry = false) => {
+    const reader = response.body.getReader();
+    
+    if (response.status !== 200) { 
+      const body = await response.json();
+      throw Error(body.message);
+    }
+    else {
+      const contentLength = +response.headers.get('Content-Length');
+      // console.log(`Content Length: ${contentLength}`);
+      let receivedLength = 0; // received that many bytes at the moment
+      let chunks = []; // array of received binary chunks (comprises the body)
+      let result = null;
+      try {
+        while(true) {
+          const {done, value} = await reader.read();
+
+          if (done) {
+            break;
+          }
+
+          chunks.push(value);
+          receivedLength += value.length;
+
+          // console.log(`Received ${receivedLength} of ${contentLength}`)
+        }
+
+        let chunksAll = new Uint8Array(receivedLength); // (4.1)
+        let position = 0;
+        for(let chunk of chunks) {
+          chunksAll.set(chunk, position); // (4.2)
+          position += chunk.length;
+        }
+        result = new TextDecoder("utf-8").decode(chunksAll);
+      } catch (e) {
+        return retry();
+      }
+      if (result === null) {
+        return retry();
+      } else {
+        let finalResult = JSON.parse(result);
+        // console.log(finalResult);
+        // return finalResult;
+        if (sessionName !== null) {
+          let expiresAt = new Date();
+          if (noExpiry) 
+            expiresAt = "never";
+          else 
+            expiresAt.setHours(expiresAt.getHours() + 1);
+          const sessionObj = {
+            expiresAt,
+            finalResult
+          };
+          localStorage.setItem(sessionName, JSON.stringify(sessionObj));
+        }
+        return finalResult;
+      }
+    }
   };
 
   relogin = async () => {

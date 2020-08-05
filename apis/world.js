@@ -48,7 +48,11 @@ router
       function respond(worldID) {
         res.send({ worldID });
       }
-      db.createWorld(respond, req.session.userID, req.body.world);
+      const world = req.body.world;
+      world.CreateDT = new Date();
+      world.EditDT = new Date();
+      world.EditUserID = req.session.userID;
+      db.createWorld(respond, req.session.userID, world);
     }
   })
   .delete("/deleteWorld", function(req, res) {
@@ -67,11 +71,17 @@ router
     if (req.session.userID == undefined) {
       res.send({ error: "Session lost.  Please log in again." });
     } else {
-      function respond(message) {
-        res.send(message);
-      }
+      function gotWorld(oldWorld) {
+        function respond(message) {
+          res.send(message);
+        }
 
-      db.updateWorld(respond, req.session.userID, req.body.world);
+        const world = {...oldWorld,...req.body.world};
+        world.EditDT = new Date();
+        world.EditUserID = req.session.userID;
+        db.updateWorld(respond, req.session.userID, world);
+      }
+      db.getWorld(gotWorld, req.session.userID, req.body.world._id);
     }
   })
   .patch("/generateCollabLink", function(req, res) {
@@ -447,8 +457,11 @@ router
               function respond(typeID) {
                 res.send({ typeID });
               }
-        
-              db.createType(respond, req.body.type);
+              const createMe = req.body.type;
+              createMe.CreateDT = new Date();
+              createMe.EditDT = new Date();
+              createMe.EditUserID = req.session.userID;
+              db.createType(respond, createMe);
             }
           }
 
@@ -487,12 +500,17 @@ router
           res.send({ error: "Problem with updating the Type" });
         }
         else {
-          function respond(message) {
-            res.send(message);
-          }
+          function gotType(type) {
+            function respond(message) {
+              res.send(message);
+            }
 
-          // I need to make it check for changed attributes and propagate the changes to all child types and things
-          db.updateType(respond, req.body.type.worldID, req.body.type);
+            const updateMe = {...type, ...req.body.type};
+            updateMe.EditDT = new Date();
+            updateMe.EditUserID = req.session.userID;
+            db.updateType(respond, req.body.type.worldID, updateMe);
+          }
+          db.getTypeByID(gotType, req.body.type._id);
         }
       }
 
@@ -531,10 +549,11 @@ router
                 res.send({ thingID });
               }
 
-              db.createThing(
-                respond,
-                req.body.thing
-              );
+              const createMe = req.body.thing;
+              createMe.CreateDT = new Date();
+              createMe.EditDT = new Date();
+              createMe.EditUserID = req.session.userID;
+              db.createThing(respond, createMe);
             }
           }
 
@@ -578,15 +597,17 @@ router
           res.send({ error: "Problem with creating the Thing" });
         }
         else {
-          function respond(message) {
-            res.send(message);
-          }
+          function gotThing(thing) {
+            function respond(message) {
+              res.send(message);
+            }
 
-          db.updateThing(
-            respond,
-            req.body.thing.worldID,
-            req.body.thing
-          );
+            const updateMe = {...thing, ...req.body.thing};
+            updateMe.EditDT = new Date();
+            updateMe.EditUserID = req.session.userID;
+            db.updateThing(respond, req.body.thing.worldID, updateMe);
+          }
+          db.getThingByID(gotThing, req.body.thing._id);
         }
       }
 
@@ -769,6 +790,7 @@ router
               res.send(message);
             }
             // The Template is ready. Insert it.
+            template.CreateDT = new Date();
             db.createTemplate(respond, template);
           }
           db.getThingsForWorld(gotThings, req.session.userID, req.body.template.worldID);
@@ -799,10 +821,11 @@ router
       function respond(commentID) {
         res.send({ commentID });
       }
-      db.addComment(
-        respond,
-        req.body.comment
-      );
+      const createMe = req.body.comment;
+      createMe.CreateDT = new Date();
+      createMe.EditDT = new Date();
+      createMe.EditUserID = req.session.userID;
+      db.addComment(respond, createMe);
     }
   })
   .patch("/updateComment", function(req, res) {
@@ -813,7 +836,26 @@ router
         res.send(message);
       }
       delete req.body.comment.voteSum;
-      db.updateComment(respond, req.body.comment);
+      const updateMe = req.body.comment;
+      updateMe.EditDT = new Date();
+      updateMe.EditUserID = req.session.userID;
+      db.updateComment(respond, updateMe);
+    }
+  })
+  .get("/getViews/:worldID/:userID", function(req, res) {
+    function respond(views) {
+      res.send(views);
+    }
+    db.getViews(respond, req.params.worldID, req.params.userID);
+  })
+  .post("/upsertView", function(req, res) {
+    if (req.session.userID == undefined || req.session.userID != req.body.view.userID) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else {
+      function respond(viewID) {
+        res.send({ viewID });
+      }
+      db.upsertView(respond, req.body.view);
     }
   });
 
