@@ -1,1 +1,1 @@
-web: npm run compiled
+web: node server.compiled.js
