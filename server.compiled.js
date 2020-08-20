@@ -16,6 +16,8 @@ var _user = _interopRequireDefault(require("./apis/user.js"));
 
 var _world = _interopRequireDefault(require("./apis/world.js"));
 
+var _vtt = _interopRequireDefault(require("./apis/vtt.js"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 _dotenv["default"].config({
@@ -69,6 +71,7 @@ if (app.get('env') === 'production') {
 app.use(_express["default"]["static"](_path["default"].join(__dirname, 'client/build')));
 app.use('/api/user', _user["default"]);
 app.use('/api/world', _world["default"]);
+app.use('/api/vtt', _vtt["default"]);
 var port = process.env.SERVER_PORT || 4001;
 var version = "0.0.1"; // API calls
 
@@ -90,6 +93,8 @@ function exitHandler(options, exitCode) {
     _user["default"].close();
 
     _world["default"].close();
+
+    _vtt["default"].close();
 
     process.exit();
   }

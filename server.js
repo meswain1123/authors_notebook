@@ -49,9 +49,11 @@ if (app.get('env') === 'production') {
 
 import userAPI from './apis/user.js';
 import worldAPI from './apis/world.js';
+import vttAPI from './apis/vtt.js';
 app.use(express.static(path.join(__dirname, 'client/build')));
 app.use('/api/user', userAPI);
 app.use('/api/world', worldAPI);
+app.use('/api/vtt', vttAPI);
 const port = process.env.SERVER_PORT || 4001;
 
 const version = "0.0.1";
@@ -73,6 +75,7 @@ function exitHandler(options, exitCode) {
     console.log('closing');
     userAPI.close();
     worldAPI.close();
+    vttAPI.close();
     process.exit();
   }
 }
