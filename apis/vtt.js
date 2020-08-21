@@ -136,6 +136,12 @@ router
       db.getPlayMaps(respond, req.params.userID);
     // }
   })
+  .get("/getPlayMap/:playMapID", function(req, res) {
+    function gotPlayMap(playMap) {
+      res.send(playMap);
+    }
+    db.getPlayMap(gotPlayMap, req.params.playMapID);
+  })
   .post("/createPlayMap", function(req, res) {
     // if (req.session.userID == undefined) {
     //   res.send({ error: "Session lost.  Please log in again." });
@@ -170,19 +176,15 @@ router
     // } else {
       function gotPlayMap(oldPlayMap) {
         function respond(message) {
-          console.log(message);
           res.send(message);
         }
 
-        console.log(oldPlayMap);
         const playMap = {...oldPlayMap,...req.body.playMap};
-        console.log(playMap);
         // playMap.EditDT = new Date();
         // playMap.EditUserID = req.session.userID;
         // db.updatePlayMap(respond, req.session.userID, playMap);
         db.updatePlayMap(respond, playMap);
       }
-      console.log(req.body.playMap);
       // db.getPlayMap(gotPlayMap, req.session.userID, req.body.playMap._id);
       db.getPlayMap(gotPlayMap, req.body.playMap._id);
     // }
