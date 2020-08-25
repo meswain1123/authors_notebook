@@ -23,28 +23,84 @@ function open() {
     assert.equal(null, err);
     // AddMaps();
     // AddTokens();
+    // FixLightMasks();
+    // FixPlayMaps();
   });
 }
 function close() {
   client.close();
 }
 
+// function FixPlayMaps() {
+//   function gotPlayMaps(playMaps) {
+//     let pos = 0;
+//     function respond(response) {
+//       pos++;
+//       if (pos < playMaps.length) {
+//         const playMap2 = playMaps[pos];
+//         playMap2.darkMasks = [];
+//         playMap2.fogMasks = [];
+//         updatePlayMap(respond, playMap2);
+//       }
+//     }
+//     const playMap = playMaps[pos];
+//     playMap.darkMasks = [];
+//     playMap.fogMasks = [];
+//     updatePlayMap(respond, playMap);
+//   }
+
+//   getPlayMaps(gotPlayMaps, 0);
+// }
+
+// function FixLightMasks() {
+//   function gotPlayMaps(playMaps) {
+//     let pos = 0;
+//     function respond(response) {
+//       pos++;
+//       if (pos < maps.length) {
+//         const playMap2 = playMaps[pos];
+//         playMap2.lightMasks.forEach(m => {
+//           m.points.forEach(p => {
+//             p.maskID = m.id;
+//           });
+//         });
+//         updatePlayMap(respond, playMap2);
+//       }
+//     }
+//     const playMap = playMaps[pos];
+//     playMap.lightMasks.forEach(m => {
+//       m.points.forEach(p => {
+//         p.maskID = m.id;
+//       });
+//     });
+//     updatePlayMap(respond, playMap);
+//   }
+
+//   getPlayMaps(gotPlayMaps, 0);
+// }
+
 // function AddMaps() {
 //   const maps = [
-//     "BasementStudy",
-//     "CastleWall",
-//     "CaveLair",
-//     "Crossroads",
-//     "Farmstead",
-//     "ForestLair",
-//     "MonsterLair",
-//     "SnowVillage",
-//     "SwampLair",
-//     "Tavern",
-//     "UndergroundComplex",
-//     "UrbanLair",
-//     "WagonTrailandShrine",
-//     "WaterfallCavern"
+//     // "BasementStudy",
+//     // "CastleWall",
+//     // "CaveLair",
+//     // "Crossroads",
+//     // "Farmstead",
+//     // "ForestLair",
+//     // "MonsterLair",
+//     // "SnowVillage",
+//     // "SwampLair",
+//     // "Tavern",
+//     // "UndergroundComplex",
+//     // "UrbanLair",
+//     // "WagonTrailandShrine",
+//     // "WaterfallCavern"
+//     "AbandonedWarehouse",
+//     "DaggerAlley",
+//     "UnderDaggerAlley",
+//     "TrollSkullAlleyBasement",
+//     "TrollSkullAlleyHouse",
+//     "WeddingRing"
 //   ];
 //   let pos = 0;
 //   function respond(response) {
@@ -70,45 +126,50 @@ function close() {
 
 // function AddTokens() {
 //   const tokens = [
-//     "Bald",
-//     "Bard",
-//     "BlondeHair",
-//     "BlondeWoman",
-//     "BlueSkin",
-//     "BlueSkin2",
-//     "DarkSkin",
-//     "DarkSkinF",
-//     "Dragonborn",
-//     "DragonbornFighter",
-//     "DwarfMale",
-//     "ElvenFemale",
-//     "ElvenFighter",
-//     "Eyebrows",
-//     "Eyebrows2",
-//     "Fedora",
-//     "GnomeMale",
-//     "GoliathBarb",
-//     "GreyHair",
-//     "HalflingMale",
-//     "Hood",
-//     "Hood2",
-//     "Human",
-//     "HumanFemale",
-//     "HumanFemale2",
-//     "HumanFighterF",
-//     "HumanFighterM",
-//     "HumanMale",
-//     "HumanMale2",
-//     "IDK",
-//     "Knight",
-//     "OldWoman",
-//     "OldWoman2",
-//     "RedHair",
-//     "RedSkin",
-//     "Samurai",
-//     "Scarf",
-//     "TieflingFemale",
-//     "Wizard"
+//     // "Bald",
+//     // "Bard",
+//     // "BlondeHair",
+//     // "BlondeWoman",
+//     // "BlueSkin",
+//     // "BlueSkin2",
+//     // "DarkSkin",
+//     // "DarkSkinF",
+//     // "Dragonborn",
+//     // "DragonbornFighter",
+//     // "DwarfMale",
+//     // "ElvenFemale",
+//     // "ElvenFighter",
+//     // "Eyebrows",
+//     // "Eyebrows2",
+//     // "Fedora",
+//     // "GnomeMale",
+//     // "GoliathBarb",
+//     // "GreyHair",
+//     // "HalflingMale",
+//     // "Hood",
+//     // "Hood2",
+//     // "Human",
+//     // "HumanFemale",
+//     // "HumanFemale2",
+//     // "HumanFighterF",
+//     // "HumanFighterM",
+//     // "HumanMale",
+//     // "HumanMale2",
+//     // "IDK",
+//     // "Knight",
+//     // "OldWoman",
+//     // "OldWoman2",
+//     // "RedHair",
+//     // "RedSkin",
+//     // "Samurai",
+//     // "Scarf",
+//     // "TieflingFemale",
+//     // "Wizard"
+//     "Rat",
+//     "Wererat",
+//     "Werewolf",
+//     "RugOfSmothering",
+//     "PitTrapWSpikes",
 //   ];
 //   let pos = 0;
 //   function respond(response) {
@@ -383,15 +444,14 @@ function deletePlayMap(respond, playMapID) {
 function updatePlayMap(respond, playMap) {
   const db = client.db(dbName);
   playMap._id = ObjectID(playMap._id);
-  console.log(playMap);
   db.collection("playMap").updateOne(
     { 
       _id: playMap._id
     },
     { $set: playMap }
-  );
-  console.log
-  respond({ message: `PlayMap ${playMap.name} updated!` });
+  ).then(res => {
+    respond({ message: `PlayMap ${playMap.name} updated!` });
+  });
 }
 
 // FavoriteToken
