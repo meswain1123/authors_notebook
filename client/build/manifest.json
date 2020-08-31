@@ -13,6 +13,11 @@
       "sizes": "192x192"
     },
     {
+      "src": "notebook.png",
+      "type": "image/png",
+      "sizes": "50x50"
+    },
+    {
       "src": "logo512.png",
       "type": "image/png",
       "sizes": "512x512"

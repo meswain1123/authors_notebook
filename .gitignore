@@ -1,6 +1,7 @@
 node_modules/
 /client/node_modules
 /client_old/
+/client_new/
 .elasticbeanstalk/
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
