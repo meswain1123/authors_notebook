@@ -1264,7 +1264,7 @@ class APIClass {
       throw Error(body.message);
     }
     else {
-      const contentLength = +response.headers.get('Content-Length');
+      // const contentLength = +response.headers.get('Content-Length');
       // console.log(`Content Length: ${contentLength}`);
       let receivedLength = 0; // received that many bytes at the moment
       let chunks = []; // array of received binary chunks (comprises the body)
