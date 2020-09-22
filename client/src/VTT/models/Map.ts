@@ -32,6 +32,8 @@ import WaveEchoCave from "../assets/img/maps/phandelver/wave echo cave.jpg";
 import Waterdeep from "../assets/img/maps/waterdeep/Waterdeep.jpg";
 import WaterdeepWithWards from "../assets/img/maps/waterdeep/waterdeep_with_wards.jpg";
 
+import Restaurant from "../assets/img/maps/city_buildings/restaurant.jpg";
+
 interface IHash {
   [details: string] : string;
 } 
@@ -64,7 +66,9 @@ const MapFile: IHash = {
   SwordCoast: SwordCoast,
   WaveEchoCave: WaveEchoCave,
   Waterdeep: Waterdeep,
-  WaterdeepWithWards: WaterdeepWithWards
+  WaterdeepWithWards: WaterdeepWithWards,
+
+  Restaurant: Restaurant
 };
 
 export class Map {

@@ -4,8 +4,10 @@ import styled
 // , { css } 
 from "styled-components";
 import {
-  Button, Link
+  Button, 
+  // Link
 } from "@material-ui/core";
+import { NavLink } from "react-router-dom";
 import { Campaign, PlayMap, Token, Player } from "../models";
 // import ReactPanZoom from "../components/my-react-pan-zoom";
 import CreateCampaign from "../components/CreateCampaign";
@@ -227,7 +229,9 @@ class DMPage extends Component<
             <Button onClick={this.loadPlayMap}>Load PlayMap</Button>
             <Button onClick={this.savePlayMap} disabled={this.props.selectedPlayMap === null}>Save PlayMap</Button>
             <Button onClick={this.useSelectedPlayMap} disabled={this.props.selectedPlayMap === null}>Use PlayMap</Button>
-            <Link href={`http://authorsnotebook-dev.eba-t76pskkw.us-west-2.elasticbeanstalk.com/vtt/player/${this.props.selectedCampaign._id}`} style={{ color: "black", fontWeight: "bold" }}>Player Page</Link>
+            <NavLink to={`/vtt/player/${this.props.selectedCampaign._id}`} target="_blank" style={{ color: "black" }}>
+              Player Page
+            </NavLink>
           </div>
         }
       </div>

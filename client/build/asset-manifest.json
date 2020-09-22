@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/static/css/main.bcdafb33.chunk.css",
-    "main.js": "/static/js/main.7678ecc1.chunk.js",
-    "main.js.map": "/static/js/main.7678ecc1.chunk.js.map",
+    "main.js": "/static/js/main.9d5a595d.chunk.js",
+    "main.js.map": "/static/js/main.9d5a595d.chunk.js.map",
     "runtime-main.js": "/static/js/runtime-main.55a943c4.js",
     "runtime-main.js.map": "/static/js/runtime-main.55a943c4.js.map",
-    "static/js/2.144060c4.chunk.js": "/static/js/2.144060c4.chunk.js",
-    "static/js/2.144060c4.chunk.js.map": "/static/js/2.144060c4.chunk.js.map",
+    "static/js/2.88797a3d.chunk.js": "/static/js/2.88797a3d.chunk.js",
+    "static/js/2.88797a3d.chunk.js.map": "/static/js/2.88797a3d.chunk.js.map",
     "index.html": "/index.html",
-    "precache-manifest.87acbf389c24cbddad6a772d22a12f74.js": "/precache-manifest.87acbf389c24cbddad6a772d22a12f74.js",
+    "precache-manifest.de27ce1b038d9755de58d8710a200705.js": "/precache-manifest.de27ce1b038d9755de58d8710a200705.js",
     "service-worker.js": "/service-worker.js",
     "static/css/main.bcdafb33.chunk.css.map": "/static/css/main.bcdafb33.chunk.css.map",
-    "static/js/2.144060c4.chunk.js.LICENSE.txt": "/static/js/2.144060c4.chunk.js.LICENSE.txt",
+    "static/js/2.88797a3d.chunk.js.LICENSE.txt": "/static/js/2.88797a3d.chunk.js.LICENSE.txt",
     "static/media/Abandoned Warehouse.png": "/static/media/Abandoned Warehouse.ffbf8673.png",
     "static/media/Air Genasi Ranger F.png": "/static/media/Air Genasi Ranger F.4972c7bc.png",
     "static/media/Air Genasi Ranger M.png": "/static/media/Air Genasi Ranger M.3f727552.png",
@@ -123,6 +123,7 @@
     "static/media/idk.png": "/static/media/idk.8cdd4c94.png",
     "static/media/phandalin.jpg": "/static/media/phandalin.82f129f7.jpg",
     "static/media/redbrand hideout.jpg": "/static/media/redbrand hideout.325d5f0b.jpg",
+    "static/media/restaurant.jpg": "/static/media/restaurant.96632202.jpg",
     "static/media/ruins of thundertree.jpg": "/static/media/ruins of thundertree.141d208c.jpg",
     "static/media/App.css": "/static/media/sidebar-4.fc9cb053.jpg",
     "static/media/skeleton.png": "/static/media/skeleton.6a558d8e.png",
@@ -138,8 +139,8 @@
   },
   "entrypoints": [
     "static/js/runtime-main.55a943c4.js",
-    "static/js/2.144060c4.chunk.js",
+    "static/js/2.88797a3d.chunk.js",
     "static/css/main.bcdafb33.chunk.css",
-    "static/js/main.7678ecc1.chunk.js"
+    "static/js/main.9d5a595d.chunk.js"
   ]
 }

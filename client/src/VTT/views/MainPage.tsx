@@ -68,7 +68,7 @@ class MainPage extends Component<
   }
 
   createPlayToken = (t: any, tokens: Token[], players: Player[]): (PlayToken | null) => {
-    if (t === null) {
+    if (t === null || t === undefined) {
       return null;
     } else {
       let token: (Token | null) = null;

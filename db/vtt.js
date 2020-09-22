@@ -139,6 +139,7 @@ function FixTokens() {
 
 function FixPlayMaps() {
   function gotPlayMaps(playMaps) {
+    playMaps = playMaps.filter(p => p.mapID === "5f6a1d23405ce419ac2a78db");
     let pos = 0;
     function respond(response) {
       pos++;
@@ -155,7 +156,9 @@ function FixPlayMaps() {
     const playMap = playMaps[pos];
     playMap.movingToken = null;
     playMap.playTokens.forEach(t => {
-      t.ownerID = null;
+      t.size = t.size * 2;
+      t.x = t.x * 2;
+      t.y = t.y * 2;
     });
     // playMap.campaignID = "5f46ceeaa4e6a228c888965d";
     updatePlayMap(respond, playMap);
@@ -274,8 +277,8 @@ function FixPlayers() {
 function AddMaps() {
   const maps = [
     {
-      name: "WaterdeepWithWards",
-      category: "waterdeep"
+      name: "Restaurant",
+      category: "city_buildings"
     }
   ];
   let pos = 0;

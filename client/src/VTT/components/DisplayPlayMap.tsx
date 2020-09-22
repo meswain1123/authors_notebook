@@ -253,11 +253,13 @@ class DisplayPlayMap extends Component<
     this.api.getCampaign(this.props.selectedCampaign._id, playerID).then((c: any) => {
       const campaign = {...this.props.selectedCampaign};
       if (c.selectedPlayMapID !== this.props.selectedPlayMap._id) {
-        campaign.selectedPlayMapID = c.selectedPlayMapID;
-        this.props.updateCampaign(campaign);
-        const playMapFinder = this.props.playMaps.filter(m => m._id === campaign.selectedPlayMapID);
-        if (playMapFinder.length === 1) {
-          this.props.selectPlayMap(playMapFinder[0]);
+        if (this.props.mode !== "DM") {
+          campaign.selectedPlayMapID = c.selectedPlayMapID;
+          this.props.updateCampaign(campaign);
+          const playMapFinder = this.props.playMaps.filter(m => m._id === campaign.selectedPlayMapID);
+          if (playMapFinder.length === 1) {
+            this.props.selectPlayMap(playMapFinder[0]);
+          }
         }
         this.setState({ 
           lastRefresh: new Date() 
@@ -357,11 +359,17 @@ class DisplayPlayMap extends Component<
               let lightMasks: Mask[] = [];
               let darkMasks: Mask[] = [];
               let fogMasks: Mask[] = [];
+              let zoom = 0;
+              let dx = 0;
+              let dy = 0;
               if (this.props.mode === "DM") {
                 // The DM is the one who changes these, so we don't want to update these for him.
                 lightMasks = this.props.selectedPlayMap.lightMasks;
                 darkMasks = this.props.selectedPlayMap.darkMasks;
                 fogMasks = this.props.selectedPlayMap.fogMasks;
+                zoom = this.props.selectedPlayMap.zoom;
+                dx = this.props.selectedPlayMap.dx;
+                dy = this.props.selectedPlayMap.dy;
               } else {
                 m.lightMasks.forEach((l: any) => {
                   const points: MaskPoint[] = [];
@@ -384,8 +392,11 @@ class DisplayPlayMap extends Component<
                   });
                   fogMasks.push(new Mask(l.id, "fog", points));
                 });
+                zoom = m.zoom;
+                dx = m.dx;
+                dy = m.dy;
               }
-              const playMap = new PlayMap(m._id, m.campaignID, m.name, map, playTokens, m.movingToken, lightMasks, darkMasks, fogMasks, m.zoom, m.dx, m.dy);
+              const playMap = new PlayMap(m._id, m.campaignID, m.name, map, playTokens, m.movingToken, lightMasks, darkMasks, fogMasks, zoom, dx, dy);
               this.props.updatePlayMap(playMap);
               this.setState({ 
                 refreshing: false, 
@@ -1818,7 +1829,8 @@ class DisplayPlayMap extends Component<
   render() {
     if (!this.state.running) {
       this.setState({
-        running: true
+        running: true,
+        countdown: (this.props.mode === "DM" ? 10 : 2)
       }, () => {
         setTimeout(this.refresh, this.state.countdown * 1000);
       });
