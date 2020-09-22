@@ -227,7 +227,7 @@ class DMPage extends Component<
             <Button onClick={this.loadPlayMap}>Load PlayMap</Button>
             <Button onClick={this.savePlayMap} disabled={this.props.selectedPlayMap === null}>Save PlayMap</Button>
             <Button onClick={this.useSelectedPlayMap} disabled={this.props.selectedPlayMap === null}>Use PlayMap</Button>
-            <Link href={`http://localhost:3000/vtt/player/${this.props.selectedCampaign._id}`} style={{ color: "black", fontWeight: "bold" }}>Player Page</Link>
+            <Link href={`http://authorsnotebook-dev.eba-t76pskkw.us-west-2.elasticbeanstalk.com/vtt/player/${this.props.selectedCampaign._id}`} style={{ color: "black", fontWeight: "bold" }}>Player Page</Link>
           </div>
         }
       </div>
