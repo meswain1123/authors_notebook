@@ -12,6 +12,93 @@ router
   .get("/test", function(req, res) {
     res.send({ message: "Becky is hot!" });
   })
+  .get("/getPlayers", function(req, res) {
+    // if (req.session.userID == undefined) {
+    //   res.send({ error: "Session lost.  Please log in again." });
+    // } else {
+      function respond(players) {
+        res.send({players});
+      }
+      db.getPlayers(respond);
+    // }
+  })
+  .post("/createPlayer", function(req, res) {
+    // if (req.session.userID == undefined) {
+    //   res.send({ error: "Session lost.  Please log in again." });
+    // } else {
+      function respond(playerID) {
+        res.send({ playerID });
+      }
+      // const player = req.body.player;
+      // player.CreateDT = new Date();
+      // player.EditDT = new Date();
+      // player.EditUserID = req.session.userID;
+      // db.createPlayer(respond, req.session.userID, req.body.player);
+      db.createPlayer(respond, req.body.player);
+    // }
+  })
+  .delete("/deletePlayer", function(req, res) {
+    // if (req.session.userID == undefined) {
+    //   res.send({ error: "Session lost.  Please log in again." });
+    // } 
+    // else {
+      function respond(message) {
+        res.send(message);
+      }
+
+      // db.deletePlayer(respond, req.session.userID, req.body.playerID);
+      db.deletePlayer(respond, req.body.playerID);
+    // }
+  })
+  .patch("/updatePlayer", function(req, res) {
+    // if (req.session.userID == undefined) {
+    //   res.send({ error: "Session lost.  Please log in again." });
+    // } else {
+      function gotPlayer(oldPlayer) {
+        function respond(message) {
+          res.send(message);
+        }
+
+        const player = {...oldPlayer,...req.body.player};
+        // player.EditDT = new Date();
+        // player.EditUserID = req.session.userID;
+        // db.updatePlayer(respond, req.session.userID, player);
+        db.updatePlayer(respond, player);
+      }
+      // db.getPlayer(gotPlayer, req.session.userID, req.body.player._id);
+      db.getPlayer(gotPlayer, req.body.player._id);
+    // }
+  })
+  .post("/login", function(req, res) {
+    function gotPlayer(player) {
+      if (player) {
+        function respond(message) {
+          res.send(player);
+        }
+
+        player.lastPing = new Date().toString(); 
+        db.updatePlayer(respond, player);
+      } else {
+        res.send(null);
+      }
+    }
+    db.getPlayerByLogin(gotPlayer, req.body.email, req.body.password);
+  })
+  .post("/playerPing", function(req, res) {
+    function gotPlayer(player) {
+      if (player) {
+        function respond(message) {
+          res.send(player);
+        }
+
+        player.lastPing = new Date().toString(); 
+        db.updatePlayer(respond, player);
+      } else {
+        res.send(null);
+      }
+    }
+    db.getPlayer(gotPlayer, req.body.playerID);
+  })
   .get("/getMaps/:userID", function(req, res) {
     // if (req.session.userID == undefined) {
     //   res.send({ error: "Session lost.  Please log in again." });
@@ -136,10 +223,27 @@ router
       db.getCampaigns(respond, req.params.userID);
     // }
   })
-  .get("/getCampaign/:campaignID", function(req, res) {
+  .get("/getCampaign/:campaignID/:userID", function(req, res) {
     function gotCampaign(campaign) {
-      res.send(campaign);
+      if (req.params.userID === -1 || req.params.userID === "-1") {
+        res.send(campaign);
+      } else {
+        function gotPlayer(player) {
+          if (player) {
+            function respond(message) {
+              res.send(campaign);
+            }
+
+            player.lastPing = new Date().toString(); 
+            db.updatePlayer(respond, player);
+          } else {
+            res.send(campaign);
+          }
+        }
+        db.getPlayer(gotPlayer, req.params.userID);
+      }
     }
+    
     db.getCampaign(gotCampaign, req.params.campaignID);
   })
   .post("/createCampaign", function(req, res) {

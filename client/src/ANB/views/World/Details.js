@@ -189,7 +189,6 @@ class Page extends Component {
     if (this.props.fromLogin) {
       this.props.notFromLogin();
     }
-    console.log('load');
     if (this.state.templateMode || this.state.importMode) {
       this.setState({ 
         loading: true, templateMode: false, importMode: false 

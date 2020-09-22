@@ -12,11 +12,7 @@ import {
 // import {
 //   // notFromLogin
 // } from "../redux/actions/index";
-import { Campaign } from "../models/Campaign";
-import { PlayMap } from "../models/PlayMap";
-import { Map } from "../models/Map";
-// import { PlayToken } from "../models/PlayToken";
-// import { Token } from "../models/Token";
+import { Campaign, PlayMap, Map } from "../models";
 import API from "../smartAPI";
 
 // This lets the user select a Map and use it to create a new

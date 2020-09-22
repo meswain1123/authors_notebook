@@ -12,6 +12,11 @@ import {
   UPDATE_CAMPAIGN,
   // DELETE_CAMPAIGN,
   SELECT_CAMPAIGN,
+  SET_PLAYERS,
+  ADD_PLAYER,
+  UPDATE_PLAYER,
+  // DELETE_PLAYER,
+  SELECT_PLAYER,
   SET_PLAYMAPS,
   ADD_PLAYMAP,
   UPDATE_PLAYMAP,
@@ -28,9 +33,11 @@ const initialState = {
   maps: null,
   tokens: null,
   campaigns: null,
+  players: null,
   playMaps: null,
   favoriteTokens: null,
   selectedCampaign: null,
+  selectedPlayer: null,
   selectedPlayMap: null,
   isOn: true
 };
@@ -47,7 +54,11 @@ function rootReducer(state = initialState, action) {
     return Object.assign({}, state, {
       campaigns: action.payload
     });
-  }  else if (action.type === SET_PLAYMAPS) {
+  } else if (action.type === SET_PLAYERS) {
+    return Object.assign({}, state, {
+      players: action.payload
+    });
+  } else if (action.type === SET_PLAYMAPS) {
     return Object.assign({}, state, {
       playMaps: action.payload
     });
@@ -72,6 +83,12 @@ function rootReducer(state = initialState, action) {
     campaigns.push(action.payload);
     return Object.assign({}, state, {
       campaigns
+    });
+  } else if (action.type === ADD_PLAYER) {
+    const players = state.players;
+    players.push(action.payload);
+    return Object.assign({}, state, {
+      players
     });
   } else if (action.type === ADD_PLAYMAP) {
     const playMaps = state.playMaps;
@@ -117,6 +134,7 @@ function rootReducer(state = initialState, action) {
       const campaign = campaignFinder[0];
       campaign.name = action.payload.name;
       campaign.selectedPlayMapID = action.payload.selectedPlayMapID;
+      campaign.turnPlayerID = action.payload.turnPlayerID;
 
       if (selectedCampaign._id === campaign._id) {
         selectedCampaign = campaign;
@@ -136,6 +154,25 @@ function rootReducer(state = initialState, action) {
       campaigns,
       selectedCampaign,
       // selectedPlayMap
+    });
+  } else if (action.type === UPDATE_PLAYER) {
+    const players = state.players;
+    let selectedPlayer = state.selectedPlayer;
+    const playerFinder = players.filter(m => m._id === action.payload._id);
+    if (playerFinder.length === 1) {
+      const player = playerFinder[0];
+      player.email = action.payload.email;
+      player.username = action.payload.username;
+      player.password = action.payload.password;
+      player.campaign = action.payload.campaign;
+      
+      if (selectedPlayer._id === player._id) {
+        selectedPlayer = player;
+      }
+    }
+    return Object.assign({}, state, {
+      players,
+      selectedPlayer
     });
   } else if (action.type === UPDATE_PLAYMAP) {
     const playMaps = state.playMaps;
@@ -186,6 +223,10 @@ function rootReducer(state = initialState, action) {
     return Object.assign({}, state, {
       selectedCampaign,
       selectedPlayMap
+    });
+  } else if (action.type === SELECT_PLAYER) {
+    return Object.assign({}, state, {
+      selectedPlayer: action.payload
     });
   } else if (action.type === SELECT_PLAYMAP) {
     return Object.assign({}, state, {

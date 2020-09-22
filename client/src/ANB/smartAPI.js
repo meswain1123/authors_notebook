@@ -1117,7 +1117,6 @@ class APIClass {
     if (this.real) {
       const response = await this.fetchData(`/api/world/getViews/${worldID}/${userID}`);
       const tempViews = await this.processResponse(response);
-      console.log(tempViews);
       tempViews.forEach(v => {
         v.ViewDT = Date.parse(v.ViewDT);
       });
@@ -1297,8 +1296,6 @@ class APIClass {
         return retry();
       } else {
         let finalResult = JSON.parse(result);
-        // console.log(finalResult);
-        // return finalResult;
         if (sessionName !== null) {
           let expiresAt = new Date();
           if (noExpiry) 

@@ -67,7 +67,7 @@ export class PlayMap {
       name: this.name,
       mapID: this.map._id,
       playTokens: playTokens,
-      movingToken: this.movingToken ? this.movingToken.toDBObj() : null,
+      movingToken: null, // this.movingToken ? this.movingToken.toDBObj() : null,
       lightMasks: lightMasks,
       darkMasks: darkMasks,
       fogMasks: fogMasks,

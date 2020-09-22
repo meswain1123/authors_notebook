@@ -22,6 +22,8 @@ function open() {
     // console.log(err);
     assert.equal(null, err);
     // AddCampaign();
+    // AddPlayers();
+    // FixPlayers();
     // AddMaps();
     // AddTokens();
     // FixLightMasks();
@@ -144,7 +146,7 @@ function FixPlayMaps() {
         const playMap2 = playMaps[pos];
         playMap2.movingToken = null;
         playMap2.playTokens.forEach(t => {
-          t.moving = false;
+          t.ownerID = null;
         });
         // playMap2.campaignID = "5f46ceeaa4e6a228c888965d";
         updatePlayMap(respond, playMap2);
@@ -153,7 +155,7 @@ function FixPlayMaps() {
     const playMap = playMaps[pos];
     playMap.movingToken = null;
     playMap.playTokens.forEach(t => {
-      t.moving = false;
+      t.ownerID = null;
     });
     // playMap.campaignID = "5f46ceeaa4e6a228c888965d";
     updatePlayMap(respond, playMap);
@@ -198,6 +200,76 @@ function FixPlayMaps() {
 //   }
 //   createCampaign(respond, newCampaign);
 // }
+
+function AddPlayers() {
+  const players = [
+    {
+      email: "meswain@gmail.com",
+      username: "DM",
+      password: "password",
+      campaignID: "5f46ceeaa4e6a228c888965d"
+    },
+    // {
+    //   email: "madmardegin@hotmail.com",
+    //   username: "Breog",
+    //   password: "password",
+    //   campaignID: "5f46ceeaa4e6a228c888965d"
+    // },
+    // {
+    //   email: "sirmattmadsen@gmail.com",
+    //   username: "Kiroz",
+    //   password: "password",
+    //   campaignID: "5f46ceeaa4e6a228c888965d"
+    // },
+    // {
+    //   email: "roblcode@gmail.com",
+    //   username: "Ravt",
+    //   password: "password",
+    //   campaignID: "5f46ceeaa4e6a228c888965d"
+    // }
+  ];
+  let pos = 0;
+  function respond(response) {
+    pos++;
+    if (pos < players.length) {
+      const newPlayer2 = {
+        email: players[pos].email,
+        username: players[pos].username,
+        password: players[pos].password,
+        campaignID: players[pos].campaignID,
+        lastPing: new Date().toString()
+      }
+      createPlayer(respond, newPlayer2);
+    }
+  }
+  const newPlayer = {
+    email: players[pos].email,
+    username: players[pos].username,
+    password: players[pos].password,
+    campaignID: players[pos].campaignID,
+    lastPing: new Date().toString()
+  }
+  createPlayer(respond, newPlayer);
+}
+
+function FixPlayers() {
+  function gotPlayers(players) {
+    let pos = 0;
+    function respond(response) {
+      pos++;
+      if (pos < players.length) {
+        const player2 = players[pos];
+        player2.lastPing = new Date().toString();
+        updatePlayer(respond, player2);
+      }
+    }
+    const player = players[pos];
+    player.lastPing = new Date().toString();
+    updatePlayer(respond, player);
+  }
+
+  getPlayers(gotPlayers);
+}
 
 function AddMaps() {
   const maps = [
@@ -255,6 +327,110 @@ function AddTokens() {
     category: tokens[pos].category
   }
   createToken(respond, newToken);
+}
+
+// Player
+function getPlayers(respond) {
+  try {
+    const db = client.db(dbName);
+    db.collection("player")
+      // .find({ Owner: userID })
+      .find({ })
+      .toArray(function(err, docs) {
+        if (err) respond({ error: `Error: ${err}.` });
+        else if (docs == null || docs.length == 0) respond([]);
+        else respond(docs);
+      });
+  } catch (err) {
+    console.log(err);
+    respond(err);
+  }
+}
+
+function getPlayer(respond, playerID) {
+  try {
+    const db = client.db(dbName);
+    db.collection("player")
+      .find({ _id: ObjectID(playerID) })
+      .toArray(function(err, docs) {
+        if (err) respond({ error: `Error: ${err}.` });
+        else if (docs == null || docs.length == 0) respond(null);
+        else respond(docs[0]);
+      });
+  } catch (err) {
+    console.log(err);
+    respond(err);
+  }
+}
+
+function getPlayerByLogin(respond, email, password) {
+  try {
+    const db = client.db(dbName);
+    db.collection("player")
+      .find({ email, password })
+      .toArray(function(err, docs) {
+        if (err) respond({ error: `Error: ${err}.` });
+        else if (docs == null || docs.length == 0) respond(null);
+        else respond(docs[0]);
+      });
+  } catch (err) {
+    console.log(err);
+    respond(err);
+  }
+}
+
+function createPlayer(respond, player) {
+  const db = client.db(dbName);
+
+  db.collection("player").insertOne(
+    player
+  ).then(res => {
+    respond(res.insertedId);
+  });
+}
+
+function deletePlayer(respond, playerID) {
+  const db = client.db(dbName);
+
+  // db.collection("player")
+  //   .find({ _id: ObjectID(playerID) })
+  //   .toArray(function(err, docs) {
+  //     if (err) {
+  //       throw err;
+  //     }
+  //     if (docs != null && docs.length > 0) {
+        // db.collection("attribute").deleteMany({
+        //   playerID: playerID
+        // });
+
+        // db.collection("thing").deleteMany({
+        //   playerID: playerID
+        // });
+
+        // db.collection("type").deleteMany({
+        //   playerID: playerID
+        // });
+
+        db.collection("player").deleteOne({
+          _id: ObjectID(playerID)
+        });
+        respond({ message: `Player ${playerID} deleted!` });
+    //   } else {
+    //     respond({ error: `You don't own that player!` });
+    //   }
+    // });
+}
+
+function updatePlayer(respond, player) {
+  const db = client.db(dbName);
+  player._id = ObjectID(player._id);
+  db.collection("player").updateOne(
+    { 
+      _id: player._id
+    },
+    { $set: player }
+  );
+  respond({ message: `Player ${player.name} updated!` });
 }
 
 // Map
@@ -702,6 +878,12 @@ function updateFavoriteToken(respond, favoriteToken) {
 module.exports = {
   open,
   close,
+  getPlayers,
+  getPlayer,
+  getPlayerByLogin,
+  createPlayer,
+  deletePlayer,
+  updatePlayer,
   getMaps,
   getMap,
   createMap,

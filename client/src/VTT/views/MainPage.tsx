@@ -6,15 +6,15 @@ import {
   Switch } from "react-router-dom";
   // import { connect } from "react-redux";
 import HomePage from "./Home";
-import DMPage from "./DM";
-import PlayerPage from "./Player";
-import { Campaign } from "../models/Campaign";
-import { Map } from "../models/Map";
-import { Token } from "../models/Token";
-import { PlayMap } from "../models/PlayMap";
-import { PlayToken } from "../models/PlayToken";
-import { Mask, MaskPoint } from "../models/Mask";
-import { FavoriteToken } from "../models/FavoriteToken";
+import DMPage from "./DMPage";
+import PlayerPage from "./PlayerPage";
+import { 
+  Campaign, Map, Token, 
+  PlayMap, PlayToken, 
+  Mask, MaskPoint, 
+  FavoriteToken,
+  Player 
+} from "../models";
 import API from "../smartAPI";
 // import Grid from "@material-ui/core/Grid";
 // import {
@@ -39,6 +39,7 @@ const mapDispatch = {
   setPlayMaps: (playMaps: PlayMap[]) => ({ type: 'SET_PLAYMAPS', payload: playMaps }),
   setTokens: (tokens: Token[]) => ({ type: 'SET_TOKENS', payload: tokens }),
   setFavoriteTokens: (favoriteTokens: FavoriteToken[]) => ({ type: 'SET_FAVORITETOKENS', payload: favoriteTokens }),
+  setPlayers: (players: Player[]) => ({ type: 'SET_PLAYERS', payload: players }),
 }
 
 const connector = connect(mapState, mapDispatch)
@@ -66,20 +67,22 @@ class MainPage extends Component<
   componentDidMount() {
   }
 
-  createPlayToken = (t: any, tokens: Token[]): (PlayToken | null) => {
+  createPlayToken = (t: any, tokens: Token[], players: Player[]): (PlayToken | null) => {
     if (t === null) {
       return null;
-    } else if (t.tokenID === null) {
-      return new PlayToken(t.id, t.name, null, t.x, t.y, t.size, t.stealth, t.moving);
     } else {
+      let token: (Token | null) = null;
       const tokenFinder: Token[] = tokens.filter(t2 => t2._id === t.tokenID);
-      if (tokenFinder.length === 1)
-      {
-        const token: Token = tokenFinder[0];
-        return new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.moving);
+      if (tokenFinder.length === 1) {
+        token = tokenFinder[0];
       }
+      const playerFinder: Player[] = players.filter(p => p._id === t.ownerID);
+      let owner: (Player | null) = null;
+      if (playerFinder.length === 1) {
+        owner = playerFinder[0];
+      }
+      return new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.moving, owner);
     }
-    return null;
   }
 
   render() {
@@ -88,9 +91,19 @@ class MainPage extends Component<
         if (res !== undefined && res.error === undefined) {
           const campaigns: Campaign[] = [];
           res.campaigns.forEach((c: any) => {
-            campaigns.push(new Campaign(c._id, c.name, c.selectedPlayMapID));
+            campaigns.push(new Campaign(c._id, c.name, c.selectedPlayMapID, c.turnPlayerID));
           });
           this.props.setCampaigns(campaigns);
+          const players: Player[] = [];
+          res.players.forEach((p: any) => {
+            const campaignFinder = campaigns.filter(c => c._id === p.campaignID);
+            let campaign: (Campaign | null) = null;
+            if (campaignFinder.length === 1) {
+              campaign = campaignFinder[0];
+            }
+            players.push(new Player(p._id, p.email, p.username, p.password, campaign, new Date(Date.parse(p.lastPing))));
+          });
+          this.props.setPlayers(players);
           const maps: Map[] = [];
           res.maps.forEach((m: any) => {
             maps.push(new Map(m._id, m.name, m.category, m.fileName, m.gridWidth, m.gridHeight));
@@ -119,7 +132,7 @@ class MainPage extends Component<
               const map: Map = mapFinder[0];
               const playTokens: PlayToken[] = [];
               m.playTokens.forEach((t: any) => {
-                const playToken: (PlayToken | null) = this.createPlayToken(t, tokens);
+                const playToken: (PlayToken | null) = this.createPlayToken(t, tokens, players);
                 if (playToken) {
                   playTokens.push(playToken);
                 }
@@ -134,7 +147,7 @@ class MainPage extends Component<
                 //   }
                 // }
               });
-              const movingToken: (PlayToken | null) = this.createPlayToken(m.movingToken, tokens);
+              const movingToken: (PlayToken | null) = this.createPlayToken(m.movingToken, tokens, players);
               const lightMasks: Mask[] = [];
               m.lightMasks.forEach((l: any) => {
                 const points: MaskPoint[] = [];

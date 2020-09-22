@@ -477,27 +477,6 @@ class Control extends Component {
             DefaultValue,
             DefaultListValues
           });
-        // } else if (attribute.AttributeType === "List") {
-        //   theDefault = theDefault[0];
-        //   console.log(theDefault);
-        //   console.log(thingMap);
-        //   if (attribute.ListType === "Type") {
-        //     d.DefaultListValues.forEach(v => {
-        //       console.log(v);
-        //       const id = thingMap[v]._id;
-        //       console.log(id);
-        //       if (!theDefault.DefaultListValues.includes(id)) {
-        //         theDefault.DefaultListValues.push(id);
-        //       }
-        //     });
-        //   } else {
-        //     d.DefaultListValues.forEach(v => {
-        //       if (!theDefault.DefaultListValues.includes(v)) {
-        //         theDefault.DefaultListValues.push(v);
-        //       }
-        //     });
-        //   }
-        // }
       });
       this.api.updateType(type).then(res => {
         if (res.error === undefined) {

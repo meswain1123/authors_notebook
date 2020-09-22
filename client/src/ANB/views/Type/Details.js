@@ -168,7 +168,6 @@ class Page extends Component {
             let type = res.types.filter((t) => t._id === id);
             if (type.length > 0) {
               type = type[0];
-              console.log(type);
 
               if (this.props.user !== null && this.props.user !== undefined) {
                 this.api.upsertView({ 

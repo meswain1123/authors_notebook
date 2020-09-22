@@ -5,13 +5,10 @@ import { connect, ConnectedProps } from 'react-redux'
 // import {
 //   // notFromLogin
 // } from "../redux/actions/index";
-import { PlayMap } from "../models/PlayMap";
-import { Map } from "../models/Map";
-// import { PlayToken } from "../models/PlayToken";
-// import { Token } from "../models/Token";
-import {
-  Button
-} from "@material-ui/core";
+import { PlayMap, Map } from "../models";
+// import {
+//   Button
+// } from "@material-ui/core";
 
 // This control will be used to add or edit PlayTokens.
 // It will show all the PlayTokens which are part of the PlayMap

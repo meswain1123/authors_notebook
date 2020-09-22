@@ -7,6 +7,7 @@ import {
 import { connect } from "react-redux";
 import MainPage from "./views/MainPage";
 import Grid from "@material-ui/core/Grid";
+import { Helmet } from 'react-helmet';
 // import Box from "@material-ui/core/Box";
 import { 
   // setWidth,
@@ -14,6 +15,7 @@ import {
 } from "./redux/actions/index";
 // import API from "./smartAPI";
 import "./assets/css/quill.snow.css";
+// import SkullIcon from "./assets/img/skullicon.ico";
 
 const mapStateToProps = (state: any) => {
   return {
@@ -78,12 +80,25 @@ class AppLayout extends Component<IProps, IState> {
     // }
   }
 
+  // getFaviconEl() {
+  //   return document.getElementById("favicon");
+  // }
+
   render() {
+    // const favicon = this.getFaviconEl(); // Accessing favicon element
+    // if (favicon) {
+    //   const favicon2 = favicon as HTMLLinkElement;
+    //   favicon2.href = "/skullicon.ico"; // SkullIcon;
+    // }
     // if (this.props.api === null) {
     //   this.props.setAPI(this.api);
     // }
     return (
       <Router>
+        <Helmet>
+          <link rel="icon" id="favicon" href="/skullicon.ico" />
+          <title>Dead Simple VTT</title>
+        </Helmet>
         <Grid container>
           <Grid item xs={12}
             // style={{ 

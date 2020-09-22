@@ -162,7 +162,6 @@ class Page extends Component {
           }
           else {
             thing = thing[0];
-            console.log(thing);
             if (this.props.user !== null && this.props.user !== undefined) {
               this.api.upsertView({ 
                 userID: this.props.user._id, 

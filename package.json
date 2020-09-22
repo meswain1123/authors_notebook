@@ -13,20 +13,20 @@
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "dot-prop": "^5.2.0",
+    "dot-prop": "^5.3.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "express-session": "^1.17.0",
+    "express-session": "^1.17.1",
     "lodash": "^4.17.20",
-    "mongodb": "^3.5.5",
-    "nodemailer": "^6.4.6",
-    "uuid": "^7.0.2"
+    "mongodb": "^3.6.2",
+    "nodemailer": "^6.4.11",
+    "uuid": "^7.0.3"
   },
   "devDependencies": {
-    "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.8.7",
-    "@babel/node": "^7.8.7",
-    "@babel/preset-env": "^7.8.7",
-    "nodemon": "^2.0.2"
+    "@babel/cli": "^7.11.6",
+    "@babel/core": "^7.11.6",
+    "@babel/node": "^7.10.5",
+    "@babel/preset-env": "^7.11.5",
+    "nodemon": "^2.0.4"
   }
 }

@@ -8,7 +8,6 @@ import ReactPlayer from 'react-player'; // npm install react-player --save
 // }
 
 export default function MediaPlayer(props) {
-  // console.log(props);
   return (
     <ReactPlayer
       // className='react-player fixed-bottom'

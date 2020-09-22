@@ -9,9 +9,7 @@ import {
   Button, Grid
 } from "@material-ui/core";
 
-import { PlayMap } from "../models/PlayMap";
-import { Campaign } from "../models/Campaign";
-// import { Map } from "../models/Map";
+import { PlayMap, Campaign } from "../models";
 
 // import API from "../smartAPI";
 

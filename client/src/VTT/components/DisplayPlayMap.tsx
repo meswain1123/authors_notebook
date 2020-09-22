@@ -14,13 +14,14 @@ import {
 } from "@material-ui/core";
 import styled, { css } from "styled-components";
 import ReactPanZoom from "./my-react-pan-zoom";
-import { Campaign } from "../models/Campaign";
-import { PlayMap } from "../models/PlayMap";
-import { Map } from "../models/Map";
-import { PlayToken } from "../models/PlayToken";
-import { Mask, MaskPoint } from "../models/Mask";
-import { FavoriteToken } from "../models/FavoriteToken";
-import { Token } from "../models/Token";
+import { 
+  Campaign, 
+  PlayMap, Map, 
+  PlayToken, 
+  Mask, MaskPoint, 
+  FavoriteToken, Token,
+  Player
+} from "../models";
 import FogOfWar from "../assets/img/Fog.jpg";
 import API from "../smartAPI";
 
@@ -58,6 +59,26 @@ const ControlsContainer = styled.div`
   }
 `;
 
+const PlayersContainer = styled.div`
+  position: fixed;
+  background: lightgray;
+  height: 100%;
+  left: 0;
+  z-index: 2;
+  cursor: pointer;
+  user-select: none;
+
+  > div {
+    padding: 15px;
+    &:hover {
+      background: darkgray;
+    }
+    &:active {
+      box-shadow: 1px 1px 1px inset;
+    }
+  }
+`;
+
 const Heading = styled.div`
   background: dimgrey;
   color: white;
@@ -74,6 +95,9 @@ const Icons = styled.strong`
 
 interface AppState {
   selectedCampaign: Campaign;
+  campaigns: Campaign[];
+  selectedPlayer: Player | null;
+  players: Player[];
   playMaps: PlayMap[];
   selectedPlayMap: PlayMap;
   tokens: Token[];
@@ -87,6 +111,9 @@ interface RootState {
 
 const mapState = (state: RootState) => ({
   selectedCampaign: state.app.selectedCampaign,
+  campaigns: state.app.campaigns,
+  selectedPlayer: state.app.selectedPlayer,
+  players: state.app.players,
   playMaps: state.app.playMaps,
   selectedPlayMap: state.app.selectedPlayMap,
   tokens: state.app.tokens,
@@ -101,7 +128,8 @@ const mapDispatch = {
   updateFavoriteToken: (favoriteToken: FavoriteToken) => ({ type: 'UPDATE_FAVORITETOKEN', payload: favoriteToken }),
   updateCampaign: (campaign: Campaign) => ({ type: 'UPDATE_CAMPAIGN', payload: campaign }),
   selectPlayMap: (playMap: PlayMap) => ({ type: 'SELECT_PLAYMAP', payload: playMap }),
-  updatePlayMap: (playMap: PlayMap) => ({ type: 'UPDATE_PLAYMAP', payload: playMap })
+  updatePlayMap: (playMap: PlayMap) => ({ type: 'UPDATE_PLAYMAP', payload: playMap }),
+  setPlayers: (players: Player[]) => ({ type: 'SET_PLAYERS', payload: players })
 }
 
 const connector = connect(mapState, mapDispatch)
@@ -137,6 +165,7 @@ export interface IDisplayPlayMapStateType {
   selectedMask: Mask | null;
   countdown: number;
   refreshing: boolean;
+  running: boolean;
 }
 // export interface IDisplayPlayMapProps {
 //   maps: Map[];
@@ -169,20 +198,10 @@ class DisplayPlayMap extends Component<
       selectedFavoriteToken: null,
       selectedMask: null,
       countdown: 2,
-      refreshing: false
+      refreshing: false,
+      running: false
     };
     this.api = API.getInstance();
-    // TODO: I need to put in a method that contacts the API and 
-    // gets the latest version of this.props.selectedPlayMap.
-    // Once it gets it, it updates it, and then restarts the timer.
-    // I'll have the timer be displayed, and it only triggers when
-    // it hits zero.
-    // Other than that I just need to test it.
-    // And of course get some more maps to put in, and set up some 
-    // PlayMaps.
-    if (props.mode !== "DM") {
-      setTimeout(this.countdown, 1000);
-    }
   }
 
   api: any;
@@ -197,22 +216,43 @@ class DisplayPlayMap extends Component<
     document.removeEventListener("keyup", this.onKeyUp.bind(this));
   }
 
-  countdown = () => {
-    // console.log(`countdown: ${this.state.countdown}`);
-    if (this.state.countdown > 0) {
-      this.setState({ countdown: this.state.countdown - 1 }, () => {
-        setTimeout(this.countdown, 1000);
+  // countdown = () => {
+  //   console.log(`countdown: ${this.state.countdown}`);
+  //   if (this.state.countdown > 0) {
+  //     this.setState({ countdown: this.state.countdown - 1 }, () => {
+  //       setTimeout(this.countdown, 1000);
+  //     });
+  //   } else {
+  //     this.setState({ countdown: 0, refreshing: true }, this.refresh);
+  //   }
+  // }
+
+  refresh = () => {
+    if (this.props.mode === "DM") {
+      this.api.getPlayers(true).then((res: any) => {
+        const campaigns = this.props.campaigns;
+        const players: Player[] = [];
+        res.players.forEach((p: any) => {
+          const campaignFinder = campaigns.filter(c => c._id === p.campaignID);
+          let campaign: (Campaign | null) = null;
+          if (campaignFinder.length === 1) {
+            campaign = campaignFinder[0];
+          }
+          players.push(new Player(p._id, p.email, p.username, p.password, campaign, new Date(Date.parse(p.lastPing))));
+        });
+        this.props.setPlayers(players);
+        this.refreshCampaign();
       });
     } else {
-      this.setState({ countdown: 0, refreshing: true }, this.refresh);
+      this.refreshCampaign();
     }
   }
 
-  refresh = () => {
-    // console.log('refreshing');
-    this.api.getCampaign(this.props.selectedCampaign._id).then((c: any) => {
+  refreshCampaign = () => {
+    const playerID = (this.props.selectedPlayer ? this.props.selectedPlayer._id : -1);
+    this.api.getCampaign(this.props.selectedCampaign._id, playerID).then((c: any) => {
+      const campaign = {...this.props.selectedCampaign};
       if (c.selectedPlayMapID !== this.props.selectedPlayMap._id) {
-        const campaign = this.props.selectedCampaign;
         campaign.selectedPlayMapID = c.selectedPlayMapID;
         this.props.updateCampaign(campaign);
         const playMapFinder = this.props.playMaps.filter(m => m._id === campaign.selectedPlayMapID);
@@ -222,58 +262,157 @@ class DisplayPlayMap extends Component<
         this.setState({ 
           lastRefresh: new Date() 
         }, () => {
-          setTimeout(this.refresh, 1000);
+          setTimeout(this.refresh, this.state.countdown * 1000);
         });
       } else {
-        this.api.getPlayMap(this.props.selectedPlayMap._id).then((m: any) => {
-          const mapFinder: Map[] = this.props.maps.filter(m2 => m2._id === m.mapID);
-          if (mapFinder.length === 1)
-          {
-            const map: Map = mapFinder[0];
-            const playTokens: PlayToken[] = [];
-            m.playTokens.forEach((t: any) => {
-              const tokenFinder: Token[] = this.props.tokens.filter(t2 => t2._id === t.tokenID);
-              if (tokenFinder.length === 1)
-              {
-                const token: Token = tokenFinder[0];
-                playTokens.push(new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.moving));
+        let toggleIt = false;
+        if (c.turnPlayerID !== campaign.turnPlayerID) {
+          campaign.turnPlayerID = c.turnPlayerID;
+          this.props.updateCampaign(campaign);
+        }
+        if (this.props.selectedPlayer !== null && 
+          ((campaign.turnPlayerID === this.props.selectedPlayer._id && !this.state.singleSelect) ||
+          (campaign.turnPlayerID !== this.props.selectedPlayer._id && this.state.singleSelect))
+          ) {
+          toggleIt = true;
+        }
+        // If it's the DM then only need to update things that belong to the player whose turn it is.  If no one then can skip it.
+        if (this.props.mode !== "DM" || campaign.turnPlayerID) {
+          this.api.getPlayMap(this.props.selectedPlayMap._id).then((m: any) => {
+            const mapFinder: Map[] = this.props.maps.filter(m2 => m2._id === m.mapID);
+            if (mapFinder.length === 1)
+            {
+              const map: Map = mapFinder[0];
+              
+              let playTokens: PlayToken[] = [];
+              if (this.props.mode === "DM") {
+                playTokens = this.props.selectedPlayMap.tokens;
+                m.playTokens.filter((t: any) => t.ownerID === campaign.turnPlayerID).forEach((t: any) => {
+                  const tokenFinder = playTokens.filter(t2 => t.id === t2.id);
+                  if (tokenFinder.length === 1) {
+                    const playToken = tokenFinder[0];
+                    playToken.x = t.x;
+                    playToken.y = t.y;
+                  }
+                }); 
+              } else if (this.props.selectedPlayer && 
+                this.props.selectedPlayer._id === campaign.turnPlayerID) {
+                playTokens = this.props.selectedPlayMap.tokens;
+                m.playTokens.forEach((t: any) => {
+                  const playTokenFinder = playTokens.filter(t2 => t.id === t2.id);
+                  if (playTokenFinder.length === 1) {
+                    const playToken = playTokenFinder[0];
+                    const playerFinder: Player[] = this.props.players.filter(p => p._id === t.ownerID);
+                    let owner: (Player | null) = null;
+                    if (playerFinder.length === 1) {
+                      owner = playerFinder[0];
+                    }
+                    const tokenFinder: Token[] = this.props.tokens.filter(t2 => t2._id === t.tokenID);
+                    let token: (Token | null) = null;
+                    if (tokenFinder.length === 1) {
+                      token = tokenFinder[0];
+                    }
+                    playToken.name = t.name;
+                    playToken.token = token;
+                    playToken.size = t.size;
+                    playToken.stealth = t.stealth;
+                    playToken.owner = owner;
+                    if (owner === null || (this.props.selectedPlayer && owner._id !== this.props.selectedPlayer._id)) {
+                      // It's not theirs, so they don't have control of x and y
+                      playToken.x = t.x;
+                      playToken.y = t.y;
+                    } else {
+                      // It's theirs, so they have control of x and y
+                    }
+                  } else if (playTokenFinder.length === 0) {
+                    // It's a new token, so do the normal stuff
+                    const tokenFinder: Token[] = this.props.tokens.filter(t2 => t2._id === t.tokenID);
+                    let token: (Token | null) = null;
+                    if (tokenFinder.length === 1) {
+                      token = tokenFinder[0];
+                    }
+                    const playerFinder: Player[] = this.props.players.filter(p => p._id === t.ownerID);
+                    let owner: (Player | null) = null;
+                    if (playerFinder.length === 1) {
+                      owner = playerFinder[0];
+                    }
+                    playTokens.push(new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.moving, owner));
+                  }
+                }); 
+              } else {
+                m.playTokens.forEach((t: any) => {
+                  const tokenFinder: Token[] = this.props.tokens.filter(t2 => t2._id === t.tokenID);
+                  let token: (Token | null) = null;
+                  if (tokenFinder.length === 1) {
+                    token = tokenFinder[0];
+                  }
+                  const playerFinder: Player[] = this.props.players.filter(p => p._id === t.ownerID);
+                  let owner: (Player | null) = null;
+                  if (playerFinder.length === 1) {
+                    owner = playerFinder[0];
+                  }
+                  playTokens.push(new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.moving, owner));
+                });  
               }
-            });
-            const lightMasks: Mask[] = [];
-            m.lightMasks.forEach((l: any) => {
-              const points: MaskPoint[] = [];
-              l.points.forEach((p: any) => {
-                points.push(new MaskPoint(p.id, l.id, "light", p.x, p.y));
+              let lightMasks: Mask[] = [];
+              let darkMasks: Mask[] = [];
+              let fogMasks: Mask[] = [];
+              if (this.props.mode === "DM") {
+                // The DM is the one who changes these, so we don't want to update these for him.
+                lightMasks = this.props.selectedPlayMap.lightMasks;
+                darkMasks = this.props.selectedPlayMap.darkMasks;
+                fogMasks = this.props.selectedPlayMap.fogMasks;
+              } else {
+                m.lightMasks.forEach((l: any) => {
+                  const points: MaskPoint[] = [];
+                  l.points.forEach((p: any) => {
+                    points.push(new MaskPoint(p.id, l.id, "light", p.x, p.y));
+                  });
+                  lightMasks.push(new Mask(l.id, "light", points));
+                });
+                m.darkMasks.forEach((l: any) => {
+                  const points: MaskPoint[] = [];
+                  l.points.forEach((p: any) => {
+                    points.push(new MaskPoint(p.id, l.id, "dark", p.x, p.y));
+                  });
+                  darkMasks.push(new Mask(l.id, "dark", points));
+                });
+                m.fogMasks.forEach((l: any) => {
+                  const points: MaskPoint[] = [];
+                  l.points.forEach((p: any) => {
+                    points.push(new MaskPoint(p.id, l.id, "fog", p.x, p.y));
+                  });
+                  fogMasks.push(new Mask(l.id, "fog", points));
+                });
+              }
+              const playMap = new PlayMap(m._id, m.campaignID, m.name, map, playTokens, m.movingToken, lightMasks, darkMasks, fogMasks, m.zoom, m.dx, m.dy);
+              this.props.updatePlayMap(playMap);
+              this.setState({ 
+                refreshing: false, 
+                // countdown: 4, 
+                lastRefresh: new Date() 
+              }, () => {
+                if (toggleIt) {
+                  this.toggleSingleSelect();
+                }
+                setTimeout(this.refresh, this.state.countdown * 1000);
               });
-              lightMasks.push(new Mask(l.id, "light", points));
-            });
-            const darkMasks: Mask[] = [];
-            m.darkMasks.forEach((l: any) => {
-              const points: MaskPoint[] = [];
-              l.points.forEach((p: any) => {
-                points.push(new MaskPoint(p.id, l.id, "dark", p.x, p.y));
-              });
-              darkMasks.push(new Mask(l.id, "dark", points));
-            });
-            const fogMasks: Mask[] = [];
-            m.fogMasks.forEach((l: any) => {
-              const points: MaskPoint[] = [];
-              l.points.forEach((p: any) => {
-                points.push(new MaskPoint(p.id, l.id, "fog", p.x, p.y));
-              });
-              fogMasks.push(new Mask(l.id, "fog", points));
-            });
-            const playMap = new PlayMap(m._id, m.campaignID, m.name, map, playTokens, m.movingToken, lightMasks, darkMasks, fogMasks, m.zoom, m.dx, m.dy);
-            this.props.updatePlayMap(playMap);
-            this.setState({ 
-              refreshing: false, 
-              countdown: 4, 
-              lastRefresh: new Date() 
-            }, () => {
-              setTimeout(this.countdown, 1000);
-            });
-          }
-        });
+            } else {
+              console.log("Something went wrong");
+            }
+          });
+        } else {
+          this.setState({ 
+            refreshing: false, 
+            // countdown: 4, 
+            lastRefresh: new Date() 
+          }, () => {
+            if (toggleIt) {
+              this.toggleSingleSelect();
+            }
+            setTimeout(this.refresh, this.state.countdown * 1000);
+          });
+        }
       }
     });
   }
@@ -353,7 +492,8 @@ class DisplayPlayMap extends Component<
             0,
             this.state.tokenSize, 
             false,
-            false)
+            false,
+            null)
           );
         }
         // this.api.updatePlayMap(newPlayMap.toDBObj()).then(() => {
@@ -372,7 +512,8 @@ class DisplayPlayMap extends Component<
           0,
           this.state.tokenSize, 
           false,
-          false)
+          false,
+          null)
         );
         // this.api.updatePlayMap(newPlayMap.toDBObj()).then(() => {
           this.props.updatePlayMap(newPlayMap);
@@ -398,7 +539,7 @@ class DisplayPlayMap extends Component<
     }
   }
 
-  adjustPlayToken = (t: PlayToken, name: string, size: number, x: number, y: number, stealth: boolean) => {
+  adjustPlayToken = (t: PlayToken, name: string, size: number, x: number, y: number, stealth: boolean, owner: (Player | null)) => {
     if (this.props.selectedPlayMap) {
       const newPlayMap = this.props.selectedPlayMap;
       const theToken: PlayToken = t;
@@ -410,12 +551,13 @@ class DisplayPlayMap extends Component<
         selectedToken.x = x;
         selectedToken.y = y;
         selectedToken.stealth = stealth;
+        selectedToken.owner = owner;
 
         // this.api.updatePlayMap(newPlayMap.toDBObj()).then(() => {
         this.props.updatePlayMap(newPlayMap);
         this.setState({
           lastRefresh: new Date(),
-          hovered: selectedToken
+          // hovered: selectedToken
         });
         // });
       }
@@ -539,10 +681,9 @@ class DisplayPlayMap extends Component<
 
   onClick = (x: number, y: number) => {
     // I need to make this respond to some types of held keys plus clicks
-    if (this.props.selectedPlayMap && this.props.mode === "DM") {
+    if (this.props.selectedPlayMap) {
       const newPlayMap: PlayMap = this.props.selectedPlayMap;
       if (this.state.singleSelect) {
-        // console.log(this.state.hovered);
         if (this.state.hovered === null) {
           if (this.state.selected.length === 1) {
             // Moving
@@ -558,13 +699,21 @@ class DisplayPlayMap extends Component<
                   selectedToken.x = Math.round(((x - (window.innerWidth / 2) - newPlayMap.dx + 25) / newPlayMap.zoom)/50);
                   selectedToken.y = Math.round(((y - (window.innerHeight / 2) - newPlayMap.dy - 37.5) / newPlayMap.zoom)/50);
 
-                  // this.api.updatePlayMap(newPlayMap.toDBObj()).then(() => {
+                  if (this.props.mode === "DM") {
                     this.props.updatePlayMap(newPlayMap);
                     this.setState({
                       lastRefresh: new Date(),
                       hovered: selectedToken
                     });
-                  // });
+                  } else {
+                    this.api.updatePlayMap(newPlayMap.toDBObj()).then((res: any) => {
+                      this.props.updatePlayMap(newPlayMap);
+                      this.setState({
+                        lastRefresh: new Date(),
+                        hovered: selectedToken
+                      });
+                    });
+                  }
                 }
               }
             });
@@ -581,7 +730,7 @@ class DisplayPlayMap extends Component<
           if (selectedTokens.length === 1) {
             const selectedToken = selectedTokens[0];
             selectedToken.moving = true;
-            newPlayMap.movingToken = new PlayToken(selectedToken.id, selectedToken.name, selectedToken.token, selectedToken.x, selectedToken.y, selectedToken.size, selectedToken.stealth, true);
+            newPlayMap.movingToken = new PlayToken(selectedToken.id, selectedToken.name, selectedToken.token, selectedToken.x, selectedToken.y, selectedToken.size, selectedToken.stealth, true, selectedToken.owner);
             this.props.updatePlayMap(newPlayMap);
           }
               
@@ -692,13 +841,13 @@ class DisplayPlayMap extends Component<
   };
 
   onMouseMove = (x: number, y: number) => {
-    // console.log(`(${x}, ${y})`);
     // I need to make this respond to some types of held keys plus clicks
-    if (this.props.selectedPlayMap && this.props.mode === "DM") {
+    if (this.props.selectedPlayMap) {
       const newPlayMap: PlayMap = this.props.selectedPlayMap;
       if (this.state.singleSelect && 
         this.state.hovered === null && 
         newPlayMap.movingToken) {
+        // console.log(`(${x}, ${y})`);
         // Moving
         // Move the token to the new location.
         const movingToken = newPlayMap.movingToken;
@@ -836,7 +985,7 @@ class DisplayPlayMap extends Component<
                     autoComplete="Off"
                     value={t.name}
                     onChange={e => {
-                      this.adjustPlayToken(t, e.target.value, t.size, t.x, t.y, t.stealth);
+                      this.adjustPlayToken(t, e.target.value, t.size, t.x, t.y, t.stealth, t.owner);
                       // this.setState({ tokenName: e.target.value });
                     }}
                     labelWidth={40}
@@ -854,7 +1003,7 @@ class DisplayPlayMap extends Component<
                     autoComplete="Off"
                     value={t.size}
                     onChange={e => {
-                      this.adjustPlayToken(t, t.name, parseFloat(e.target.value), t.x, t.y, t.stealth);
+                      this.adjustPlayToken(t, t.name, parseFloat(e.target.value), t.x, t.y, t.stealth, t.owner);
                       // this.setState({ tokenSize: parseFloat(e.target.value) });
                     }}
                     labelWidth={40}
@@ -864,15 +1013,15 @@ class DisplayPlayMap extends Component<
             </Grid>
             <Grid item xs={3}>
               <FormControl variant="outlined" fullWidth>
-                <InputLabel htmlFor={`text_field_lmp_x_${key}`}>X</InputLabel>
+                <InputLabel htmlFor={`text_field_play_token_x_${key}`}>X</InputLabel>
                   <OutlinedInput
-                    id={`text_field_lmp_x_${key}`}
-                    name={`text_field_lmp_x_${key}`}
+                    id={`text_field_play_token_x_${key}`}
+                    name={`text_field_play_token_x_${key}`}
                     type="number"
                     autoComplete="Off"
                     value={t.x}
                     onChange={e => {
-                      this.adjustPlayToken(t, t.name, t.size, parseInt(e.target.value), t.y, t.stealth);
+                      this.adjustPlayToken(t, t.name, t.size, parseInt(e.target.value), t.y, t.stealth, t.owner);
                       // this.moveLMP(p, 'y', e.target.value);
                       // this.setState({ tokenSize: parseInt(e.target.value) });
                     }}
@@ -883,21 +1032,51 @@ class DisplayPlayMap extends Component<
             </Grid>
             <Grid item xs={3}>
               <FormControl variant="outlined" fullWidth>
-                <InputLabel htmlFor={`text_field_lmp_y_${key}`}>Y</InputLabel>
+                <InputLabel htmlFor={`text_field_play_token_y_${key}`}>Y</InputLabel>
                   <OutlinedInput
-                    id={`text_field_lmp_y_${key}`}
-                    name={`text_field_lmp_y_${key}`}
+                    id={`text_field_play_token_y_${key}`}
+                    name={`text_field_play_token_y_${key}`}
                     type="number"
                     autoComplete="Off"
                     value={t.y}
                     onChange={e => {
-                      this.adjustPlayToken(t, t.name, t.size, t.x, parseInt(e.target.value), t.stealth);
+                      this.adjustPlayToken(t, t.name, t.size, t.x, parseInt(e.target.value), t.stealth, t.owner);
                       // this.moveLMP(p, 'y', e.target.value);
                       // this.setState({ tokenSize: parseInt(e.target.value) });
                     }}
                     labelWidth={40}
                     fullWidth
                   />
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <FormControl variant="outlined">
+                <InputLabel id="select_play_token_owner_label">Owner</InputLabel>
+                <Select
+                  labelId="select_play_token_owner_label"
+                  id="select_play_token_owner"
+                  value={t.owner ? t.owner._id : "null"}
+                  onChange={e => {
+                    let owner: (Player | null) = null;
+                    if (e.target.value !== "null") {
+                      const playerFinder = this.props.players.filter(p => p._id === e.target.value);
+                      if (playerFinder.length === 1) {
+                        owner = playerFinder[0];
+                      }
+                    } 
+                    this.adjustPlayToken(t, t.name, t.size, t.x, t.y, t.stealth, owner);
+                  }}
+                  label="Owner"
+                >
+                  <MenuItem value={"null"}>
+                    <em>None</em>
+                  </MenuItem>
+                  { this.props.players.map((p, pKey) => {
+                    return (
+                      <MenuItem key={pKey} value={p._id}>{p.username}</MenuItem>
+                    );
+                  })}
+                </Select>
               </FormControl>
             </Grid>
             { t.token !== null &&
@@ -907,7 +1086,7 @@ class DisplayPlayMap extends Component<
             }
             <Grid item xs={3}>
               <Button onClick={() => {
-                this.adjustPlayToken(t, t.name, t.size, t.x, t.y, !t.stealth);
+                this.adjustPlayToken(t, t.name, t.size, t.x, t.y, !t.stealth, t.owner);
               }}>
                 { t.stealth ? "Stealthy" : "Not"}
               </Button>
@@ -1135,7 +1314,7 @@ class DisplayPlayMap extends Component<
     if (this.props.selectedPlayMap && this.props.mode === "DM") {
       if (this.state.controlMode === "tokens") {
         return (
-          <ControlsContainer key="controls" style={{ width: 300 }}>
+          <ControlsContainer style={{ width: 300 }}>
             <Heading>Tokens</Heading>
             <Grid container spacing={1} direction="row">
               <Grid item xs={4}>
@@ -1279,7 +1458,7 @@ class DisplayPlayMap extends Component<
         );
       } else if (this.state.controlMode === "masks") {
         return (
-          <ControlsContainer key="controls" style={{ width: 300 }}>
+          <ControlsContainer style={{ width: 300 }}>
             <Heading>Masks</Heading>
             <Grid container spacing={1} direction="row">
               <Grid item xs={4}>
@@ -1327,7 +1506,7 @@ class DisplayPlayMap extends Component<
         );
       } else if (this.state.controlMode === "favorites") {
         return (
-          <ControlsContainer key="controls" style={{ width: 300 }}>
+          <ControlsContainer style={{ width: 300 }}>
             <Heading>Favorites</Heading>
             <Grid container spacing={1} direction="row">
               <Grid item xs={6}>
@@ -1413,7 +1592,7 @@ class DisplayPlayMap extends Component<
         );
       } else {
         return (
-          <ControlsContainer key="controls">
+          <ControlsContainer>
             <div onClick={this.zoomIn}>
               <Icons>+</Icons>
             </div>
@@ -1436,9 +1615,70 @@ class DisplayPlayMap extends Component<
         );
       }
     } else {
-      return (<div key="controls"></div>);
+      return (<div></div>);
     }
   };
+
+  renderPlayers = () => {
+    if (this.props.selectedPlayMap && this.props.mode === "DM") {
+      const threshold = new Date(new Date().getTime() + -1*60000);
+      return (
+        <PlayersContainer>
+          <Grid container spacing={1} direction="column">
+            <Grid item>
+              <Button 
+                style={{ backgroundColor: (this.props.selectedCampaign && this.props.selectedCampaign.turnPlayerID === null ? "blue" : "transparent") }}
+                onClick={() => {
+                  const newCampaign = {...this.props.selectedCampaign};
+                  if (newCampaign !== null && newCampaign._id !== undefined) {
+                    newCampaign.turnPlayerID = null;
+                    this.props.updateCampaign(newCampaign);
+                    this.saveCampaign();
+                    this.setState({
+                      lastRefresh: new Date()
+                    });
+                  }
+                }}>
+                <div style={{ margin: 4 }}>
+                  None
+                </div>
+              </Button>
+            </Grid>
+            { this.props.players.map((p, key) => {
+              return (
+                <Grid item key={key}>
+                  <Button
+                    style={{ backgroundColor: (this.props.selectedCampaign && this.props.selectedCampaign.turnPlayerID === p._id ? "blue" : "transparent") }}
+                    onClick={() => {
+                      const newCampaign = {...this.props.selectedCampaign};
+                      if (newCampaign !== null && newCampaign._id !== undefined) {
+                        newCampaign.turnPlayerID = p._id;
+                        this.props.updateCampaign(newCampaign);
+                        this.saveCampaign();
+                        this.setState({
+                          lastRefresh: new Date()
+                        });
+                      }
+                    }}>
+                    <div style={{ margin: 4, backgroundColor: (p.lastPing < threshold ? "red" : "green") }}>
+                      {p.username}
+                    </div>
+                  </Button>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </PlayersContainer>
+      );
+    } else {
+      return (<div></div>);
+    }
+  };
+
+  saveCampaign = () => {
+    this.api.updateCampaign(this.props.selectedCampaign.toDBObj()).then(() => {
+    });
+  }
 
   onKeyDown = (e: any) => {
     // Change heldKeys to be individual ones like shiftHeld, ctrlHeld, etc.
@@ -1448,7 +1688,7 @@ class DisplayPlayMap extends Component<
     // const heldKeys = this.state.heldKeys.filter(k => k !== e.key);
     // heldKeys.push(e.key);
     // this.setState({ heldKeys });
-    if (e.key === "Shift") {
+    if (e.key === "Shift" && this.props.mode === "DM") {
       if (!this.state.shiftHeld) {
         // Shift allows adding and removing selected items.
         // If it's not held then clicking while hovering will select that
@@ -1459,7 +1699,7 @@ class DisplayPlayMap extends Component<
           mapMode: "select" 
         });
       }
-    } else if (e.key === "Control") {
+    } else if (e.key === "Control" && this.props.mode === "DM") {
       if (!this.state.ctrlHeld) {
         // Ctrl is used for moving items.  
         // It only works if a single item is selected and shift isn't
@@ -1470,9 +1710,9 @@ class DisplayPlayMap extends Component<
           mapMode: (this.state.shiftHeld ? "select" : "move")
         });
       }
-    } else if (e.key === "t") {
+    } else if (e.key === "t" && this.props.mode === "DM") {
       this.toggleSingleSelect();
-    } else if (e.key === "Alt") {
+    } else if (e.key === "Alt" && this.props.mode === "DM") {
       this.clearSelectAndHover();
     } else if (e.key === "w") {
       this.slideSelected(0, -1);
@@ -1536,14 +1776,23 @@ class DisplayPlayMap extends Component<
         }
       }
     });
-    this.props.updatePlayMap(newPlayMap);
-    this.setState({
-      lastRefresh: new Date()
-    });
+    if (this.props.mode === "DM") {
+      this.props.updatePlayMap(newPlayMap);
+      this.setState({
+        lastRefresh: new Date()
+      });
+    } else {
+      this.api.updatePlayMap(newPlayMap.toDBObj()).then((res: any) => {
+        this.props.updatePlayMap(newPlayMap);
+        this.setState({
+          lastRefresh: new Date()
+        });
+      });
+    }
   }
 
   onKeyUp = (e: any) => {
-    if (e.key === "Shift") {
+    if (e.key === "Shift" && this.props.mode === "DM") {
       if (this.state.shiftHeld) {
         // Shift allows adding and removing selected items.
         // If it's not held then clicking while hovering will select that
@@ -1554,7 +1803,7 @@ class DisplayPlayMap extends Component<
           mapMode: (this.state.ctrlHeld ? "move" : "pan")
         });
       }
-    } else if (e.key === "Control") {
+    } else if (e.key === "Control" && this.props.mode === "DM") {
       if (this.state.ctrlHeld) {
         // Currently I don't know what I want to do for ctrl.
         // I'll probably have a use for it, so I'll track it being held for now
@@ -1567,7 +1816,14 @@ class DisplayPlayMap extends Component<
   }
 
   render() {
-    if (this.props.mode === "DM" && this.state.categories.length === 0 && this.props.tokens) {
+    if (!this.state.running) {
+      this.setState({
+        running: true
+      }, () => {
+        setTimeout(this.refresh, this.state.countdown * 1000);
+      });
+      return (<div>Loading</div>);
+    } else if (this.props.mode === "DM" && this.state.categories.length === 0 && this.props.tokens) {
       const categories: string[] = [];
       categories.push("all");
       categories.push("favorites");
@@ -1577,317 +1833,325 @@ class DisplayPlayMap extends Component<
         }
       });
       this.setState({ categories });
-    }
-    const StyledReactPanZoom = styled(ReactPanZoom)`
-      ${Container};
-    `;
-    return [
-      this.renderControls(),
-      <StyledReactPanZoom key="main"
-        zoom={this.props.selectedPlayMap.zoom}
-        pandx={this.props.selectedPlayMap.dx}
-        pandy={this.props.selectedPlayMap.dy}
-        onPan={this.onPan}
-        onClick={this.onClick}
-        onMouseMove={this.onMouseMove}
-        enableClick={this.state.mapMode !== "pan"}
-        singleSelect={this.state.singleSelect}
-      >
-        <div style={{
-            position: "relative", 
-            left: ((-1 * window.innerWidth / 2) + 0), 
-            top: ((-1 * window.innerHeight / 2) + 25)
-          }}>
-          { this.props.mode === "DM" ? // This is the image that goes behind the main map.  The lightMask clipPath.
-            <img style={{
-                position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
-                left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
-                top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
-                opacity: 0.5,
-                width: (this.props.selectedPlayMap.map.gridWidth * 50),
-                height: (this.props.selectedPlayMap.map.gridHeight * 50)
-              }} 
-              src={this.props.selectedPlayMap.map.file} alt="Fog of War" 
-            />
-          :
-            <img style={{
-                position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
-                left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
-                top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
-                width: this.props.selectedPlayMap.map.gridWidth * 50,
-                height: this.props.selectedPlayMap.map.gridHeight * 50
-              }} 
-              src={FogOfWar} alt="Fog of War" 
-            />
-          }
-          <img style={{
-              position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
-              left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
-              top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
-              width: (this.props.selectedPlayMap.map.gridWidth * 50),
-              height: (this.props.selectedPlayMap.map.gridHeight * 50),
-              clipPath: "url(#lightMask)"
-            }}
-            src={this.props.selectedPlayMap.map.file} alt="Light Mask" 
-          />
-          {/* <svg width="0" height="0">
-            <defs>
-              <clipPath id="lightMask">
-                <polygon points="13,13 13,113 113,113 113,13"/>
-                <polygon points="450,10 500,200 600,100" />
-                <polygon points="150,10 100,200 300,100" />
-              </clipPath>
-            </defs>
-          </svg> */}
-          <svg width="0" height="0">
-            <defs>
-              <clipPath id="lightMask">
-              { this.props.selectedPlayMap.lightMasks.map((mask, key) => {
-                return (
-                  <polygon key={key} points={mask.toClipPath(this.props.selectedPlayMap.map.gridWidth, this.props.selectedPlayMap.map.gridHeight)} />
-                );
-              })}
-              </clipPath>
-            </defs>
-          </svg>
-          <svg width="0" height="0">
-            <defs>
-              <clipPath id="darkMask">
-              { this.props.selectedPlayMap.darkMasks.map((mask, key) => {
-                return (
-                  <polygon key={key} points={mask.toClipPath(this.props.selectedPlayMap.map.gridWidth, this.props.selectedPlayMap.map.gridHeight)} />
-                );
-              })}
-              </clipPath>
-            </defs>
-          </svg>
-          <svg width="0" height="0">
-            <defs>
-              <clipPath id="fogMask">
-              { this.props.selectedPlayMap.fogMasks.map((mask, key) => {
-                return (
-                  <polygon key={key} points={mask.toClipPath(this.props.selectedPlayMap.map.gridWidth, this.props.selectedPlayMap.map.gridHeight)} />
-                );
-              })}
-              </clipPath>
-            </defs>
-          </svg>
-          { this.props.mode === "DM" && 
-            <img style={{
-                position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
-                left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
-                top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
-                width: (this.props.selectedPlayMap.map.gridWidth * 50),
-                height: (this.props.selectedPlayMap.map.gridHeight * 50),
-                clipPath: "url(#fogMask)"
-              }}
-              src={FogOfWar} alt="Fog Mask 1" 
-            />
-          }
-          { this.props.mode === "DM" && 
-            <img style={{
-                position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
-                left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
-                top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
-                width: (this.props.selectedPlayMap.map.gridWidth * 50),
-                height: (this.props.selectedPlayMap.map.gridHeight * 50),
-                opacity: 0.3,
-                clipPath: "url(#fogMask)"
-              }}
-              src={this.props.selectedPlayMap.map.file} alt="Fog Mask 2" 
-            />
-          }
-          { this.props.mode === "DM" && 
-            <img style={{
-                position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
-                left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
-                top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
-                width: (this.props.selectedPlayMap.map.gridWidth * 50),
-                height: (this.props.selectedPlayMap.map.gridHeight * 50),
-                opacity: 0.7,
-                clipPath: "url(#darkMask)"
-              }}
-              src={FogOfWar} alt="Dark Mask" 
-            />
-          }
-          { this.props.selectedPlayMap.movingToken &&
+      return (<div>Loading</div>);
+    } else {
+      const StyledReactPanZoom = styled(ReactPanZoom)`
+        ${Container};
+      `;
+      return (
+        <div>
+          { this.renderControls() }
+          { this.renderPlayers() }
+          <StyledReactPanZoom
+            zoom={this.props.selectedPlayMap.zoom}
+            pandx={this.props.selectedPlayMap.dx}
+            pandy={this.props.selectedPlayMap.dy}
+            onPan={this.onPan}
+            onClick={this.onClick}
+            onMouseMove={this.onMouseMove}
+            enableClick={this.state.mapMode !== "pan"}
+            singleSelect={this.state.singleSelect}
+          >
             <div style={{
-              position: "absolute",
-              left: this.props.selectedPlayMap.movingToken.x * 50 + (window.innerWidth / 2) - 25 - (this.props.selectedPlayMap.movingToken.size * 25),
-              top: this.props.selectedPlayMap.movingToken.y * 50 + (window.innerHeight / 2) - 25 - (this.props.selectedPlayMap.movingToken.size * 25),
-              width: this.props.selectedPlayMap.movingToken.size * 50,
-              height: this.props.selectedPlayMap.movingToken.size * 50,
-              // backgroundColor: (this.state.selected.includes(t) ? "blue" : (this.state.mapMode === "select" ? "grey" : "transparent")),
-              // borderRadius: (t.size * 25)
-              opacity: 0.5
-            }}>
-              { this.props.selectedPlayMap.movingToken.token !== null &&
-                <img src={this.props.selectedPlayMap.movingToken.token.file} alt="testing" 
-                  style={{
-                    width: this.props.selectedPlayMap.movingToken.size * 50,
-                    height: this.props.selectedPlayMap.movingToken.size * 50
-                  }}
+                position: "relative", 
+                left: ((-1 * window.innerWidth / 2) + 0), 
+                top: ((-1 * window.innerHeight / 2) + 25)
+              }}>
+              { this.props.mode === "DM" ? // This is the image that goes behind the main map.  The lightMask clipPath.
+                <img style={{
+                    position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
+                    left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
+                    top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
+                    opacity: 0.5,
+                    width: (this.props.selectedPlayMap.map.gridWidth * 50),
+                    height: (this.props.selectedPlayMap.map.gridHeight * 50)
+                  }} 
+                  src={this.props.selectedPlayMap.map.file} alt="Fog of War" 
+                />
+              :
+                <img style={{
+                    position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
+                    left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
+                    top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
+                    width: this.props.selectedPlayMap.map.gridWidth * 50,
+                    height: this.props.selectedPlayMap.map.gridHeight * 50
+                  }} 
+                  src={FogOfWar} alt="Fog of War" 
                 />
               }
-              { this.props.selectedPlayMap.movingToken.name !== "" && 
-                <span style={{ color: "black", fontWeight: "bold", backgroundColor: "white", fontSize: (10 * this.props.selectedPlayMap.movingToken.size) }}>{this.props.selectedPlayMap.movingToken.name}</span>
+              <img style={{
+                  position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
+                  left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
+                  top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
+                  width: (this.props.selectedPlayMap.map.gridWidth * 50),
+                  height: (this.props.selectedPlayMap.map.gridHeight * 50),
+                  clipPath: "url(#lightMask)"
+                }}
+                src={this.props.selectedPlayMap.map.file} alt="Light Mask" 
+              />
+              {/* <svg width="0" height="0">
+                <defs>
+                  <clipPath id="lightMask">
+                    <polygon points="13,13 13,113 113,113 113,13"/>
+                    <polygon points="450,10 500,200 600,100" />
+                    <polygon points="150,10 100,200 300,100" />
+                  </clipPath>
+                </defs>
+              </svg> */}
+              <svg width="0" height="0">
+                <defs>
+                  <clipPath id="lightMask">
+                  { this.props.selectedPlayMap.lightMasks.map((mask, key) => {
+                    return (
+                      <polygon key={key} points={mask.toClipPath(this.props.selectedPlayMap.map.gridWidth, this.props.selectedPlayMap.map.gridHeight)} />
+                    );
+                  })}
+                  </clipPath>
+                </defs>
+              </svg>
+              <svg width="0" height="0">
+                <defs>
+                  <clipPath id="darkMask">
+                  { this.props.selectedPlayMap.darkMasks.map((mask, key) => {
+                    return (
+                      <polygon key={key} points={mask.toClipPath(this.props.selectedPlayMap.map.gridWidth, this.props.selectedPlayMap.map.gridHeight)} />
+                    );
+                  })}
+                  </clipPath>
+                </defs>
+              </svg>
+              <svg width="0" height="0">
+                <defs>
+                  <clipPath id="fogMask">
+                  { this.props.selectedPlayMap.fogMasks.map((mask, key) => {
+                    return (
+                      <polygon key={key} points={mask.toClipPath(this.props.selectedPlayMap.map.gridWidth, this.props.selectedPlayMap.map.gridHeight)} />
+                    );
+                  })}
+                  </clipPath>
+                </defs>
+              </svg>
+              { this.props.mode === "DM" && 
+                <img style={{
+                    position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
+                    left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
+                    top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
+                    width: (this.props.selectedPlayMap.map.gridWidth * 50),
+                    height: (this.props.selectedPlayMap.map.gridHeight * 50),
+                    clipPath: "url(#fogMask)"
+                  }}
+                  src={FogOfWar} alt="Fog Mask 1" 
+                />
               }
+              { this.props.mode === "DM" && 
+                <img style={{
+                    position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
+                    left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
+                    top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
+                    width: (this.props.selectedPlayMap.map.gridWidth * 50),
+                    height: (this.props.selectedPlayMap.map.gridHeight * 50),
+                    opacity: 0.3,
+                    clipPath: "url(#fogMask)"
+                  }}
+                  src={this.props.selectedPlayMap.map.file} alt="Fog Mask 2" 
+                />
+              }
+              { this.props.mode === "DM" && 
+                <img style={{
+                    position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
+                    left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
+                    top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
+                    width: (this.props.selectedPlayMap.map.gridWidth * 50),
+                    height: (this.props.selectedPlayMap.map.gridHeight * 50),
+                    opacity: 0.7,
+                    clipPath: "url(#darkMask)"
+                  }}
+                  src={FogOfWar} alt="Dark Mask" 
+                />
+              }
+              { this.props.selectedPlayMap.movingToken &&
+                <div style={{
+                  position: "absolute",
+                  left: this.props.selectedPlayMap.movingToken.x * 50 + (window.innerWidth / 2) - 25 - (this.props.selectedPlayMap.movingToken.size * 25),
+                  top: this.props.selectedPlayMap.movingToken.y * 50 + (window.innerHeight / 2) - 25 - (this.props.selectedPlayMap.movingToken.size * 25),
+                  width: this.props.selectedPlayMap.movingToken.size * 50,
+                  height: this.props.selectedPlayMap.movingToken.size * 50,
+                  // backgroundColor: (this.state.selected.includes(t) ? "blue" : (this.state.mapMode === "select" ? "grey" : "transparent")),
+                  // borderRadius: (t.size * 25)
+                  opacity: 0.5
+                }}>
+                  { this.props.selectedPlayMap.movingToken.token !== null &&
+                    <img src={this.props.selectedPlayMap.movingToken.token.file} alt="testing" 
+                      style={{
+                        width: this.props.selectedPlayMap.movingToken.size * 50,
+                        height: this.props.selectedPlayMap.movingToken.size * 50
+                      }}
+                    />
+                  }
+                  { this.props.selectedPlayMap.movingToken.name !== "" && 
+                    <span style={{ color: "black", fontWeight: "bold", backgroundColor: "white", fontSize: (10 * this.props.selectedPlayMap.movingToken.size) }}>{this.props.selectedPlayMap.movingToken.name}</span>
+                  }
+                </div>
+              }
+              { this.props.selectedPlayMap.tokens.map((t, key) => {
+                return (
+                  <div key={key} style={{
+                    position: "absolute",
+                    left: t.x * 50 + (window.innerWidth / 2) - 25 - (t.size * 25),
+                    top: t.y * 50 + (window.innerHeight / 2) - 25 - (t.size * 25),
+                    width: t.size * 50,
+                    height: t.size * 50,
+                    backgroundColor: (this.state.selected.includes(t) ? "blue" : (this.state.mapMode === "select" && (this.props.mode === "DM" || (this.props.selectedPlayer && t.owner && this.props.selectedPlayer._id === t.owner._id)) ? "grey" : "transparent")),
+                    // borderRadius: (t.size * 25)
+                    opacity: (!t.stealth ? 1 : (this.props.mode === "DM" ? 0.5 : 0))
+                  }}
+                  onMouseEnter={() => {
+                    if (this.props.mode === "DM" || (this.props.selectedPlayer && t.owner && this.props.selectedPlayer._id === t.owner._id)) {
+                      this.setState({ hovered: t });
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (this.props.mode === "DM" || (this.props.selectedPlayer && t.owner && this.props.selectedPlayer._id === t.owner._id)) {
+                      this.setState({ hovered: null });
+                    }
+                  }}>
+                    { t.token !== null &&
+                      <img src={t.token.file} alt="testing" 
+                        style={{
+                          width: t.size * 50,
+                          height: t.size * 50
+                        }}
+                      />
+                    }
+                    { t.name !== "" && 
+                      <span style={{ color: "black", fontWeight: "bold", backgroundColor: "white", fontSize: (10 * t.size) }}>{t.name}</span>
+                    }
+                  </div>
+                );
+              })}
+              { this.props.mode !== "DM" && 
+                <img style={{
+                    position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
+                    left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
+                    top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
+                    width: (this.props.selectedPlayMap.map.gridWidth * 50),
+                    height: (this.props.selectedPlayMap.map.gridHeight * 50),
+                    clipPath: "url(#fogMask)"
+                  }}
+                  src={FogOfWar} alt="Fog Mask 1" 
+                />
+              }
+              { this.props.mode !== "DM" && 
+                <img style={{
+                    position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
+                    left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
+                    top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
+                    width: (this.props.selectedPlayMap.map.gridWidth * 50),
+                    height: (this.props.selectedPlayMap.map.gridHeight * 50),
+                    opacity: 0.5,
+                    clipPath: "url(#fogMask)"
+                  }}
+                  src={this.props.selectedPlayMap.map.file} alt="Fog Mask 2" 
+                />
+              }
+              { this.props.mode !== "DM" && 
+                <img style={{
+                    position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
+                    left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
+                    top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
+                    width: (this.props.selectedPlayMap.map.gridWidth * 50),
+                    height: (this.props.selectedPlayMap.map.gridHeight * 50),
+                    clipPath: "url(#darkMask)"
+                  }}
+                  src={FogOfWar} alt="Dark Mask" 
+                />
+              }
+              { this.props.mode === "DM" && this.props.selectedPlayMap.lightMasks.map((mask, mkey) => {
+                return (
+                  <div key={mkey}>
+                    { mask.points.map((p, pkey) => {
+                      return (
+                        <div key={pkey} style={{
+                          position: "absolute",
+                          left: p.x * 50 + (window.innerWidth / 2) - 60,
+                          top: p.y * 50 + (window.innerHeight / 2) - 60,
+                          width: 20,
+                          height: 20,
+                          backgroundColor: (this.state.selected.includes(p) ? "green" : "yellow"),
+                          // borderRadius: (5)
+                        }}
+                        onMouseEnter={() => {
+                          this.setState({ hovered: p });
+                        }}
+                        onMouseLeave={() => {
+                          this.setState({ hovered: null });
+                        }}>
+                          {p.id}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+              { this.props.mode === "DM" && this.props.selectedPlayMap.darkMasks.map((mask, mkey) => {
+                return (
+                  <div key={mkey}>
+                    { mask.points.map((p, pkey) => {
+                      return (
+                        <div key={pkey} style={{
+                          position: "absolute",
+                          left: p.x * 50 + (window.innerWidth / 2) - 60,
+                          top: p.y * 50 + (window.innerHeight / 2) - 60,
+                          width: 20,
+                          height: 20,
+                          backgroundColor: (this.state.selected.includes(p) ? "green" : "purple"),
+                          borderRadius: (5)
+                        }}
+                        onMouseEnter={() => {
+                          this.setState({ hovered: p });
+                        }}
+                        onMouseLeave={() => {
+                          this.setState({ hovered: null });
+                        }}>
+                          {p.id}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+              { this.props.mode === "DM" && this.props.selectedPlayMap.fogMasks.map((mask, mkey) => {
+                return (
+                  <div key={mkey}>
+                    { mask.points.map((p, pkey) => {
+                      return (
+                        <div key={pkey} style={{
+                          position: "absolute",
+                          left: p.x * 50 + (window.innerWidth / 2) - 60,
+                          top: p.y * 50 + (window.innerHeight / 2) - 60,
+                          width: 20,
+                          height: 20,
+                          backgroundColor: (this.state.selected.includes(p) ? "green" : "grey"),
+                          borderRadius: (5)
+                        }}
+                        onMouseEnter={() => {
+                          this.setState({ hovered: p });
+                        }}
+                        onMouseLeave={() => {
+                          this.setState({ hovered: null });
+                        }}>
+                          {p.id}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
-          }
-          { this.props.selectedPlayMap.tokens.map((t, key) => {
-            return (
-              <div key={key} style={{
-                position: "absolute",
-                left: t.x * 50 + (window.innerWidth / 2) - 25 - (t.size * 25),
-                top: t.y * 50 + (window.innerHeight / 2) - 25 - (t.size * 25),
-                width: t.size * 50,
-                height: t.size * 50,
-                backgroundColor: (this.state.selected.includes(t) ? "blue" : (this.state.mapMode === "select" ? "grey" : "transparent")),
-                // borderRadius: (t.size * 25)
-                opacity: (!t.stealth ? 1 : (this.props.mode === "DM" ? 0.5 : 0))
-              }}
-              onMouseEnter={() => {
-                this.setState({ hovered: t });
-              }}
-              onMouseLeave={() => {
-                console.log(t);
-                this.setState({ hovered: null });
-              }}>
-                { t.token !== null &&
-                  <img src={t.token.file} alt="testing" 
-                    style={{
-                      width: t.size * 50,
-                      height: t.size * 50
-                    }}
-                  />
-                }
-                { t.name !== "" && 
-                  <span style={{ color: "black", fontWeight: "bold", backgroundColor: "white", fontSize: (10 * t.size) }}>{t.name}</span>
-                }
-              </div>
-            );
-          })}
-          { this.props.mode !== "DM" && 
-            <img style={{
-                position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
-                left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
-                top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
-                width: (this.props.selectedPlayMap.map.gridWidth * 50),
-                height: (this.props.selectedPlayMap.map.gridHeight * 50),
-                clipPath: "url(#fogMask)"
-              }}
-              src={FogOfWar} alt="Fog Mask 1" 
-            />
-          }
-          { this.props.mode !== "DM" && 
-            <img style={{
-                position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
-                left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
-                top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
-                width: (this.props.selectedPlayMap.map.gridWidth * 50),
-                height: (this.props.selectedPlayMap.map.gridHeight * 50),
-                opacity: 0.5,
-                clipPath: "url(#fogMask)"
-              }}
-              src={this.props.selectedPlayMap.map.file} alt="Fog Mask 2" 
-            />
-          }
-          { this.props.mode !== "DM" && 
-            <img style={{
-                position: "absolute", // The 0.4s are to account for the offsets.  I should make these part of the map object.
-                left: (this.props.selectedPlayMap.map.gridWidth) * -25 + (window.innerWidth / 2),
-                top: (this.props.selectedPlayMap.map.gridHeight) * -25 + (window.innerHeight / 2) - 25,
-                width: (this.props.selectedPlayMap.map.gridWidth * 50),
-                height: (this.props.selectedPlayMap.map.gridHeight * 50),
-                clipPath: "url(#darkMask)"
-              }}
-              src={FogOfWar} alt="Dark Mask" 
-            />
-          }
-          { this.props.mode === "DM" && this.props.selectedPlayMap.lightMasks.map((mask, mkey) => {
-            return (
-              <div key={mkey}>
-                { mask.points.map((p, pkey) => {
-                  return (
-                    <div key={pkey} style={{
-                      position: "absolute",
-                      left: p.x * 50 + (window.innerWidth / 2) - 60,
-                      top: p.y * 50 + (window.innerHeight / 2) - 60,
-                      width: 20,
-                      height: 20,
-                      backgroundColor: (this.state.selected.includes(p) ? "green" : "yellow"),
-                      // borderRadius: (5)
-                    }}
-                    onMouseEnter={() => {
-                      this.setState({ hovered: p });
-                    }}
-                    onMouseLeave={() => {
-                      this.setState({ hovered: null });
-                    }}>
-                      {p.id}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
-          { this.props.mode === "DM" && this.props.selectedPlayMap.darkMasks.map((mask, mkey) => {
-            return (
-              <div key={mkey}>
-                { mask.points.map((p, pkey) => {
-                  return (
-                    <div key={pkey} style={{
-                      position: "absolute",
-                      left: p.x * 50 + (window.innerWidth / 2) - 60,
-                      top: p.y * 50 + (window.innerHeight / 2) - 60,
-                      width: 20,
-                      height: 20,
-                      backgroundColor: (this.state.selected.includes(p) ? "green" : "purple"),
-                      borderRadius: (5)
-                    }}
-                    onMouseEnter={() => {
-                      this.setState({ hovered: p });
-                    }}
-                    onMouseLeave={() => {
-                      this.setState({ hovered: null });
-                    }}>
-                      {p.id}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
-          { this.props.mode === "DM" && this.props.selectedPlayMap.fogMasks.map((mask, mkey) => {
-            return (
-              <div key={mkey}>
-                { mask.points.map((p, pkey) => {
-                  return (
-                    <div key={pkey} style={{
-                      position: "absolute",
-                      left: p.x * 50 + (window.innerWidth / 2) - 60,
-                      top: p.y * 50 + (window.innerHeight / 2) - 60,
-                      width: 20,
-                      height: 20,
-                      backgroundColor: (this.state.selected.includes(p) ? "green" : "grey"),
-                      borderRadius: (5)
-                    }}
-                    onMouseEnter={() => {
-                      this.setState({ hovered: p });
-                    }}
-                    onMouseLeave={() => {
-                      this.setState({ hovered: null });
-                    }}>
-                      {p.id}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+          </StyledReactPanZoom>
         </div>
-      </StyledReactPanZoom>
-    ];
+      );
+    }
   }
 }
 

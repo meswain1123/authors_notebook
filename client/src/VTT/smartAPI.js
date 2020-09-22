@@ -56,15 +56,122 @@ class APIClass {
     const tokens = await this.getTokens(userID, refresh);
     const playMaps = await this.getPlayMaps(userID, refresh);
     const favoriteTokens = await this.getFavoriteTokens(userID, refresh);
+    const players = await this.getPlayers(refresh);
 
     return {
       campaigns: campaigns.campaigns,
       maps: maps.maps,
       tokens: tokens.tokens,
       playMaps: playMaps.playMaps,
-      favoriteTokens: favoriteTokens.favoriteTokens
+      favoriteTokens: favoriteTokens.favoriteTokens,
+      players: players.players
     };
   }
+
+  // Player
+  getPlayers = async (refresh = false) => {
+    if (refresh) {
+      return this.getPlayersFromAPI();
+    }
+    else {
+      const data = this.getSessionData(`players`);
+      if (data !== null) {
+        return data;
+      }
+      else {
+        return this.getPlayersFromAPI();
+      }
+    }
+  };
+  getPlayersFromAPI = async () => {
+    if (this.real) {
+      const response = await this.fetchData(
+        `/api/vtt/getPlayers/`
+      );
+      // const retry = async () => {
+      //   await this.relogin();
+      //   const response = await this.fetchData(
+      //     `/api/vtt/getPlayers/`
+      //   );
+      //   return this.processResponse(response, null, `players`);
+      // }
+      // const data = await this.processResponse(response, retry, `players`);
+      const data = await this.processResponse(response, null, `players`);
+      return data;
+    } else {
+      return [{ _id: -1, vttID: -1, Name: "Alice" }];
+    }
+  };
+
+  createPlayer = async (player) => {
+    if (this.real) {
+      const response = await this.postData("/api/vtt/createPlayer", { player });
+      // const retry = async () => {
+      //   await this.relogin();
+      //   const response = await this.postData("/api/vtt/createPlayer", { player });
+      //   return this.processResponse(response);
+      // }
+      return this.processResponse(response, null);
+    } else {
+      return -1;
+    }
+  };
+
+  deletePlayer = async (playerID) => {
+    if (this.real) {
+      const response = await this.deleteData("/api/vtt/deletePlayer", { playerID });
+      // const retry = async () => {
+      //   await this.relogin();
+      //   const response = await this.deleteData("/api/vtt/deletePlayer", { playerID });
+      //   return this.processResponse(response);
+      // }
+      return this.processResponse(response, null);
+    } else {
+      return "success";
+    }
+  };
+
+  updatePlayer = async (player) => {
+    if (this.real) {
+      const response = await this.patchData("/api/vtt/updatePlayer", { player });
+      // const retry = async () => {
+      //   await this.relogin();
+      //   const response = await this.patchData("/api/vtt/updatePlayer", { player });
+      //   return this.processResponse(response);
+      // }
+      return this.processResponse(response, null);
+    } else {
+      return "success";
+    }
+  };
+
+  login = async (email, password) => {
+    if (this.real) {
+      const response = await this.postData("/api/vtt/login", { email, password });
+      // const retry = async () => {
+      //   await this.relogin();
+      //   const response = await this.patchData("/api/vtt/updatePlayer", { player });
+      //   return this.processResponse(response);
+      // }
+      return this.processResponse(response, null);
+    } else {
+      return "success";
+    }
+  };
+
+  playerPing = async (playerID) => {
+    if (this.real) {
+      const response = await this.postData("/api/vtt/playerPing", { playerID });
+      // const retry = async () => {
+      //   await this.relogin();
+      //   const response = await this.patchData("/api/vtt/updatePlayer", { player });
+      //   return this.processResponse(response);
+      // }
+      return this.processResponse(response, null);
+    } else {
+      return "success";
+    }
+  };
 
   // Map
   getMaps = async (userID, refresh = false) => {
@@ -254,9 +361,9 @@ class APIClass {
       return [{ _id: -1, vttID: -1, Name: "Alice" }];
     }
   };
-  getCampaign = async (campaignID) => {
+  getCampaign = async (campaignID, userID = -1) => {
     const response = await this.fetchData(
-      `/api/vtt/getCampaign/${campaignID}`
+      `/api/vtt/getCampaign/${campaignID}/${userID}`
     );
     const data = await this.processResponse(response);
     return data;

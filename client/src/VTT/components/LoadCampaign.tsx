@@ -4,7 +4,7 @@ import { connect, ConnectedProps } from 'react-redux';
 import {
   Button, Grid
 } from "@material-ui/core";
-import { Campaign } from "../models/Campaign";
+import { Campaign } from "../models";
 
 // This lets the user select a Campaign to use.
 

@@ -8,7 +8,7 @@ import {
   FormHelperText,
   Button, Grid
 } from "@material-ui/core";
-import { Campaign } from "../models/Campaign";
+import { Campaign } from "../models";
 import API from "../smartAPI";
 
 // This lets the user create a new campaign.
@@ -78,14 +78,15 @@ class CreateCampaign extends Component<
     this.setState({
       processing: true
     }, () => {
-      const mapObj: any = {
+      const campaignObj: any = {
         name: this.state.name,
-        selectedPlayMapID: ""
+        selectedPlayMapID: "", 
+        turnPlayerID: null
       };
 
-      this.api.createCampaign(mapObj).then((res: any) => {
+      this.api.createCampaign(campaignObj).then((res: any) => {
         if (res !== undefined && res.error === undefined) {
-          const newCampaign: Campaign = new Campaign(res.campaignID, this.state.name, "");
+          const newCampaign: Campaign = new Campaign(res.campaignID, this.state.name, "", null);
           this.props.addCampaign(newCampaign);
           this.props.selectCampaign(newCampaign);
           this.setState({ processing: false });
