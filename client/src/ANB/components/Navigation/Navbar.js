@@ -1,10 +1,13 @@
 import React, { Component } from "react";
 import {
   AppBar, Toolbar, ListItem, 
-  ListItemText, Icon, IconButton, 
+  ListItemText, 
+  // Icon, 
+  IconButton, 
   // Button
 } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
+import PersonIcon from '@material-ui/icons/Person';
 // import { NavLink } from "react-router-dom";
 import { connect } from "react-redux";
 import {
@@ -86,7 +89,7 @@ class Bar extends Component {
                   }}
                   className="float-right blue whiteFont">
                   <ListItem className="curvedButton float-right">
-                    <Icon>person</Icon>
+                    <PersonIcon/>
                     <ListItemText primary=" Login/Register"/>
                   </ListItem>
                 </span>
