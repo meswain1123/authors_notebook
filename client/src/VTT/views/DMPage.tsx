@@ -149,7 +149,10 @@ class DMPage extends Component<
   }
 
   saveCampaign = () => {
-    this.api.updateCampaign(this.props.selectedCampaign.toDBObj()).then(() => {
+    this.api.updateCampaign(this.props.selectedCampaign.toDBObj()).then((res: any) => {
+      const campaign = this.props.selectedCampaign;
+      campaign.lastUpdate = res.lastUpdate;
+      this.props.updateCampaign(campaign);
     });
   }
 
@@ -175,7 +178,10 @@ class DMPage extends Component<
   }
 
   savePlayMap = () => {
-    this.api.updatePlayMap(this.props.selectedPlayMap.toDBObj()).then(() => {
+    this.api.updatePlayMap(this.props.selectedPlayMap.toDBObj()).then((res: any) => {
+      const newCampaign = this.props.selectedCampaign;
+      newCampaign.lastUpdate = res.lastUpdate;
+      this.props.updateCampaign(newCampaign);
     });
   }
 
@@ -195,6 +201,7 @@ class DMPage extends Component<
     const campaign: Campaign = this.props.selectedCampaign;
     campaign.selectedPlayMapID = this.props.selectedPlayMap._id;
     this.api.updateCampaign(campaign.toDBObj()).then((res: any) => {
+      campaign.lastUpdate = res.lastUpdate;
       this.props.updateCampaign(campaign);
       this.setState({ mode: "main" });
     });

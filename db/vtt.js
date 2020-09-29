@@ -22,6 +22,7 @@ function open() {
     // console.log(err);
     assert.equal(null, err);
     // AddCampaign();
+    // FixCampaigns();
     // AddPlayers();
     // FixPlayers();
     // AddMaps();
@@ -204,6 +205,25 @@ function FixPlayMaps() {
 //   createCampaign(respond, newCampaign);
 // }
 
+function FixCampaigns() {
+  function gotCampaigns(campaigns) {
+    let pos = 0;
+    function respond(response) {
+      pos++;
+      if (pos < campaigns.length) {
+        const campaign2 = campaigns[pos];
+        campaign2.lastUpdate = new Date().toString();
+        updateCampaign(respond, campaign2);
+      }
+    }
+    const campaign = campaigns[pos];
+    campaign.lastUpdate = new Date().toString();
+    updateCampaign(respond, campaign);
+  }
+
+  getCampaigns(gotCampaigns);
+}
+
 function AddPlayers() {
   const players = [
     {
@@ -262,12 +282,12 @@ function FixPlayers() {
       pos++;
       if (pos < players.length) {
         const player2 = players[pos];
-        player2.lastPing = new Date().toString();
+        player2.refreshIndex = pos;
         updatePlayer(respond, player2);
       }
     }
     const player = players[pos];
-    player.lastPing = new Date().toString();
+    player.refreshIndex = pos;
     updatePlayer(respond, player);
   }
 
@@ -277,8 +297,10 @@ function FixPlayers() {
 function AddMaps() {
   const maps = [
     {
-      name: "Restaurant",
-      category: "city_buildings"
+      name: "CrimsonBrush",
+      category: "city_buildings",
+      width: 26,
+      height: 10
     }
   ];
   let pos = 0;
@@ -289,8 +311,8 @@ function AddMaps() {
         name: maps[pos].name,
         fileName: maps[pos].name,
         category: maps[pos].category,
-        gridWidth: 10,
-        gridHeight: 10
+        gridWidth: maps[pos].width,
+        gridHeight: maps[pos].height
       }
       createMap(respond, newMap2);
     }
@@ -299,8 +321,8 @@ function AddMaps() {
     name: maps[pos].name,
     fileName: maps[pos].name,
     category: maps[pos].category,
-    gridWidth: 10,
-    gridHeight: 10
+    gridWidth: maps[pos].width,
+    gridHeight: maps[pos].height
   }
   createMap(respond, newMap);
 }
@@ -310,7 +332,7 @@ function AddTokens() {
     { 
       name: "CrimsonBrush",
       category: "item"
-    }
+    },
   ];
   let pos = 0;
   function respond(response) {

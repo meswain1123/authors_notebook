@@ -86,7 +86,7 @@ class CreateCampaign extends Component<
 
       this.api.createCampaign(campaignObj).then((res: any) => {
         if (res !== undefined && res.error === undefined) {
-          const newCampaign: Campaign = new Campaign(res.campaignID, this.state.name, "", null);
+          const newCampaign: Campaign = new Campaign(res.campaignID, this.state.name, "", null, new Date().toString());
           this.props.addCampaign(newCampaign);
           this.props.selectCampaign(newCampaign);
           this.setState({ processing: false });

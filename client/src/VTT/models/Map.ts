@@ -33,6 +33,7 @@ import Waterdeep from "../assets/img/maps/waterdeep/Waterdeep.jpg";
 import WaterdeepWithWards from "../assets/img/maps/waterdeep/waterdeep_with_wards.jpg";
 
 import Restaurant from "../assets/img/maps/city_buildings/restaurant.jpg";
+import CrimsonBrush from "../assets/img/maps/city_buildings/CrimsonBrush.png";
 
 interface IHash {
   [details: string] : string;
@@ -68,7 +69,8 @@ const MapFile: IHash = {
   Waterdeep: Waterdeep,
   WaterdeepWithWards: WaterdeepWithWards,
 
-  Restaurant: Restaurant
+  Restaurant: Restaurant,
+  CrimsonBrush: CrimsonBrush
 };
 
 export class Map {

@@ -197,7 +197,7 @@ class DisplayPlayMap extends Component<
       selectedToken: null,
       selectedFavoriteToken: null,
       selectedMask: null,
-      countdown: 2,
+      countdown: 1,
       refreshing: false,
       running: false
     };
@@ -228,106 +228,149 @@ class DisplayPlayMap extends Component<
   // }
 
   refresh = () => {
-    if (this.props.mode === "DM") {
-      this.api.getPlayers(true).then((res: any) => {
-        const campaigns = this.props.campaigns;
-        const players: Player[] = [];
-        res.players.forEach((p: any) => {
-          const campaignFinder = campaigns.filter(c => c._id === p.campaignID);
-          let campaign: (Campaign | null) = null;
-          if (campaignFinder.length === 1) {
-            campaign = campaignFinder[0];
-          }
-          players.push(new Player(p._id, p.email, p.username, p.password, campaign, new Date(Date.parse(p.lastPing))));
-        });
-        this.props.setPlayers(players);
-        this.refreshCampaign();
-      });
-    } else {
-      this.refreshCampaign();
+    if (this.props.selectedPlayer || this.props.mode === "DM") {
+      const refreshIndex = (this.props.selectedPlayer ? this.props.selectedPlayer.refreshIndex : 4);
+      const currentIndex = this.getCurrentRefreshIndex();
+      if (refreshIndex === currentIndex) {
+        if (this.props.mode === "DM") {
+          this.api.getPlayers(true).then((res: any) => {
+            const campaigns = this.props.campaigns;
+            const players: Player[] = [];
+            res.players.forEach((p: any) => {
+              const campaignFinder = campaigns.filter(c => c._id === p.campaignID);
+              let campaign: (Campaign | null) = null;
+              if (campaignFinder.length === 1) {
+                campaign = campaignFinder[0];
+              }
+              players.push(new Player(p._id, p.email, p.username, p.password, campaign, new Date(Date.parse(p.lastPing)), p.refreshIndex));
+            });
+            this.props.setPlayers(players);
+            this.refreshCampaign();
+          });
+        } else {
+          this.refreshCampaign();
+        }
+      } else {
+        setTimeout(this.refresh, this.state.countdown * 1000);
+      }
     }
   }
 
   refreshCampaign = () => {
     const playerID = (this.props.selectedPlayer ? this.props.selectedPlayer._id : -1);
-    this.api.getCampaign(this.props.selectedCampaign._id, playerID).then((c: any) => {
-      const campaign = {...this.props.selectedCampaign};
-      if (c.selectedPlayMapID !== this.props.selectedPlayMap._id) {
-        if (this.props.mode !== "DM") {
-          campaign.selectedPlayMapID = c.selectedPlayMapID;
-          this.props.updateCampaign(campaign);
-          const playMapFinder = this.props.playMaps.filter(m => m._id === campaign.selectedPlayMapID);
-          if (playMapFinder.length === 1) {
-            this.props.selectPlayMap(playMapFinder[0]);
-          }
-        }
-        this.setState({ 
-          lastRefresh: new Date() 
-        }, () => {
-          setTimeout(this.refresh, this.state.countdown * 1000);
-        });
-      } else {
+    this.api.getCampaign(this.props.selectedCampaign._id, this.props.selectedCampaign.lastUpdate, playerID).then((c: any) => {
+      if (c.noChanges) {
         let toggleIt = false;
-        if (c.turnPlayerID !== campaign.turnPlayerID) {
-          campaign.turnPlayerID = c.turnPlayerID;
-          this.props.updateCampaign(campaign);
-        }
         if (this.props.selectedPlayer !== null && 
-          ((campaign.turnPlayerID === this.props.selectedPlayer._id && !this.state.singleSelect) ||
-          (campaign.turnPlayerID !== this.props.selectedPlayer._id && this.state.singleSelect))
+          ((this.props.selectedCampaign.turnPlayerID === this.props.selectedPlayer._id && !this.state.singleSelect) ||
+          (this.props.selectedCampaign.turnPlayerID !== this.props.selectedPlayer._id && this.state.singleSelect))
           ) {
           toggleIt = true;
         }
-        // If it's the DM then only need to update things that belong to the player whose turn it is.  If no one then can skip it.
-        if (this.props.mode !== "DM" || campaign.turnPlayerID) {
-          this.api.getPlayMap(this.props.selectedPlayMap._id).then((m: any) => {
-            const mapFinder: Map[] = this.props.maps.filter(m2 => m2._id === m.mapID);
-            if (mapFinder.length === 1)
-            {
-              const map: Map = mapFinder[0];
-              
-              let playTokens: PlayToken[] = [];
-              if (this.props.mode === "DM") {
-                playTokens = this.props.selectedPlayMap.tokens;
-                m.playTokens.filter((t: any) => t.ownerID === campaign.turnPlayerID).forEach((t: any) => {
-                  const tokenFinder = playTokens.filter(t2 => t.id === t2.id);
-                  if (tokenFinder.length === 1) {
-                    const playToken = tokenFinder[0];
-                    playToken.x = t.x;
-                    playToken.y = t.y;
-                  }
-                }); 
-              } else if (this.props.selectedPlayer && 
-                this.props.selectedPlayer._id === campaign.turnPlayerID) {
-                playTokens = this.props.selectedPlayMap.tokens;
-                m.playTokens.forEach((t: any) => {
-                  const playTokenFinder = playTokens.filter(t2 => t.id === t2.id);
-                  if (playTokenFinder.length === 1) {
-                    const playToken = playTokenFinder[0];
-                    const playerFinder: Player[] = this.props.players.filter(p => p._id === t.ownerID);
-                    let owner: (Player | null) = null;
-                    if (playerFinder.length === 1) {
-                      owner = playerFinder[0];
-                    }
-                    const tokenFinder: Token[] = this.props.tokens.filter(t2 => t2._id === t.tokenID);
-                    let token: (Token | null) = null;
+        this.setState({ 
+          refreshing: false, 
+          // countdown: 4, 
+          lastRefresh: new Date() 
+        }, () => {
+          if (toggleIt) {
+            this.toggleSingleSelect();
+          }
+          setTimeout(this.refresh, this.state.countdown * 4 * 1000);
+        });
+      } else {
+        const campaign = {...this.props.selectedCampaign};
+        campaign.lastUpdate = c.lastUpdate;
+        if (c.selectedPlayMapID !== this.props.selectedPlayMap._id) {
+          if (this.props.mode !== "DM") {
+            campaign.selectedPlayMapID = c.selectedPlayMapID;
+            this.props.updateCampaign(campaign);
+            const playMapFinder = this.props.playMaps.filter(m => m._id === campaign.selectedPlayMapID);
+            if (playMapFinder.length === 1) {
+              this.props.selectPlayMap(playMapFinder[0]);
+            }
+          }
+          this.setState({ 
+            lastRefresh: new Date() 
+          }, () => {
+            setTimeout(this.refresh, this.state.countdown * 1000);
+          });
+        } else {
+          let toggleIt = false;
+          if (c.turnPlayerID !== campaign.turnPlayerID) {
+            campaign.turnPlayerID = c.turnPlayerID;
+          }
+          this.props.updateCampaign(campaign);
+          if (this.props.selectedPlayer !== null && 
+            ((campaign.turnPlayerID === this.props.selectedPlayer._id && !this.state.singleSelect) ||
+            (campaign.turnPlayerID !== this.props.selectedPlayer._id && this.state.singleSelect))
+            ) {
+            toggleIt = true;
+          }
+          // If it's the DM then only need to update things that belong to the player whose turn it is.  If no one then can skip it.
+          if (this.props.mode !== "DM" || campaign.turnPlayerID) {
+            this.api.getPlayMap(this.props.selectedPlayMap._id).then((m: any) => {
+              const mapFinder: Map[] = this.props.maps.filter(m2 => m2._id === m.mapID);
+              if (mapFinder.length === 1)
+              {
+                const map: Map = mapFinder[0];
+                
+                let playTokens: PlayToken[] = [];
+                if (this.props.mode === "DM") {
+                  playTokens = this.props.selectedPlayMap.tokens;
+                  m.playTokens.filter((t: any) => t.ownerID === campaign.turnPlayerID).forEach((t: any) => {
+                    const tokenFinder = playTokens.filter(t2 => t.id === t2.id);
                     if (tokenFinder.length === 1) {
-                      token = tokenFinder[0];
-                    }
-                    playToken.name = t.name;
-                    playToken.token = token;
-                    playToken.size = t.size;
-                    playToken.stealth = t.stealth;
-                    playToken.owner = owner;
-                    if (owner === null || (this.props.selectedPlayer && owner._id !== this.props.selectedPlayer._id)) {
-                      // It's not theirs, so they don't have control of x and y
+                      const playToken = tokenFinder[0];
                       playToken.x = t.x;
                       playToken.y = t.y;
-                    } else {
-                      // It's theirs, so they have control of x and y
                     }
-                  } else if (playTokenFinder.length === 0) {
-                    // It's a new token, so do the normal stuff
+                  }); 
+                } else if (this.props.selectedPlayer && 
+                  this.props.selectedPlayer._id === campaign.turnPlayerID) {
+                  playTokens = this.props.selectedPlayMap.tokens;
+                  m.playTokens.forEach((t: any) => {
+                    const playTokenFinder = playTokens.filter(t2 => t.id === t2.id);
+                    if (playTokenFinder.length === 1) {
+                      const playToken = playTokenFinder[0];
+                      const playerFinder: Player[] = this.props.players.filter(p => p._id === t.ownerID);
+                      let owner: (Player | null) = null;
+                      if (playerFinder.length === 1) {
+                        owner = playerFinder[0];
+                      }
+                      const tokenFinder: Token[] = this.props.tokens.filter(t2 => t2._id === t.tokenID);
+                      let token: (Token | null) = null;
+                      if (tokenFinder.length === 1) {
+                        token = tokenFinder[0];
+                      }
+                      playToken.name = t.name;
+                      playToken.token = token;
+                      playToken.size = t.size;
+                      playToken.stealth = t.stealth;
+                      playToken.owner = owner;
+                      if (owner === null || (this.props.selectedPlayer && owner._id !== this.props.selectedPlayer._id)) {
+                        // It's not theirs, so they don't have control of x and y
+                        playToken.x = t.x;
+                        playToken.y = t.y;
+                      } else {
+                        // It's theirs, so they have control of x and y
+                      }
+                    } else if (playTokenFinder.length === 0) {
+                      // It's a new token, so do the normal stuff
+                      const tokenFinder: Token[] = this.props.tokens.filter(t2 => t2._id === t.tokenID);
+                      let token: (Token | null) = null;
+                      if (tokenFinder.length === 1) {
+                        token = tokenFinder[0];
+                      }
+                      const playerFinder: Player[] = this.props.players.filter(p => p._id === t.ownerID);
+                      let owner: (Player | null) = null;
+                      if (playerFinder.length === 1) {
+                        owner = playerFinder[0];
+                      }
+                      playTokens.push(new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.moving, owner));
+                    }
+                  }); 
+                } else {
+                  m.playTokens.forEach((t: any) => {
                     const tokenFinder: Token[] = this.props.tokens.filter(t2 => t2._id === t.tokenID);
                     let token: (Token | null) = null;
                     if (tokenFinder.length === 1) {
@@ -339,93 +382,85 @@ class DisplayPlayMap extends Component<
                       owner = playerFinder[0];
                     }
                     playTokens.push(new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.moving, owner));
-                  }
-                }); 
-              } else {
-                m.playTokens.forEach((t: any) => {
-                  const tokenFinder: Token[] = this.props.tokens.filter(t2 => t2._id === t.tokenID);
-                  let token: (Token | null) = null;
-                  if (tokenFinder.length === 1) {
-                    token = tokenFinder[0];
-                  }
-                  const playerFinder: Player[] = this.props.players.filter(p => p._id === t.ownerID);
-                  let owner: (Player | null) = null;
-                  if (playerFinder.length === 1) {
-                    owner = playerFinder[0];
-                  }
-                  playTokens.push(new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.moving, owner));
-                });  
-              }
-              let lightMasks: Mask[] = [];
-              let darkMasks: Mask[] = [];
-              let fogMasks: Mask[] = [];
-              let zoom = 0;
-              let dx = 0;
-              let dy = 0;
-              if (this.props.mode === "DM") {
-                // The DM is the one who changes these, so we don't want to update these for him.
-                lightMasks = this.props.selectedPlayMap.lightMasks;
-                darkMasks = this.props.selectedPlayMap.darkMasks;
-                fogMasks = this.props.selectedPlayMap.fogMasks;
-                zoom = this.props.selectedPlayMap.zoom;
-                dx = this.props.selectedPlayMap.dx;
-                dy = this.props.selectedPlayMap.dy;
-              } else {
-                m.lightMasks.forEach((l: any) => {
-                  const points: MaskPoint[] = [];
-                  l.points.forEach((p: any) => {
-                    points.push(new MaskPoint(p.id, l.id, "light", p.x, p.y));
-                  });
-                  lightMasks.push(new Mask(l.id, "light", points));
-                });
-                m.darkMasks.forEach((l: any) => {
-                  const points: MaskPoint[] = [];
-                  l.points.forEach((p: any) => {
-                    points.push(new MaskPoint(p.id, l.id, "dark", p.x, p.y));
-                  });
-                  darkMasks.push(new Mask(l.id, "dark", points));
-                });
-                m.fogMasks.forEach((l: any) => {
-                  const points: MaskPoint[] = [];
-                  l.points.forEach((p: any) => {
-                    points.push(new MaskPoint(p.id, l.id, "fog", p.x, p.y));
-                  });
-                  fogMasks.push(new Mask(l.id, "fog", points));
-                });
-                zoom = m.zoom;
-                dx = m.dx;
-                dy = m.dy;
-              }
-              const playMap = new PlayMap(m._id, m.campaignID, m.name, map, playTokens, m.movingToken, lightMasks, darkMasks, fogMasks, zoom, dx, dy);
-              this.props.updatePlayMap(playMap);
-              this.setState({ 
-                refreshing: false, 
-                // countdown: 4, 
-                lastRefresh: new Date() 
-              }, () => {
-                if (toggleIt) {
-                  this.toggleSingleSelect();
+                  });  
                 }
-                setTimeout(this.refresh, this.state.countdown * 1000);
-              });
-            } else {
-              console.log("Something went wrong");
-            }
-          });
-        } else {
-          this.setState({ 
-            refreshing: false, 
-            // countdown: 4, 
-            lastRefresh: new Date() 
-          }, () => {
-            if (toggleIt) {
-              this.toggleSingleSelect();
-            }
-            setTimeout(this.refresh, this.state.countdown * 1000);
-          });
+                let lightMasks: Mask[] = [];
+                let darkMasks: Mask[] = [];
+                let fogMasks: Mask[] = [];
+                let zoom = 0;
+                let dx = 0;
+                let dy = 0;
+                if (this.props.mode === "DM") {
+                  // The DM is the one who changes these, so we don't want to update these for him.
+                  lightMasks = this.props.selectedPlayMap.lightMasks;
+                  darkMasks = this.props.selectedPlayMap.darkMasks;
+                  fogMasks = this.props.selectedPlayMap.fogMasks;
+                  zoom = this.props.selectedPlayMap.zoom;
+                  dx = this.props.selectedPlayMap.dx;
+                  dy = this.props.selectedPlayMap.dy;
+                } else {
+                  m.lightMasks.forEach((l: any) => {
+                    const points: MaskPoint[] = [];
+                    l.points.forEach((p: any) => {
+                      points.push(new MaskPoint(p.id, l.id, "light", p.x, p.y));
+                    });
+                    lightMasks.push(new Mask(l.id, "light", points));
+                  });
+                  m.darkMasks.forEach((l: any) => {
+                    const points: MaskPoint[] = [];
+                    l.points.forEach((p: any) => {
+                      points.push(new MaskPoint(p.id, l.id, "dark", p.x, p.y));
+                    });
+                    darkMasks.push(new Mask(l.id, "dark", points));
+                  });
+                  m.fogMasks.forEach((l: any) => {
+                    const points: MaskPoint[] = [];
+                    l.points.forEach((p: any) => {
+                      points.push(new MaskPoint(p.id, l.id, "fog", p.x, p.y));
+                    });
+                    fogMasks.push(new Mask(l.id, "fog", points));
+                  });
+                  zoom = m.zoom;
+                  dx = m.dx;
+                  dy = m.dy;
+                }
+                const playMap = new PlayMap(m._id, m.campaignID, m.name, map, playTokens, m.movingToken, lightMasks, darkMasks, fogMasks, zoom, dx, dy);
+                this.props.updatePlayMap(playMap);
+                this.setState({ 
+                  refreshing: false, 
+                  // countdown: 4, 
+                  lastRefresh: new Date() 
+                }, () => {
+                  if (toggleIt) {
+                    this.toggleSingleSelect();
+                  }
+                  setTimeout(this.refresh, this.state.countdown * 1000);
+                });
+              } else {
+                console.log("Something went wrong");
+              }
+            });
+          } else {
+            this.setState({ 
+              refreshing: false, 
+              // countdown: 4, 
+              lastRefresh: new Date() 
+            }, () => {
+              if (toggleIt) {
+                this.toggleSingleSelect();
+              }
+              setTimeout(this.refresh, this.state.countdown * 1000);
+            });
+          }
         }
       }
     });
+  }
+
+  getCurrentRefreshIndex = () => {
+    const refreshTime = new Date();
+    const secs = refreshTime.getSeconds();
+    return Math.floor((secs % 12) / 2);
   }
 
   zoomIn = () => {
@@ -718,6 +753,9 @@ class DisplayPlayMap extends Component<
                     });
                   } else {
                     this.api.updatePlayMap(newPlayMap.toDBObj()).then((res: any) => {
+                      const newCampaign = this.props.selectedCampaign;
+                      newCampaign.lastUpdate = res.lastUpdate;
+                      this.props.updateCampaign(newCampaign);
                       this.props.updatePlayMap(newPlayMap);
                       this.setState({
                         lastRefresh: new Date(),
@@ -1687,7 +1725,10 @@ class DisplayPlayMap extends Component<
   };
 
   saveCampaign = () => {
-    this.api.updateCampaign(this.props.selectedCampaign.toDBObj()).then(() => {
+    this.api.updateCampaign(this.props.selectedCampaign.toDBObj()).then((res: any) => {
+      const campaign = this.props.selectedCampaign;
+      campaign.lastUpdate = res.lastUpdate;
+      this.props.updateCampaign(campaign);
     });
   }
 
@@ -1794,6 +1835,9 @@ class DisplayPlayMap extends Component<
       });
     } else {
       this.api.updatePlayMap(newPlayMap.toDBObj()).then((res: any) => {
+        const newCampaign = this.props.selectedCampaign;
+        newCampaign.lastUpdate = res.lastUpdate;
+        this.props.updateCampaign(newCampaign);
         this.props.updatePlayMap(newPlayMap);
         this.setState({
           lastRefresh: new Date()
@@ -1830,7 +1874,7 @@ class DisplayPlayMap extends Component<
     if (!this.state.running) {
       this.setState({
         running: true,
-        countdown: (this.props.mode === "DM" ? 10 : 2)
+        // countdown: (this.props.mode === "DM" ? 10 : 2)
       }, () => {
         setTimeout(this.refresh, this.state.countdown * 1000);
       });

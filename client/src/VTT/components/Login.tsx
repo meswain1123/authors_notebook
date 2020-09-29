@@ -89,7 +89,7 @@ class Login extends Component<
           if (campaignFinder.length === 1) {
             campaign = campaignFinder[0];
           }
-          const newPlayer: Player = new Player(res._id, res.email, res.username, res.password, campaign, new Date(Date.parse(res.lastPing)));
+          const newPlayer: Player = new Player(res._id, res.email, res.username, res.password, campaign, new Date(Date.parse(res.lastPing)), res.refreshIndex);
           this.props.selectPlayer(newPlayer);
           this.setState({ processing: false });
         }

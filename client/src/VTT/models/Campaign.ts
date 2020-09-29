@@ -9,16 +9,19 @@ export class Campaign {
   name: string;
   selectedPlayMapID: string;
   turnPlayerID: string | null; 
+  lastUpdate: string;
 
   constructor(
     _id: string, 
     name: string,
     selectedPlayMapID: string,
-    turnPlayerID: string | null) {
+    turnPlayerID: string | null,
+    lastUpdate: string) {
     this._id = _id;
     this.name = name;
     this.selectedPlayMapID = selectedPlayMapID;
     this.turnPlayerID = turnPlayerID;
+    this.lastUpdate = lastUpdate;
   }
 
   toDBObj = () => {

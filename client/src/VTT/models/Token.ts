@@ -43,7 +43,7 @@ import Rat from "../assets/img/tokens/animals/Rat.png";
 
 import Wererat from "../assets/img/tokens/monsters/Wererat.png";
 import Werewolf from "../assets/img/tokens/monsters/Werewolf.png";
-import RugOfSmothering from "../assets/img/tokens/monsters/RugOfSmothering.png";
+import RugOfSmothering from "../assets/img/tokens/monsters/mimics/Rug.png";
 
 import PitTrapWSpikes from "../assets/img/tokens/items/PitTrapWSpikes.png";
 import SewerGrate from "../assets/img/tokens/items/SewerGrate.png";
@@ -105,6 +105,15 @@ import Daggers from "../assets/img/tokens/items/Daggers.png";
 import TrollSkull from "../assets/img/tokens/items/TrollSkull.png";
 
 import CrimsonBrush from "../assets/img/tokens/items/Crimson Brush.png";
+
+import BookMimic from "../assets/img/tokens/monsters/mimics/Book.png";
+import ChairMimic from "../assets/img/tokens/monsters/mimics/Chair.png";
+import ChestMimic from "../assets/img/tokens/monsters/mimics/Chest.png";
+import PumpkinMimic from "../assets/img/tokens/monsters/mimics/Pumpkin.png";
+import WallMimic from "../assets/img/tokens/monsters/mimics/Wall.png";
+import CakeMimic from "../assets/img/tokens/monsters/mimics/Cake.png";
+
+import Rug from "../assets/img/tokens/items/rug.png";
 
 interface IHash {
   [details: string] : string;
@@ -215,7 +224,16 @@ const TokenFile: IHash = {
   Daggers: Daggers,
   TrollSkull: TrollSkull,
 
-  CrimsonBrush: CrimsonBrush
+  CrimsonBrush: CrimsonBrush,
+
+  BookMimic: BookMimic,
+  ChairMimic: ChairMimic,
+  ChestMimic: ChestMimic,
+  PumpkinMimic: PumpkinMimic,
+  WallMimic: WallMimic,
+  CakeMimic: CakeMimic,
+
+  Rug: Rug
 };
 
 export class Token {

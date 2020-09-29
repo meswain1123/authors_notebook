@@ -11,6 +11,7 @@ export class Player {
   password: string;
   campaign: Campaign | null;
   lastPing: Date;
+  refreshIndex: number;
 
   constructor(
     _id: string, 
@@ -18,13 +19,15 @@ export class Player {
     username: string,
     password: string,
     campaign: (Campaign | null),
-    lastPing: Date) {
+    lastPing: Date,
+    refreshIndex: number) {
     this._id = _id;
     this.email = email;
     this.username = username;
     this.password = password;
     this.campaign = campaign;
     this.lastPing = lastPing;
+    this.refreshIndex = refreshIndex;
   }
 
   toDBObj = () => {
@@ -33,7 +36,8 @@ export class Player {
       email: this.email,
       username: this.username,
       password: this.password,
-      campaignID: (this.campaign ? this.campaign._id : null)
+      campaignID: (this.campaign ? this.campaign._id : null),
+      refreshIndex: this.refreshIndex
     };
   }
 }

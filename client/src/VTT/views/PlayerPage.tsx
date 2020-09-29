@@ -3,17 +3,17 @@ import { connect, ConnectedProps } from 'react-redux';
 import { RouteComponentProps } from "react-router-dom";
 import styled from "styled-components";
 import {
-  // FormControl,
-  // OutlinedInput,
-  // InputLabel,
-  // FormHelperText,
+  FormControl,
+  Select,
+  InputLabel,
+  MenuItem,
   Button, 
   // Grid
 } from "@material-ui/core";
 import { 
   Campaign, Map, PlayMap, Token, Player 
 } from "../models";
-import Login from "../components/Login";
+// import Login from "../components/Login";
 // import LoadPlayMap from "../components/LoadPlayMap";
 import DisplayPlayMap from "../components/DisplayPlayMap";
 import API from "../smartAPI";
@@ -127,8 +127,17 @@ class PlayerPage extends Component<
     const newCampaign = this.props.selectedCampaign;
     newCampaign.turnPlayerID = null;
     this.api.updateCampaign(newCampaign.toDBObj()).then((res: any) => {
+      newCampaign.lastUpdate = res.lastUpdate;
       this.props.updateCampaign(newCampaign);
     });
+  }
+
+  changePlayer = (e: any) => {
+    const playerFinder = this.props.players.filter(p => p._id === e.target.value);
+    if (playerFinder.length === 1) {
+      this.props.selectPlayer(playerFinder[0]);
+      // this.setState({});
+    }
   }
 
   renderHeader = () => {
@@ -140,9 +149,27 @@ class PlayerPage extends Component<
             &nbsp;-&nbsp;{this.props.selectedCampaign.name}
           </span>
         }
-        { this.props.selectedPlayer && 
+        { this.props.selectedPlayer ? 
           <span>
             &nbsp;-&nbsp;{this.props.selectedPlayer.username}
+          </span>
+          :
+          <span>
+            &nbsp;-&nbsp;
+            <FormControl variant="outlined">
+              <InputLabel id="player">Select a Player</InputLabel>
+              <Select
+                labelId="player"
+                id="player"
+                value={this.props.selectedPlayer}
+                onChange={this.changePlayer}
+                label="Select a Player"
+              >
+                { this.props.players.map((p, key) => {
+                  return (<MenuItem key={key} value={p._id}>{p.username}</MenuItem>);
+                })}
+              </Select>
+            </FormControl>
           </span>
         }
         { this.props.selectedCampaign && this.props.selectedPlayer &&
@@ -158,11 +185,12 @@ class PlayerPage extends Component<
   };
 
   renderMain = () => {
-    if (!this.props.selectedPlayer) {
-      return (
-        <Login key="main"/>
-      );
-    } else if (this.props.selectedPlayMap) {
+    // if (!this.props.selectedPlayer) {
+    //   return (
+    //     <Login key="main"/>
+    //   );
+    // } else 
+    if (this.props.selectedPlayMap) {
       return (
         <DisplayPlayMap key="main" mode="Player" />
       );

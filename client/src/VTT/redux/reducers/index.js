@@ -135,6 +135,7 @@ function rootReducer(state = initialState, action) {
       campaign.name = action.payload.name;
       campaign.selectedPlayMapID = action.payload.selectedPlayMapID;
       campaign.turnPlayerID = action.payload.turnPlayerID;
+      campaign.lastUpdate = action.payload.lastUpdate;
 
       if (selectedCampaign._id === campaign._id) {
         selectedCampaign = campaign;

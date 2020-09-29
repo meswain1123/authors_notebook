@@ -361,9 +361,9 @@ class APIClass {
       return [{ _id: -1, vttID: -1, Name: "Alice" }];
     }
   };
-  getCampaign = async (campaignID, userID = -1) => {
-    const response = await this.fetchData(
-      `/api/vtt/getCampaign/${campaignID}/${userID}`
+  getCampaign = async (campaignID, lastUpdate, userID = -1) => {
+    const response = await this.postData(
+      `/api/vtt/getCampaign`, { campaignID, lastUpdate, userID}
     );
     const data = await this.processResponse(response);
     return data;

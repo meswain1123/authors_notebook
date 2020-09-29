@@ -223,15 +223,23 @@ router
       db.getCampaigns(respond, req.params.userID);
     // }
   })
-  .get("/getCampaign/:campaignID/:userID", function(req, res) {
+  .post("/getCampaign", function(req, res) {
     function gotCampaign(campaign) {
-      if (req.params.userID === -1 || req.params.userID === "-1") {
-        res.send(campaign);
+      if (req.body.userID === -1 || req.body.userID === "-1") {
+        if (req.body.lastUpdate.toString() !== campaign.lastUpdate.toString()) {
+          res.send(campaign);
+        } else {
+          res.send({ noChanges: true });
+        }
       } else {
         function gotPlayer(player) {
           if (player) {
             function respond(message) {
-              res.send(campaign);
+              if (req.body.lastUpdate.toString() !== campaign.lastUpdate.toString()) {
+                res.send(campaign);
+              } else {
+                res.send({ noChanges: true });
+              }
             }
 
             player.lastPing = new Date().toString(); 
@@ -240,11 +248,11 @@ router
             res.send(campaign);
           }
         }
-        db.getPlayer(gotPlayer, req.params.userID);
+        db.getPlayer(gotPlayer, req.body.userID);
       }
     }
     
-    db.getCampaign(gotCampaign, req.params.campaignID);
+    db.getCampaign(gotCampaign, req.body.campaignID);
   })
   .post("/createCampaign", function(req, res) {
     // if (req.session.userID == undefined) {
@@ -279,11 +287,13 @@ router
     //   res.send({ error: "Session lost.  Please log in again." });
     // } else {
       function gotCampaign(oldCampaign) {
+        const lastUpdate = new Date().toString();
         function respond(message) {
-          res.send(message);
+          res.send({ message, lastUpdate });
         }
 
         const campaign = {...oldCampaign,...req.body.campaign};
+        campaign.lastUpdate = lastUpdate;
         // campaign.EditDT = new Date();
         // campaign.EditUserID = req.session.userID;
         // db.updateCampaign(respond, req.session.userID, campaign);
@@ -343,7 +353,20 @@ router
     // } else {
       function gotPlayMap(oldPlayMap) {
         function respond(message) {
-          res.send(message);
+          // res.send(message);
+          function gotCampaign(oldCampaign) {
+            const lastUpdate = new Date().toString();
+            function respond(campaignMessage) {
+              res.send({ message, lastUpdate });
+            }
+    
+            const campaign = {...oldCampaign,...req.body.campaign};
+            campaign.lastUpdate = lastUpdate;
+            
+            db.updateCampaign(respond, campaign);
+          }
+          
+          db.getCampaign(gotCampaign, req.body.playMap.campaignID);
         }
 
         const playMap = {...oldPlayMap,...req.body.playMap};

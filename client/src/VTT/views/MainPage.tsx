@@ -91,7 +91,7 @@ class MainPage extends Component<
         if (res !== undefined && res.error === undefined) {
           const campaigns: Campaign[] = [];
           res.campaigns.forEach((c: any) => {
-            campaigns.push(new Campaign(c._id, c.name, c.selectedPlayMapID, c.turnPlayerID));
+            campaigns.push(new Campaign(c._id, c.name, c.selectedPlayMapID, c.turnPlayerID, c.lastUpdate));
           });
           this.props.setCampaigns(campaigns);
           const players: Player[] = [];
@@ -101,7 +101,7 @@ class MainPage extends Component<
             if (campaignFinder.length === 1) {
               campaign = campaignFinder[0];
             }
-            players.push(new Player(p._id, p.email, p.username, p.password, campaign, new Date(Date.parse(p.lastPing))));
+            players.push(new Player(p._id, p.email, p.username, p.password, campaign, new Date(Date.parse(p.lastPing)), p.refreshIndex));
           });
           this.props.setPlayers(players);
           const maps: Map[] = [];
