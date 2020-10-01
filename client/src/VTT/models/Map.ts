@@ -35,6 +35,10 @@ import WaterdeepWithWards from "../assets/img/maps/waterdeep/waterdeep_with_ward
 import Restaurant from "../assets/img/maps/city_buildings/restaurant.jpg";
 import CrimsonBrush from "../assets/img/maps/city_buildings/CrimsonBrush.png";
 
+import GraveyardPath from "../assets/img/maps/graveyards/GraveyardPath.png";
+import GraveyardPumpkinPatch from "../assets/img/maps/graveyards/GraveyardPumpkinPatch.jpg";
+import MausoleumCrypts from "../assets/img/maps/graveyards/MausoleumCrypts.jpg";
+
 interface IHash {
   [details: string] : string;
 } 
@@ -70,7 +74,11 @@ const MapFile: IHash = {
   WaterdeepWithWards: WaterdeepWithWards,
 
   Restaurant: Restaurant,
-  CrimsonBrush: CrimsonBrush
+  CrimsonBrush: CrimsonBrush,
+
+  GraveyardPath: GraveyardPath,
+  GraveyardPumpkinPatch: GraveyardPumpkinPatch,
+  MausoleumCrypts: MausoleumCrypts
 };
 
 export class Map {

@@ -112,8 +112,22 @@ import ChestMimic from "../assets/img/tokens/monsters/mimics/Chest.png";
 import PumpkinMimic from "../assets/img/tokens/monsters/mimics/Pumpkin.png";
 import WallMimic from "../assets/img/tokens/monsters/mimics/Wall.png";
 import CakeMimic from "../assets/img/tokens/monsters/mimics/Cake.png";
+import Jack from "../assets/img/tokens/monsters/mimics/Jack.png";
+import Marty from "../assets/img/tokens/monsters/mimics/Marty.png";
+import Harvey from "../assets/img/tokens/monsters/mimics/Harvey.png";
 
 import Rug from "../assets/img/tokens/items/rug.png";
+
+import TabaxiMummy from "../assets/img/tokens/monsters/Tabaxi Mummy.png";
+
+import GraveDigger from "../assets/img/tokens/characters/Gravedigger.png";
+import Dog from "../assets/img/tokens/animals/Dog.png";
+import BeepBeep from "../assets/img/tokens/animals/Beep Beep.png";
+import Bird from "../assets/img/tokens/animals/bird.png";
+import Ram from "../assets/img/tokens/animals/Ram.png";
+import Sheep from "../assets/img/tokens/animals/Sheep.png";
+import Sheep2 from "../assets/img/tokens/animals/Sheep2.png";
+
 
 interface IHash {
   [details: string] : string;
@@ -232,8 +246,21 @@ const TokenFile: IHash = {
   PumpkinMimic: PumpkinMimic,
   WallMimic: WallMimic,
   CakeMimic: CakeMimic,
+  Jack: Jack,
+  Marty: Marty,
+  Harvey: Harvey,
 
-  Rug: Rug
+  TabaxiMummy: TabaxiMummy,
+
+  Rug: Rug,
+
+  GraveDigger: GraveDigger,
+  Dog: Dog,
+  BeepBeep: BeepBeep,
+  Bird: Bird,
+  Ram: Ram,
+  Sheep: Sheep,
+  Sheep2: Sheep2
 };
 
 export class Token {

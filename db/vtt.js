@@ -26,7 +26,7 @@ function open() {
     // AddPlayers();
     // FixPlayers();
     // AddMaps();
-    // AddTokens();
+    AddTokens();
     // FixLightMasks();
     // FixPlayMaps();
     // FixFavoriteTokens();
@@ -297,11 +297,23 @@ function FixPlayers() {
 function AddMaps() {
   const maps = [
     {
-      name: "CrimsonBrush",
-      category: "city_buildings",
-      width: 26,
-      height: 10
-    }
+      name: "GraveyardPath",
+      category: "graveyards",
+      width: 22,
+      height: 30
+    },
+    {
+      name: "GraveyardPumpkinPatch",
+      category: "graveyards",
+      width: 35,
+      height: 35
+    },
+    {
+      name: "MausoleumCrypts",
+      category: "graveyards",
+      width: 30,
+      height: 35
+    },
   ];
   let pos = 0;
   function respond(response) {
@@ -330,8 +342,24 @@ function AddMaps() {
 function AddTokens() {
   const tokens = [
     { 
-      name: "CrimsonBrush",
-      category: "item"
+      name: "Sheep",
+      category: "animal"
+    },
+    { 
+      name: "Sheep2",
+      category: "animal"
+    },
+    { 
+      name: "Ram",
+      category: "animal"
+    },
+    { 
+      name: "BeepBeep",
+      category: "animal"
+    },
+    { 
+      name: "Bird",
+      category: "animal"
     },
   ];
   let pos = 0;
