@@ -26,7 +26,7 @@ function open() {
     // AddPlayers();
     // FixPlayers();
     // AddMaps();
-    AddTokens();
+    // AddTokens();
     // FixLightMasks();
     // FixPlayMaps();
     // FixFavoriteTokens();
@@ -342,24 +342,44 @@ function AddMaps() {
 function AddTokens() {
   const tokens = [
     { 
-      name: "Sheep",
-      category: "animal"
+      name: "GhostWizard",
+      category: "monster"
     },
     { 
-      name: "Sheep2",
-      category: "animal"
+      name: "GhostBlueWoman",
+      category: "monster"
     },
     { 
-      name: "Ram",
-      category: "animal"
+      name: "GhostWhiteWoman",
+      category: "monster"
     },
     { 
-      name: "BeepBeep",
-      category: "animal"
+      name: "GhostHeartWoman",
+      category: "monster"
     },
     { 
-      name: "Bird",
-      category: "animal"
+      name: "GhostLizardfolk",
+      category: "monster"
+    },
+    { 
+      name: "GhostScreaming",
+      category: "monster"
+    },
+    { 
+      name: "GhostSkeletal",
+      category: "monster"
+    },
+    { 
+      name: "Specter",
+      category: "monster"
+    },
+    { 
+      name: "Wraith",
+      category: "monster"
+    },
+    { 
+      name: "Wraith2",
+      category: "monster"
     },
   ];
   let pos = 0;

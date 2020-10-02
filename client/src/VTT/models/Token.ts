@@ -128,6 +128,16 @@ import Ram from "../assets/img/tokens/animals/Ram.png";
 import Sheep from "../assets/img/tokens/animals/Sheep.png";
 import Sheep2 from "../assets/img/tokens/animals/Sheep2.png";
 
+import GhostWizard from "../assets/img/tokens/monsters/ghosts/Wizard.png";
+import GhostBlueWoman from "../assets/img/tokens/monsters/ghosts/Blue Woman.png";
+import GhostWhiteWoman from "../assets/img/tokens/monsters/ghosts/White Woman.png";
+import GhostHeartWoman from "../assets/img/tokens/monsters/ghosts/Heart Woman.png";
+import GhostLizardfolk from "../assets/img/tokens/monsters/ghosts/Lizardfolk.png";
+import GhostScreaming from "../assets/img/tokens/monsters/ghosts/Screaming.png";
+import GhostSkeletal from "../assets/img/tokens/monsters/ghosts/Skeletal.png";
+import Specter from "../assets/img/tokens/monsters/ghosts/Specter.png";
+import Wraith from "../assets/img/tokens/monsters/ghosts/Wraith.png";
+import Wraith2 from "../assets/img/tokens/monsters/ghosts/Wraith2.png";
 
 interface IHash {
   [details: string] : string;
@@ -260,7 +270,18 @@ const TokenFile: IHash = {
   Bird: Bird,
   Ram: Ram,
   Sheep: Sheep,
-  Sheep2: Sheep2
+  Sheep2: Sheep2,
+
+  GhostWizard: GhostWizard,
+  GhostBlueWoman: GhostBlueWoman,
+  GhostWhiteWoman: GhostWhiteWoman,
+  GhostHeartWoman: GhostHeartWoman,
+  GhostLizardfolk: GhostLizardfolk,
+  GhostScreaming: GhostScreaming,
+  GhostSkeletal: GhostSkeletal,
+  Specter: Specter,
+  Wraith: Wraith,
+  Wraith2: Wraith2
 };
 
 export class Token {
