@@ -81,7 +81,7 @@ class MainPage extends Component<
       if (playerFinder.length === 1) {
         owner = playerFinder[0];
       }
-      return new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.moving, owner);
+      return new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.bloodied, t.moving, owner);
     }
   }
 

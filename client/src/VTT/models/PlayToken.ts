@@ -10,6 +10,7 @@ export class PlayToken {
   y: number;
   size: number;
   stealth: boolean;
+  bloodied: boolean;
   moving: boolean;
   owner: Player | null;
 
@@ -21,6 +22,7 @@ export class PlayToken {
     y: number,
     size: number,
     stealth: boolean,
+    bloodied: boolean,
     moving: boolean,
     owner: Player | null) {
     this.id = id;
@@ -30,6 +32,7 @@ export class PlayToken {
     this.y = y;
     this.size = size;
     this.stealth = stealth;
+    this.bloodied = bloodied;
     this.moving = moving;
     this.owner = owner;
   }
@@ -43,6 +46,7 @@ export class PlayToken {
       y: this.y,
       size: this.size,
       stealth: this.stealth,
+      bloodied: this.bloodied,
       moving: this.moving,
       ownerID: this.owner ? this.owner._id : null
     };

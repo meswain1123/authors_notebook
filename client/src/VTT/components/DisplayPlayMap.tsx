@@ -23,6 +23,7 @@ import {
   Player
 } from "../models";
 import FogOfWar from "../assets/img/Fog.jpg";
+import BloodSplatter from "../assets/img/Blood Splatter.png";
 import API from "../smartAPI";
 
 // This displays the PlayMap.  
@@ -366,7 +367,7 @@ class DisplayPlayMap extends Component<
                       if (playerFinder.length === 1) {
                         owner = playerFinder[0];
                       }
-                      playTokens.push(new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.moving, owner));
+                      playTokens.push(new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.bloodied, t.moving, owner));
                     }
                   }); 
                 } else {
@@ -381,7 +382,7 @@ class DisplayPlayMap extends Component<
                     if (playerFinder.length === 1) {
                       owner = playerFinder[0];
                     }
-                    playTokens.push(new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.moving, owner));
+                    playTokens.push(new PlayToken(t.id, t.name, token, t.x, t.y, t.size, t.stealth, t.bloodied, t.moving, owner));
                   });  
                 }
                 let lightMasks: Mask[] = [];
@@ -539,6 +540,7 @@ class DisplayPlayMap extends Component<
             this.state.tokenSize, 
             false,
             false,
+            false,
             null)
           );
         }
@@ -557,6 +559,7 @@ class DisplayPlayMap extends Component<
           0,
           0,
           this.state.tokenSize, 
+          false,
           false,
           false,
           null)
@@ -585,7 +588,7 @@ class DisplayPlayMap extends Component<
     }
   }
 
-  adjustPlayToken = (t: PlayToken, name: string, size: number, x: number, y: number, stealth: boolean, owner: (Player | null)) => {
+  adjustPlayToken = (t: PlayToken, name: string, size: number, x: number, y: number, stealth: boolean, bloodied: boolean, owner: (Player | null)) => {
     if (this.props.selectedPlayMap) {
       const newPlayMap = this.props.selectedPlayMap;
       const theToken: PlayToken = t;
@@ -597,6 +600,7 @@ class DisplayPlayMap extends Component<
         selectedToken.x = x;
         selectedToken.y = y;
         selectedToken.stealth = stealth;
+        selectedToken.bloodied = bloodied;
         selectedToken.owner = owner;
 
         // this.api.updatePlayMap(newPlayMap.toDBObj()).then(() => {
@@ -779,7 +783,7 @@ class DisplayPlayMap extends Component<
           if (selectedTokens.length === 1) {
             const selectedToken = selectedTokens[0];
             selectedToken.moving = true;
-            newPlayMap.movingToken = new PlayToken(selectedToken.id, selectedToken.name, selectedToken.token, selectedToken.x, selectedToken.y, selectedToken.size, selectedToken.stealth, true, selectedToken.owner);
+            newPlayMap.movingToken = new PlayToken(selectedToken.id, selectedToken.name, selectedToken.token, selectedToken.x, selectedToken.y, selectedToken.size, selectedToken.stealth, selectedToken.bloodied, true, selectedToken.owner);
             this.props.updatePlayMap(newPlayMap);
           }
               
@@ -1034,7 +1038,7 @@ class DisplayPlayMap extends Component<
                     autoComplete="Off"
                     value={t.name}
                     onChange={e => {
-                      this.adjustPlayToken(t, e.target.value, t.size, t.x, t.y, t.stealth, t.owner);
+                      this.adjustPlayToken(t, e.target.value, t.size, t.x, t.y, t.stealth, t.bloodied, t.owner);
                       // this.setState({ tokenName: e.target.value });
                     }}
                     labelWidth={40}
@@ -1052,7 +1056,7 @@ class DisplayPlayMap extends Component<
                     autoComplete="Off"
                     value={t.size}
                     onChange={e => {
-                      this.adjustPlayToken(t, t.name, parseFloat(e.target.value), t.x, t.y, t.stealth, t.owner);
+                      this.adjustPlayToken(t, t.name, parseFloat(e.target.value), t.x, t.y, t.stealth, t.bloodied, t.owner);
                       // this.setState({ tokenSize: parseFloat(e.target.value) });
                     }}
                     labelWidth={40}
@@ -1070,7 +1074,7 @@ class DisplayPlayMap extends Component<
                     autoComplete="Off"
                     value={t.x}
                     onChange={e => {
-                      this.adjustPlayToken(t, t.name, t.size, parseInt(e.target.value), t.y, t.stealth, t.owner);
+                      this.adjustPlayToken(t, t.name, t.size, parseInt(e.target.value), t.y, t.stealth, t.bloodied, t.owner);
                       // this.moveLMP(p, 'y', e.target.value);
                       // this.setState({ tokenSize: parseInt(e.target.value) });
                     }}
@@ -1089,7 +1093,7 @@ class DisplayPlayMap extends Component<
                     autoComplete="Off"
                     value={t.y}
                     onChange={e => {
-                      this.adjustPlayToken(t, t.name, t.size, t.x, parseInt(e.target.value), t.stealth, t.owner);
+                      this.adjustPlayToken(t, t.name, t.size, t.x, parseInt(e.target.value), t.stealth, t.bloodied, t.owner);
                       // this.moveLMP(p, 'y', e.target.value);
                       // this.setState({ tokenSize: parseInt(e.target.value) });
                     }}
@@ -1113,7 +1117,7 @@ class DisplayPlayMap extends Component<
                         owner = playerFinder[0];
                       }
                     } 
-                    this.adjustPlayToken(t, t.name, t.size, t.x, t.y, t.stealth, owner);
+                    this.adjustPlayToken(t, t.name, t.size, t.x, t.y, t.stealth, t.bloodied, owner);
                   }}
                   label="Owner"
                 >
@@ -1133,12 +1137,21 @@ class DisplayPlayMap extends Component<
                 <img src={t.token.file} style={{ width: 140 }} alt={t.name} />
               </Grid>
             }
-            <Grid item xs={3}>
-              <Button onClick={() => {
-                this.adjustPlayToken(t, t.name, t.size, t.x, t.y, !t.stealth, t.owner);
-              }}>
-                { t.stealth ? "Stealthy" : "Not"}
-              </Button>
+            <Grid item xs={3} container spacing={1} direction="column">
+              <Grid item>
+                <Button onClick={() => {
+                  this.adjustPlayToken(t, t.name, t.size, t.x, t.y, !t.stealth, t.bloodied, t.owner);
+                }}>
+                  { t.stealth ? "Stealthy" : "Not"}
+                </Button>
+              </Grid>
+              <Grid item>
+                <Button onClick={() => {
+                  this.adjustPlayToken(t, t.name, t.size, t.x, t.y, t.stealth, !t.bloodied, t.owner);
+                }}>
+                  { t.bloodied ? "Bloodied" : "Not"}
+                </Button>
+              </Grid>
             </Grid>
             <Grid item xs={3}>
               <Button onClick={() => {
@@ -2059,7 +2072,7 @@ class DisplayPlayMap extends Component<
                     height: t.size * 50,
                     backgroundColor: (this.state.selected.includes(t) ? "blue" : (this.state.mapMode === "select" && (this.props.mode === "DM" || (this.props.selectedPlayer && t.owner && this.props.selectedPlayer._id === t.owner._id)) ? "grey" : "transparent")),
                     // borderRadius: (t.size * 25)
-                    opacity: (!t.stealth ? 1 : (this.props.mode === "DM" ? 0.5 : 0))
+                    opacity: (!t.stealth ? 1 : (this.props.mode === "DM" ? 0.5 : 0)),
                   }}
                   onMouseEnter={() => {
                     if (this.props.mode === "DM" || (this.props.selectedPlayer && t.owner && this.props.selectedPlayer._id === t.owner._id)) {
@@ -2075,11 +2088,32 @@ class DisplayPlayMap extends Component<
                       <img src={t.token.file} alt="testing" 
                         style={{
                           width: t.size * 50,
-                          height: t.size * 50
+                          height: t.size * 50,
+                          position:"absolute", /* and this has to be relative */
                         }}
                       />
                     }
-                    { t.name !== "" && 
+                    { t.token !== null && t.bloodied &&
+                      <img src={BloodSplatter} alt="testing" 
+                        style={{
+                          width: t.size * 50,
+                          height: t.size * 50,
+                          position: "absolute",
+                          zIndex: 3
+                        }}
+                      />
+                    }
+                    { t.name !== "" && t.token !== null && 
+                      <span style={{ 
+                        color: "black", 
+                        fontWeight: "bold", 
+                        backgroundColor: "white", 
+                        fontSize: (10 * t.size),
+                        position: "absolute",
+                        top: t.size * 50 
+                      }}>{t.name}</span>
+                    }
+                    { t.name !== "" && t.token === null && 
                       <span style={{ color: "black", fontWeight: "bold", backgroundColor: "white", fontSize: (10 * t.size) }}>{t.name}</span>
                     }
                   </div>

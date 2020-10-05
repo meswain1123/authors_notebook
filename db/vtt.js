@@ -148,7 +148,7 @@ function FixPlayMaps() {
         const playMap2 = playMaps[pos];
         playMap2.movingToken = null;
         playMap2.playTokens.forEach(t => {
-          t.ownerID = null;
+          t.bloodied = false;
         });
         // playMap2.campaignID = "5f46ceeaa4e6a228c888965d";
         updatePlayMap(respond, playMap2);
@@ -157,9 +157,7 @@ function FixPlayMaps() {
     const playMap = playMaps[pos];
     playMap.movingToken = null;
     playMap.playTokens.forEach(t => {
-      t.size = t.size * 2;
-      t.x = t.x * 2;
-      t.y = t.y * 2;
+      t.bloodied = false;
     });
     // playMap.campaignID = "5f46ceeaa4e6a228c888965d";
     updatePlayMap(respond, playMap);
