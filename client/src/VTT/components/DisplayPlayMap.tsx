@@ -347,6 +347,7 @@ class DisplayPlayMap extends Component<
                       playToken.token = token;
                       playToken.size = t.size;
                       playToken.stealth = t.stealth;
+                      playToken.bloodied = t.bloodied;
                       playToken.owner = owner;
                       if (owner === null || (this.props.selectedPlayer && owner._id !== this.props.selectedPlayer._id)) {
                         // It's not theirs, so they don't have control of x and y
