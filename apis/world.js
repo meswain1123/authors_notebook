@@ -23,6 +23,18 @@ router
       db.getWorldsForUser(respond, req.session.userID);
     }
   })
+  .get("/getWorldIDByTypeID/:typeID", function(req, res) {
+    function respond(type) {
+      res.send({ worldID: type.worldID });
+    }
+    db.getTypeByID(respond, req.params.typeID);
+  })
+  .get("/getWorldIDByThingID/:thingID", function(req, res) {
+    function respond(thing) {
+      res.send({ worldID: thing.worldID });
+    }
+    db.getThingByID(respond, req.params.thingID);
+  })
   .get("/getPublicWorlds", function(req, res) {
     function respond(worlds) {
       res.send({worlds});
@@ -36,7 +48,11 @@ router
       function respond(worldID) {
         res.send({ worldID });
       }
-      db.createWorld(respond, req.session.userID, req.body.world);
+      const world = req.body.world;
+      world.CreateDT = new Date();
+      world.EditDT = new Date();
+      world.EditUserID = req.session.userID;
+      db.createWorld(respond, req.session.userID, world);
     }
   })
   .delete("/deleteWorld", function(req, res) {
@@ -45,7 +61,7 @@ router
     } 
     else {
       function respond(message) {
-        res.send({ message });
+        res.send(message);
       }
 
       db.deleteWorld(respond, req.session.userID, req.body.worldID);
@@ -55,11 +71,17 @@ router
     if (req.session.userID == undefined) {
       res.send({ error: "Session lost.  Please log in again." });
     } else {
-      function respond(message) {
-        res.send(message);
-      }
+      function gotWorld(oldWorld) {
+        function respond(message) {
+          res.send(message);
+        }
 
-      db.updateWorld(respond, req.session.userID, req.body.world);
+        const world = {...oldWorld,...req.body.world};
+        world.EditDT = new Date();
+        world.EditUserID = req.session.userID;
+        db.updateWorld(respond, req.session.userID, world);
+      }
+      db.getWorld(gotWorld, req.session.userID, req.body.world._id);
     }
   })
   .patch("/generateCollabLink", function(req, res) {
@@ -435,15 +457,17 @@ router
               function respond(typeID) {
                 res.send({ typeID });
               }
-        
-              db.createType(respond, req.body.type);
+              const createMe = req.body.type;
+              createMe.CreateDT = new Date();
+              createMe.EditDT = new Date();
+              createMe.EditUserID = req.session.userID;
+              db.createType(respond, createMe);
             }
           }
 
           db.getTypeByName(gotType, req.body.type.worldID, req.body.type.Name);
         }
       }
-
       db.getWorld(gotWorld, req.session.userID, req.body.type.worldID);
     }
   })
@@ -476,12 +500,17 @@ router
           res.send({ error: "Problem with updating the Type" });
         }
         else {
-          function respond(message) {
-            res.send(message);
-          }
+          function gotType(type) {
+            function respond(message) {
+              res.send(message);
+            }
 
-          // I need to make it check for changed attributes and propagate the changes to all child types and things
-          db.updateType(respond, req.body.type.worldID, req.body.type);
+            const updateMe = {...type, ...req.body.type};
+            updateMe.EditDT = new Date();
+            updateMe.EditUserID = req.session.userID;
+            db.updateType(respond, req.body.type.worldID, updateMe);
+          }
+          db.getTypeByID(gotType, req.body.type._id);
         }
       }
 
@@ -520,10 +549,11 @@ router
                 res.send({ thingID });
               }
 
-              db.createThing(
-                respond,
-                req.body.thing
-              );
+              const createMe = req.body.thing;
+              createMe.CreateDT = new Date();
+              createMe.EditDT = new Date();
+              createMe.EditUserID = req.session.userID;
+              db.createThing(respond, createMe);
             }
           }
 
@@ -567,19 +597,265 @@ router
           res.send({ error: "Problem with creating the Thing" });
         }
         else {
-          function respond(message) {
-            res.send(message);
-          }
+          function gotThing(thing) {
+            function respond(message) {
+              res.send(message);
+            }
 
-          db.updateThing(
-            respond,
-            req.body.thing.worldID,
-            req.body.thing
-          );
+            const updateMe = {...thing, ...req.body.thing};
+            updateMe.EditDT = new Date();
+            updateMe.EditUserID = req.session.userID;
+            db.updateThing(respond, req.body.thing.worldID, updateMe);
+          }
+          db.getThingByID(gotThing, req.body.thing._id);
         }
       }
 
       db.getWorld(gotWorld, req.session.userID, req.body.thing.worldID);
+    }
+  })
+  .post("/createTemplate", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else if (req.body.template.worldID != undefined) {
+      function gotAttributes(attributes) {
+        function gotTypes(types) {
+          function gotThings(things) {
+            const template = {
+              Name: req.body.template.Name,
+              Types: [],
+              Things: [],
+              Attributes: []
+            };
+            const typeMap = {
+              // realID: {
+              //   typeID: "template type id",
+              //   Name: "The actual Type object in template"
+              // }
+            };
+            const thingMap = {
+              // realID: {
+              //   typeID: "template thing id",
+              //   Name: "The actual Thing object in template"
+              // }
+            };
+            const attrMap = {
+              // realID: {
+              //   attrID: "template attr id",
+              //   Name: "The actual Attribute object in template"
+              // }
+            };
+            // TODO: It needs to do equivalent of dumb imports first
+            // req.body.template comes with a list of typeIDs.  
+            // add all those types into a template, along with their attributes.  
+            // Utilize mappings for converting old ids to template ids
+            req.body.template.typeIDs.forEach(id => {
+              let type = types.filter(t => t._id.toString() === id);
+              if (type.length > 0) {
+                type = type[0];
+                const templateType = {...type};
+                delete templateType._id;
+                delete templateType.worldID;
+                delete templateType.ReferenceIDs;
+                delete templateType.AttributesArr;
+                templateType.typeID = uuid.v1();
+                templateType.Attributes = [];
+                // templateType.Defaults = [];
+                type.Attributes.forEach(a => {
+                  const attr = {...a};
+                  if (attrMap[a.attrID] === undefined) {
+                    let templateAttr = attributes.filter(a => a._id.toString() === attr.attrID);
+                    if (templateAttr.length > 0) {
+                      templateAttr = {...templateAttr[0]};
+                      delete templateAttr._id;
+                      delete templateAttr.worldID;
+                      templateAttr.attrID = uuid.v1();
+                      attr.attrID = templateAttr.attrID;
+                      template.Attributes.push(templateAttr);
+                      attrMap[a.attrID] = templateAttr;
+                    }
+                  } else {
+                    attr.attrID = attrMap[a.attrID].attrID;
+                  }
+                  templateType.Attributes.push(attr);
+                });
+                template.Types.push(templateType);
+                typeMap[id] = templateType;
+              }
+            });
+            req.body.template.thingIDs.forEach(id => {
+              let thing = things.filter(t => t._id.toString() === id);
+              if (thing.length > 0) {
+                thing = thing[0];
+                const templateThing = {...thing};
+                delete templateThing._id;
+                delete templateThing.worldID;
+                delete templateThing.ReferenceIDs;
+                delete templateThing.AttributesArr;
+                templateThing.thingID = uuid.v1();
+                templateThing.Attributes = [];
+                thing.Attributes.forEach(a => {
+                  const attr = {...a};
+                  if (attrMap[a.attrID] === undefined) {
+                    let templateAttr = attributes.filter(a => a._id.toString() === attr.attrID);
+                    if (templateAttr.length > 0) {
+                      templateAttr = {...templateAttr[0]};
+                      delete templateAttr._id;
+                      delete templateAttr.worldID;
+                      templateAttr.attrID = uuid.v1();
+                      attr.attrID = templateAttr.attrID;
+                      template.Attributes.push(templateAttr);
+                      attrMap[a.attrID] = templateAttr;
+                    }
+                  } else {
+                    attr.attrID = attrMap[a.attrID].attrID;
+                  }
+                  templateThing.Attributes.push(attr);
+                });
+                template.Things.push(templateThing);
+                thingMap[id] = templateThing;
+              }
+            });
+            template.Attributes.forEach(a => {
+              if (a.AttributeType === "Type" || (a.AttributeType === "List" && a.ListType === "Type")) {
+                a.DefinedType = typeMap[a.DefinedType].typeID;
+              }
+            });
+            template.Things.forEach(t => {
+              const TypeIDs = [];
+              t.TypeIDs.forEach(s => {
+                TypeIDs.push(typeMap[s].typeID.toString())
+              });
+              t.TypeIDs = TypeIDs;
+              const Attributes = [];
+              t.Attributes.forEach(d => {
+                const newAttribute = {...d};
+                
+                let templateAttr = template.Attributes.filter(a => a.attrID === d.attrID);
+                if (templateAttr.length > 0) {
+                  templateAttr = templateAttr[0];
+                  if (templateAttr.AttributeType === "Type") {
+                    newAttribute.Value = thingMap[d.Value].thingID;
+                  } else if (templateAttr.AttributeType === "List" && templateAttr.ListType === "Type") {
+                    newAttribute.ListValues = [];
+                    d.ListValues.forEach(v => {
+                      newAttribute.ListValues.push(thingMap[v].thingID);
+                    });
+                  }
+                }
+                Attributes.push(newAttribute);
+              });
+              t.Attributes = Attributes;
+            });
+            template.Types.forEach(t => {
+              const SuperIDs = [];
+              t.SuperIDs.forEach(s => {
+                SuperIDs.push(typeMap[s].typeID.toString())
+              });
+              t.SuperIDs = SuperIDs;
+              const Defaults = [];
+              t.Defaults.forEach(d => {
+                const newDefault = {...d};
+                
+                let templateAttr = attrMap[d.attrID];
+                if (templateAttr !== undefined) {
+                  newDefault.attrID = templateAttr.attrID;
+                  
+                  if (templateAttr.AttributeType === "Type") {
+                    newDefault.DefaultListValues = [];
+                    const defThing = thingMap[d.DefaultValue];
+                    if (defThing === undefined) {
+                      newDefault.DefaultValue = "";
+                    } else {
+                      newDefault.DefaultValue = defThing.thingID.toString();
+                    }
+                  } else if (templateAttr.AttributeType === "List" && templateAttr.ListType === "Type") {
+                    newDefault.DefaultValue = "";
+                    newDefault.DefaultListValues = [];
+                    d.DefaultListValues.forEach(v => {
+                      const defThing = thingMap[v];
+                      if (defThing !== undefined) {
+                        newDefault.DefaultListValues.push(defThing.thingID.toString());
+                      }
+                    });
+                  }
+                }
+                if (newDefault.DefaultValue !== "" || newDefault.DefaultListValues.length > 0) {
+                  Defaults.push(newDefault);
+                }
+              });
+              t.Defaults = Defaults;
+            });
+            function respond(message) {
+              res.send(message);
+            }
+            // The Template is ready. Insert it.
+            template.CreateDT = new Date();
+            db.createTemplate(respond, template);
+          }
+          db.getThingsForWorld(gotThings, req.session.userID, req.body.template.worldID);
+        }
+        db.getTypesForWorld(gotTypes, req.body.template.worldID);
+      }
+      db.getAttributesForWorld(gotAttributes, req.body.template.worldID);
+    } else {
+      res.send({ error: "Invalid request" });
+    }
+  })
+  .get("/getTemplates", function(req, res) {
+    function respond(templates) {
+      res.send({templates});
+    }
+    db.getTemplates(respond);
+  })
+  .get("/getComments/:worldID/:objectType/:objectID", function(req, res) {
+    function respond(comments) {
+      res.send({comments});
+    }
+    db.getComments(respond, req.params.worldID, req.params.objectType, req.params.objectID);
+  })
+  .post("/addComment", function(req, res) {
+    if (req.session.userID == undefined || req.session.userID != req.body.comment.userID) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else {
+      function respond(commentID) {
+        res.send({ commentID });
+      }
+      const createMe = req.body.comment;
+      createMe.CreateDT = new Date();
+      createMe.EditDT = new Date();
+      createMe.EditUserID = req.session.userID;
+      db.addComment(respond, createMe);
+    }
+  })
+  .patch("/updateComment", function(req, res) {
+    if (req.session.userID == undefined) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else {
+      function respond(message) {
+        res.send(message);
+      }
+      delete req.body.comment.voteSum;
+      const updateMe = req.body.comment;
+      updateMe.EditDT = new Date();
+      updateMe.EditUserID = req.session.userID;
+      db.updateComment(respond, updateMe);
+    }
+  })
+  .get("/getViews/:worldID/:userID", function(req, res) {
+    function respond(views) {
+      res.send(views);
+    }
+    db.getViews(respond, req.params.worldID, req.params.userID);
+  })
+  .post("/upsertView", function(req, res) {
+    if (req.session.userID == undefined || req.session.userID != req.body.view.userID) {
+      res.send({ error: "Session lost.  Please log in again." });
+    } else {
+      function respond(viewID) {
+        res.send({ viewID });
+      }
+      db.upsertView(respond, req.body.view);
     }
   });
 

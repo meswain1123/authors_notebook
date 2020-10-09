@@ -32,7 +32,7 @@ router.get('/getUsersByText/:text', function (req, res) {
 }).post('/login', function (req, res) {
   function respond(user) {
     if (user != null && user.message == null && user.password == req.body.password) {
-      req.session.userID = user._id;
+      req.session.userID = user._id.toString();
       const pwdStripped = {
         _id: user._id,
         email: user.email,
@@ -156,44 +156,44 @@ router.get('/getUsersByText/:text', function (req, res) {
   };
   db.getUserByCode(respond, req.body.code);
 }).patch('/update', function (req, res) {
-  if (req.session.userID !== req.body._id) {
+  if (req.session.userID == undefined) {
     res.send({error: "Session lost.  Please log in again."});
   } 
-  else if (req.body.emailChange) {
-    function respond(response) {
-      function respond2(user) {
-        function finalRespond(_) {
-          if (user != null && user.message == null && user.password == req.body.password) {
-            req.session.userID = user._id;
-            const pwdStripped = {
-              _id: user._id,
-              email: user.email,
-              username: user.username,
-              followingWorlds: user.followingWorlds
-            };
-            res.send({ message: `Welcome to World Building, ${user.username}!  Let's make a World!`, user: pwdStripped });
-          } else {
-            console.log(`UpdateUser error`);
-            res.send({ error: 'There was a problem with your credentials.', user: null });
-          }
-        }
+  // else if (req.body.emailChange != undefined && req.body.emailChange) {
+  //   function respond(response) {
+  //     function respond2(user) {
+  //       function finalRespond(_) {
+  //         if (user != null && user.message == null && user.password == req.body.password) {
+  //           req.session.userID = user._id;
+  //           const pwdStripped = {
+  //             _id: user._id,
+  //             email: user.email,
+  //             username: user.username,
+  //             followingWorlds: user.followingWorlds
+  //           };
+  //           res.send({ message: `Welcome to World Building, ${user.username}!  Let's make a World!`, user: pwdStripped });
+  //         } else {
+  //           console.log(`UpdateUser error`);
+  //           res.send({ error: 'There was a problem with your credentials.', user: null });
+  //         }
+  //       }
         
-        const message = `Updated Email on Author's Notebook.  
-          Use <a href='${process.env.ROOT_URL}/User/confirmEmail/${response.confirmEmailCode}'>this link</a> to confirm your new email.  It will be good for one hour.  
-          If you did not update your user in Author's Notebook, please disregard this email.`;
-        emailer.sendEmail(finalRespond, req.body.email, "Author's Notebook, Email Update", message);
-      };
+  //       const message = `Updated Email on Author's Notebook.  
+  //         Use <a href='${process.env.ROOT_URL}/User/confirmEmail/${response.confirmEmailCode}'>this link</a> to confirm your new email.  It will be good for one hour.  
+  //         If you did not update your user in Author's Notebook, please disregard this email.`;
+  //       emailer.sendEmail(finalRespond, req.body.email, "Author's Notebook, Email Update", message);
+  //     };
     
-      db.getUserByEmail(respond2, req.body.email);
-    };
-    const myDate = new Date();
-    myDate.setHours(myDate.getHours() + 1);
-    db.updateUserWithNewEmail(respond, req.session.userID, req.body, uuid.v1(), myDate);
-  } 
+  //     db.getUserByEmail(respond2, req.body.email);
+  //   };
+  //   const myDate = new Date();
+  //   myDate.setHours(myDate.getHours() + 1);
+  //   db.updateUserWithNewEmail(respond, req.session.userID, req.body, uuid.v1(), myDate);
+  // } 
   else {
     function respond(response) {
       function respond2(user) {
-        if (user != null && user.message == null && user.password == req.body.password) {
+        if (user != null && user.message == null) {
           req.session.userID = user._id;
           const pwdStripped = {
             _id: user._id,
@@ -203,7 +203,7 @@ router.get('/getUsersByText/:text', function (req, res) {
           };
           res.send({ message: `Welcome to World Building, ${user.username}!  Let's make a World!`, user: pwdStripped });
         } else {
-          console.log(`Login error`);
+          console.log(`Update User error`);
           res.send({ error: 'There was a problem with your credentials.', user: null });
         }
       };

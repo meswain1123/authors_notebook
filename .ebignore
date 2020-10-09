@@ -1,0 +1,3 @@
+*.ts
+/client_old/
+/client_new/
