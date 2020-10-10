@@ -210,7 +210,7 @@ class DMPage extends Component<
   renderHeader = () => {
     return (
       <Heading key="heading"> 
-        Dead Simple VTT - DM Page 
+        Dead Simple VTT - DM 
         <Button onClick={this.createCampaign}>Create Campaign</Button>
         <Button onClick={this.loadCampaign}>Load Campaign</Button>
         { this.renderControls() }
